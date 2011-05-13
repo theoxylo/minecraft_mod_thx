@@ -1,5 +1,7 @@
 package net.minecraft.src;
 
+// test git change
+
 public class mod_Thx extends BaseMod
 {
 	static Class classHelicopter = net.minecraft.src.ThxEntityHelicopter.class;
