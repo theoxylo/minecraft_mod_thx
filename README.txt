@@ -1,6 +1,3 @@
-README.txt for https://github.com/theoxylo/minecraft_mod_helicopter
-
-
 INSTALLATION
 ------------
 
@@ -10,13 +7,13 @@ If you just want to get the latest version of this mod to try it out, you can do
 
 Just copy it to your '%APPDATA%\.minecraft\mods' directory and start Minecraft normally (ModLoader required!)
 
-Then, check out the options in file '%APPDATA%\.minecraft\mods\mod_thx.options' for controls and other settings.
+After running at least once, check out the options in file '%APPDATA%\.minecraft\mods\mod_thx.options' for controls and other settings.
 
 
 DEVELOPMENT
 -----------
 
-Welcome to the Minecraft mod_Helicopter project! If you are still reading then we will assume you are a modder of would like to become one. Here's what you need:
+Welcome to the Minecraft mod_thx Helicopter project! If you are still reading then we will assume you are a modder of would like to become one. Here's what you need:
 
 1. Minecraft (full version, v 1.5_01): http://www.minecraft.net
 
@@ -24,4 +21,4 @@ Welcome to the Minecraft mod_Helicopter project! If you are still reading then w
 
 3. MCP (version 3.1): http://mcp.ocean-labs.de/index.php/Main_Page
 
-4. Mod source code and project files: git://github.com/theoxylo/minecraft_mod_thx.git
+4. Mod_thx source code and project files: git://github.com/theoxylo/minecraft_mod_thx.git
