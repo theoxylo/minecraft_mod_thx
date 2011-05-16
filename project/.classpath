@@ -4,8 +4,8 @@
 	<classpathentry kind="lib" path="lib/jinput.jar"/>
 	<classpathentry kind="lib" path="lib/lwjgl_util.jar"/>
 	<classpathentry kind="lib" path="lib/lwjgl.jar"/>
-	<classpathentry kind="lib" path="lib/mc_ml_beta_1.5_01.jar" sourcepath="lib/mc_ml_beta_1.5_01-src.jar"/>
 	<classpathentry kind="lib" path="lib/minecraft-sound.jar"/>
+	<classpathentry kind="lib" path="lib/mc_ml_1.5_01.jar" sourcepath="lib/mc_ml_1.5_01-src.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="temp"/>
 </classpath>
