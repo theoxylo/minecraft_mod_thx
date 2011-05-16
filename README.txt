@@ -24,4 +24,4 @@ Welcome to the Minecraft mod_Helicopter project! If you are still reading then w
 
 3. MCP (version 3.1): http://mcp.ocean-labs.de/index.php/Main_Page
 
-4. Mod_helicopter source code and project files (instructions coming soon).
+4. Mod source code and project files: git://github.com/theoxylo/minecraft_mod_thx.git
