@@ -1,11 +1,15 @@
 INSTALLATION
 ------------
 
-If you just want to get the latest version of this mod to try it out, you can download the zip file from Dropbox:
+If you just want to get the latest version of this mod to try it out, you can download the zip file from Dropbox or Github downloads:
 
     http://dl.dropbox.com/u/8642515/mod_thx_helicopter_beta_1.5_01_v002.zip
 
-Just copy it to your '%APPDATA%\.minecraft\mods' directory and start Minecraft normally (ModLoader required!)
+    or
+
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.5_01_v002.zip
+
+Just copy the zip file to your '%APPDATA%\.minecraft\mods' directory and start Minecraft normally (ModLoader required).
 
 After running at least once, check out the options in file '%APPDATA%\.minecraft\mods\mod_thx.options' for controls and other settings.
 
