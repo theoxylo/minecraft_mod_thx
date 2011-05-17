@@ -90,7 +90,9 @@ public class ThxConfig
         writeFile = ensureDefault(props, "enable_drone_mode", "false") || writeFile;
         writeFile = ensureDefault(props, "enable_pilot_aim", "false") || writeFile;
         writeFile = ensureDefault(props, "enable_rotor", "true") || writeFile;
-         
+        writeFile = ensureDefault(props, "enable_auto_level", "true") || writeFile;
+        writeFile = ensureDefault(props, "rotor_speed_percent", "30") || writeFile;
+        
         System.out.println("Loaded properties: " + props);
         
         if (writeFile) // update file with defaults if any properties were missing

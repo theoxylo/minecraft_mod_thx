@@ -44,7 +44,8 @@ public class ThxEntityMissile extends ThxEntity
 
         if (_instance == null) _instance = this;
         
-        //new Exception("new EntityThxMissile called").printStackTrace();
+        new Exception("new ThxEntityMissile called").printStackTrace();
+        
         instanceCount++;
         log("EntityThxMissile instance count: " + instanceCount);
     }
@@ -59,10 +60,6 @@ public class ThxEntityMissile extends ThxEntity
     public void onUpdate()
     {
         super.onUpdate();
-        
-        frame++;
-        
-        //plog("EntityThxMissile.onUpdate called for frame " + _frame);
         
         // start by moving entity
         //double speedSq = motionX*motionX + motionY*motionY + motionZ*motionZ;
@@ -84,6 +81,7 @@ public class ThxEntityMissile extends ThxEntity
         
         if (!stopped)
         {
+            // detonate if we hit an obstacle
             if (deltaPosSqXZ < .10 && dy*dy < .05)
             {
                 worldObj.newExplosion(this, posX, posY, posZ, 1.0F, true);

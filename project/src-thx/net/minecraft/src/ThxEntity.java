@@ -8,7 +8,6 @@ public class ThxEntity extends Entity
     final float PI          = 03.14159265f;
 
     boolean plog = true;
-    int frame = 0;
 
     public boolean visible = true;
     
@@ -29,7 +28,7 @@ public class ThxEntity extends Entity
     {
         super(world);
         instanceCount++;
-        System.out.println("ThxEntity() called " + instanceCount);
+        log("ThxEntity() called " + instanceCount);
         
         preventEntitySpawning = true;
 
@@ -47,6 +46,14 @@ public class ThxEntity extends Entity
     }
     
     @Override
+    public void onUpdate()
+    {
+        super.onUpdate();
+        
+        plog("onUpdate called, ticksExisted:" + ticksExisted);
+    }
+
+    @Override
     protected void entityInit()
     {
     }
@@ -63,7 +70,7 @@ public class ThxEntity extends Entity
 
     void plog(String s) // periodic log
     {
-        if (plog && frame % 60 == 0)
+        if (plog && ticksExisted % 60 == 0)
         {
             log(s);
         }
