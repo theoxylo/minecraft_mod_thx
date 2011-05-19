@@ -163,7 +163,7 @@ public class ThxEntityMissile extends ThxEntity
             worldObj.playSoundAtEntity(this, "mob.ghast.fireball", 1.0f, 1.0f);
             log("missile was launched");
         }
-        else log("missile delay remaining: " + missileDelay);
+        //else log("missile delay remaining: " + missileDelay);
     }
     
     public String toString() { return "Missile " + entityId; }

@@ -27,7 +27,9 @@ public class ThxEntity extends Entity
     public ThxEntity(World world)
     {
         super(world);
+        
         instanceCount++;
+        
         log("ThxEntity() called " + instanceCount);
         
         preventEntitySpawning = true;
@@ -50,7 +52,7 @@ public class ThxEntity extends Entity
     {
         super.onUpdate();
         
-        plog("onUpdate called, ticksExisted:" + ticksExisted);
+        //plog("onUpdate called, ticksExisted:" + ticksExisted);
     }
 
     @Override

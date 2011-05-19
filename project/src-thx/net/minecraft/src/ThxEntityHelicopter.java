@@ -190,7 +190,6 @@ public class ThxEntityHelicopter extends ThxEntity
 	            {
 	                // use pilot look to aim
 	                missile.launch(posX, posY, posZ, motionX * .1, motionY * .1, motionZ * .1, pilot.rotationYaw, pilot.rotationPitch);
-	                
 	            }
 	            else
 	            {
@@ -208,13 +207,13 @@ public class ThxEntityHelicopter extends ThxEntity
 	            while (deltaYawDeg > 180f) deltaYawDeg -= 360f;
 	            while (deltaYawDeg < -180f) deltaYawDeg += 360f;
 	            
-	            if (deltaYawDeg < -10f)
+	            if (deltaYawDeg < -15f)
                 {
 	                rotationYaw += TURN_SPEED_DEG;
 		            if (deltaYawDeg < -45f) rotationYaw += TURN_SPEED_DEG * 2f;
                 }
 	            
-	            if (deltaYawDeg > 10f)
+	            if (deltaYawDeg > 15f)
                 {
 	                rotationYaw -= TURN_SPEED_DEG;
 	                if (deltaYawDeg > 45f) rotationYaw -= TURN_SPEED_DEG * 2f;
@@ -222,6 +221,7 @@ public class ThxEntityHelicopter extends ThxEntity
             }
             else // buttonYaw:
             {
+            }
 	            // button yaw
 	            if (Keyboard.isKeyDown(KEY_ROTATE_LEFT)) // g, rotate left
 	            {
@@ -231,7 +231,6 @@ public class ThxEntityHelicopter extends ThxEntity
 	            {
 	                rotationYaw += TURN_SPEED_DEG;
 	            }
-            }
             
             rotationYaw %= 360f;
 

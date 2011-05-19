@@ -7,7 +7,7 @@ If you just want to get the latest version of this mod to try it out, you can do
 
     or
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.5_01_v002.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.5_01_v003.zip
 
 Just copy the zip file to your '%APPDATA%\.minecraft\mods' directory and start Minecraft normally (ModLoader required).
 

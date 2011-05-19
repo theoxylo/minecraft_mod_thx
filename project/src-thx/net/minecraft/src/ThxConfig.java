@@ -132,7 +132,7 @@ public class ThxConfig
         }
         catch (Exception e)
         {
-            System.out.println("Error loading properties: " + e);
+            System.out.println("mod_thx: Error loading properties: " + e);
         }
         
         // add any missing properties using default values
@@ -150,22 +150,22 @@ public class ThxConfig
         writeFile = ensureDefault(props, "enable_look_yaw", "true") || writeFile;
         writeFile = ensureDefault(props, "enable_look_pitch", "false") || writeFile;
         writeFile = ensureDefault(props, "enable_drone_mode", "false") || writeFile;
-        writeFile = ensureDefault(props, "enable_pilot_aim", "false") || writeFile;
+        writeFile = ensureDefault(props, "enable_pilot_aim", "true") || writeFile;
         writeFile = ensureDefault(props, "enable_rotor", "true") || writeFile;
         writeFile = ensureDefault(props, "enable_auto_level", "true") || writeFile;
         writeFile = ensureDefault(props, "rotor_speed_percent", "30") || writeFile;
         
-        System.out.println("Loaded properties: " + props);
+        System.out.println("mod_thx: Loaded properties: " + props);
         
         if (writeFile) // update file with defaults if any properties were missing
         {
 	        try
 	        {
 	            // create default properties file
-	            System.out.println("Creating/updating config file " + filename);
+	            System.out.println("mod_thx: Creating/updating config file " + filename);
 	            props.store(new FileOutputStream(filename), "Added default properties");
 	        }
-	        catch(IOException e) { System.out.println("Error writing default properties file: " + e); }
+	        catch(IOException e) { System.out.println("mod_thx: Error writing default properties file: " + e); }
         }
         
         ENABLE_LOGGING = getBoolProperty("enable_logging");
@@ -192,6 +192,6 @@ public class ThxConfig
     
     static void log(String s)
     {
-        if (ENABLE_LOGGING) System.out.println(new java.util.Date() + ": " + s);
+        if (ENABLE_LOGGING) System.out.println(new java.util.Date() + " [mod_thx]: " + s);
     }
 }

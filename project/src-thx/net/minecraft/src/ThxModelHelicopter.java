@@ -144,8 +144,8 @@ public class ThxModelHelicopter extends ModelBase
         }
         else
         {
-            // show fixed x rotor by rendering twice
-            rotor1.rotateAngleY = .9f;
+            // show fixed rotor by rendering twice
+            rotor1.rotateAngleY = 0.7854f;
             rotor1.render(f5);
             rotor1.rotateAngleY += 1.5707f;
             rotor1.render(f5);
