@@ -13,7 +13,7 @@ public class mod_Thx extends BaseMod
         missile:
         {
 	        int entityId = ModLoader.getUniqueEntityId();
-	        log("Registering entity class for THX_MISSILE with entity id " + entityId);
+	        log("Registering entity class for missile with entity id " + entityId);
 	        ModLoader.RegisterEntityID(classMissile, "thxMissile", entityId);
         }
         helicopter:
@@ -70,6 +70,6 @@ public class mod_Thx extends BaseMod
     
     void log(String s) 
     { 
-    	System.out.println("mod_Thx: " + s); 
+    	System.out.println("mod_thx: " + s); 
 	}
 }

@@ -88,16 +88,16 @@ public class ThxEntityHelicopter extends ThxEntity
     public ThxEntityHelicopter(World world)
     {
         super(world);
+        
+        //System.out.println(toString() + " - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
+        // new Exception("EntityThxHelicopter call stack:").printStackTrace();
 
         renderModel = new ThxModelHelicopter();
         renderTexture = "/thx/helicopter.png";
         
-        missile = ThxEntityMissile.getInstance(world);
-        // new Exception("EntityThxHelicopter call stack:").printStackTrace();
-
         setSize(1.5F, 0.6F);
 
-        yOffset = .8f; // only moves render model, not actual position
+        yOffset = .8f;
 
 	    thrust = Vec3D.createVector(.0, .0, .0);
 	    velocity = Vec3D.createVector(.0, .0, .0);
@@ -190,7 +190,6 @@ public class ThxEntityHelicopter extends ThxEntity
 	            {
 	                // use pilot look to aim
 	                missile.launch(posX, posY, posZ, motionX * .1, motionY * .1, motionZ * .1, pilot.rotationYaw, pilot.rotationPitch);
-	                
 	            }
 	            else
 	            {
@@ -208,13 +207,13 @@ public class ThxEntityHelicopter extends ThxEntity
 	            while (deltaYawDeg > 180f) deltaYawDeg -= 360f;
 	            while (deltaYawDeg < -180f) deltaYawDeg += 360f;
 	            
-	            if (deltaYawDeg < -10f)
+	            if (deltaYawDeg < -15f)
                 {
 	                rotationYaw += TURN_SPEED_DEG;
 		            if (deltaYawDeg < -45f) rotationYaw += TURN_SPEED_DEG * 2f;
                 }
 	            
-	            if (deltaYawDeg > 10f)
+	            if (deltaYawDeg > 15f)
                 {
 	                rotationYaw -= TURN_SPEED_DEG;
 	                if (deltaYawDeg > 45f) rotationYaw -= TURN_SPEED_DEG * 2f;
@@ -222,6 +221,7 @@ public class ThxEntityHelicopter extends ThxEntity
             }
             else // buttonYaw:
             {
+            }
 	            // button yaw
 	            if (Keyboard.isKeyDown(KEY_ROTATE_LEFT)) // g, rotate left
 	            {
@@ -231,7 +231,6 @@ public class ThxEntityHelicopter extends ThxEntity
 	            {
 	                rotationYaw += TURN_SPEED_DEG;
 	            }
-            }
             
             rotationYaw %= 360f;
 

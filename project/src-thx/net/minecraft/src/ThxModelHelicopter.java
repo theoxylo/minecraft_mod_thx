@@ -33,10 +33,9 @@ public class ThxModelHelicopter extends ModelBase
         byte byte2 = 20;
         byte byte3 = 4;
         
+        // body, based on original mc boat
         boxes[0].addBox(-byte0 / 2, -byte2 / 2 + 2, -3F, byte0, byte2 - 4, 4);
         boxes[0].setPosition(0.0F, 0 + byte3, 0.0F);
-        //boxes[0].addBox(-24f / 2f, -20f / 2f + 2, -3F, 24, 20 - 4, 8, 0.0F);
-        //boxes[0].setPosition(0f, 8f, 0f);
         boxes[0].rotateAngleX = 1.570796F;
         
         boxes[1].addBox(-byte0 / 2 + 2, -byte1 - 1, -1F, byte0 - 4, byte1, 2);
@@ -145,8 +144,8 @@ public class ThxModelHelicopter extends ModelBase
         }
         else
         {
-            // show fixed x rotor by rendering twice
-            rotor1.rotateAngleY = .9f;
+            // show fixed rotor by rendering twice
+            rotor1.rotateAngleY = 0.7854f;
             rotor1.render(f5);
             rotor1.rotateAngleY += 1.5707f;
             rotor1.render(f5);

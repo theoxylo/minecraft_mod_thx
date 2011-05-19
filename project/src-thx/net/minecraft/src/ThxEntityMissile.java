@@ -31,6 +31,9 @@ public class ThxEntityMissile extends ThxEntity
     public ThxEntityMissile(World world)
     {
         super(world);
+        
+        //System.out.println(toString() + " - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
+        //new Exception("new ThxEntityMissile called").printStackTrace();
 
         renderModel = new ThxModelMissile();
         renderTexture = "/thx/missile.png";
@@ -43,8 +46,6 @@ public class ThxEntityMissile extends ThxEntity
         //deltaPos = Vec3D.createVector(.0, .0, .0);
 
         if (_instance == null) _instance = this;
-        
-        new Exception("new ThxEntityMissile called").printStackTrace();
         
         instanceCount++;
         log("EntityThxMissile instance count: " + instanceCount);
@@ -162,7 +163,7 @@ public class ThxEntityMissile extends ThxEntity
             worldObj.playSoundAtEntity(this, "mob.ghast.fireball", 1.0f, 1.0f);
             log("missile was launched");
         }
-        else log("missile delay remaining: " + missileDelay);
+        //else log("missile delay remaining: " + missileDelay);
     }
     
     public String toString() { return "Missile " + entityId; }
