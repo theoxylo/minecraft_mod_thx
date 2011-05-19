@@ -16,15 +16,77 @@ public class ThxConfig
     static String filename = Minecraft.getMinecraftDir() + "/mods/mod_thx.options";
     static Properties props;
     
+    /* troubleshooting this startup error:
+     * 
+     * 
+		[19:06] java.lang.Exception: new ThxEntityMissile called
+		[19:06] at net.minecraft.src.ThxEntityMissile.<init>(ThxEntityMissile.java:47)
+		[19:06] at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+		[19:06] at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:39)
+		[19:06] at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:27)
+		[19:06] at java.lang.reflect.Constructor.newInstance(Constructor.java:513)
+		[19:06] at net.minecraft.src.EntityList.createEntityFromNBT(EntityList.java:66)
+		[19:06] at net.minecraft.src.ChunkLoader.loadChunkIntoWorldFromCompound(ChunkLoader.java:212)
+		[19:06] at net.minecraft.src.McRegionChunkLoader.loadChunk(McRegionChunkLoader.java:43)
+		[19:06] at net.minecraft.src.ChunkProviderLoadOrGenerate.func_542_c(ChunkProviderLoadOrGenerate.java:131)
+		[19:06] at net.minecraft.src.ChunkProviderLoadOrGenerate.provideChunk(ChunkProviderLoadOrGenerate.java:82)
+		[19:06] at net.minecraft.src.World.getChunkFromChunkCoords(World.java:370)
+		[19:06] at net.minecraft.src.World.getBlockId(World.java:306)
+		[19:06] at net.minecraft.client.Minecraft.func_6255_d(Minecraft.java:1342)
+		[19:06] at net.minecraft.client.Minecraft.changeWorld(Minecraft.java:1265)
+		[19:06] at net.minecraft.client.Minecraft.changeWorld2(Minecraft.java:1229)
+		[19:06] at net.minecraft.client.Minecraft.startWorld(Minecraft.java:1178)
+		[19:06] at net.minecraft.src.GuiSelectWorld.selectWorld(GuiSelectWorld.java:133)
+		[19:06] at net.minecraft.src.GuiSelectWorld.actionPerformed(GuiSelectWorld.java:100)
+		[19:06] at net.minecraft.src.GuiScreen.mouseClicked(GuiScreen.java:76)
+		[19:06] at net.minecraft.src.GuiScreen.handleMouseInput(GuiScreen.java:123)
+		[19:06] at net.minecraft.src.GuiScreen.handleInput(GuiScreen.java:113)
+		[19:06] at net.minecraft.client.Minecraft.runTick(Minecraft.java:941)
+		[19:06] at net.minecraft.client.Minecraft.run(Minecraft.java:451)
+		[19:06] at java.lang.Thread.run(Thread.java:662)
+		[19:06] Wrong location! Missile 0
+		[19:06] java.lang.Exception: Stack trace
+		[19:06] at java.lang.Thread.dumpStack(Thread.java:1249)
+		[19:06] at net.minecraft.src.Chunk.addEntity(Chunk.java:389)
+		[19:06] at net.minecraft.src.ChunkLoader.loadChunkIntoWorldFromCompound(ChunkLoader.java:216)
+		[19:06] at net.minecraft.src.McRegionChunkLoader.loadChunk(McRegionChunkLoader.java:43)
+		[19:06] at net.minecraft.src.ChunkProviderLoadOrGenerate.func_542_c(ChunkProviderLoadOrGenerate.java:131)
+		[19:06] at net.minecraft.src.ChunkProviderLoadOrGenerate.provideChunk(ChunkProviderLoadOrGenerate.java:82)
+		[19:06] at net.minecraft.src.World.getChunkFromChunkCoords(World.java:370)
+		[19:06] at net.minecraft.src.World.getBlockId(World.java:306)
+		[19:06] at net.minecraft.client.Minecraft.func_6255_d(Minecraft.java:1342)
+		[19:06] at net.minecraft.client.Minecraft.changeWorld(Minecraft.java:1265)
+		[19:06] at net.minecraft.client.Minecraft.changeWorld2(Minecraft.java:1229)
+		[19:06] at net.minecraft.client.Minecraft.startWorld(Minecraft.java:1178)
+		[19:06] at net.minecraft.src.GuiSelectWorld.selectWorld(GuiSelectWorld.java:133)
+		[19:06] at net.minecraft.src.GuiSelectWorld.actionPerformed(GuiSelectWorld.java:100)
+		[19:06] at net.minecraft.src.GuiScreen.mouseClicked(GuiScreen.java:76)
+		[19:06] at net.minecraft.src.GuiScreen.handleMouseInput(GuiScreen.java:123)
+		[19:06] at net.minecraft.src.GuiScreen.handleInput(GuiScreen.java:113)
+		[19:06] at net.minecraft.client.Minecraft.runTick(Minecraft.java:941)
+		[19:06] at net.minecraft.client.Minecraft.run(Minecraft.java:451)
+		[19:06] at java.lang.Thread.run(Thread.java:662)
+		
+	// some test code	
+    static EntityBoat boat;
+    static Chunk chunk;
+    static EntityList entities;
+    static
+    {
+	    if (chunk != null) chunk.addEntity(null);
+	    if (entities != null) entities.createEntityFromNBT(null, null);
+	    if (boat != null) boat.writeEntityToNBT(null);
+    }
+     */
+    
+    
+
+    
     static String getProperty(String name)
     {
         if (props == null)
         {
             loadProperties();
-            /*
-            System.out.println("Error: thx properties not loaded");
-            return null;
-            */
         }
         return props.getProperty(name);
     }

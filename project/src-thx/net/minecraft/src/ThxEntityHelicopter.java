@@ -88,16 +88,16 @@ public class ThxEntityHelicopter extends ThxEntity
     public ThxEntityHelicopter(World world)
     {
         super(world);
+        
+        //System.out.println(toString() + " - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
+        // new Exception("EntityThxHelicopter call stack:").printStackTrace();
 
         renderModel = new ThxModelHelicopter();
         renderTexture = "/thx/helicopter.png";
         
-        missile = ThxEntityMissile.getInstance(world);
-        // new Exception("EntityThxHelicopter call stack:").printStackTrace();
-
         setSize(1.5F, 0.6F);
 
-        yOffset = .8f; // only moves render model, not actual position
+        yOffset = .8f;
 
 	    thrust = Vec3D.createVector(.0, .0, .0);
 	    velocity = Vec3D.createVector(.0, .0, .0);
