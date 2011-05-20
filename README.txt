@@ -11,7 +11,7 @@ After running at least once, check out the options in file '%APPDATA%\.minecraft
 
 DEVELOPMENT
 -----------
-Welcome to the Minecraft mod_thx Helicopter project! If you are still reading then we will assume you are a modder of would like to become one. Here's what you need:
+Welcome to the Minecraft mod_thx Helicopter project! If you are still reading then we will assume you are a modder or would like to become one. Here's what you need to develop, build, test, and play:
 
 1. Minecraft (full version, v 1.5_01): http://www.minecraft.net
 
@@ -26,8 +26,14 @@ Welcome to the Minecraft mod_thx Helicopter project! If you are still reading th
 6. An IDE or good text editor. Eclipse is recommended: http://www.eclipse.org/downloads
 
 
+CREDITS
+-------
+Special thanks to the ModLoader and MCP projects, without which this project would not be possible!
+
+
 CHANGELOG
 ---------
+v003 (current release):
 v003: now using ModLoader v4
 v003: added rotor spin up/down
 v003: added model windshield
@@ -35,3 +41,10 @@ v003: changed to pilot aim default
 v003: fixed 'wrong location' startup error
 v003: added flag for auto-level
 v003: added rotor speed property
+
+v004 (coming soon):
+v004: fixed pitch-up rendering bug?
+v004: add rockets, 8 of them?
+v004: better model from forum volunteer?
+v004: enable vehicle damage?
+v004: add collision sound?
