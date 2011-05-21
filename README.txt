@@ -48,3 +48,5 @@ v004: add rockets, 8 of them?
 v004: better model from forum volunteer?
 v004: enable vehicle damage?
 v004: add collision sound?
+v004: add float on water?
+v004: carry passenger?
