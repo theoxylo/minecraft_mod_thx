@@ -1,7 +1,5 @@
 package net.minecraft.src;
 
-import org.lwjgl.input.Keyboard;
-
 public class ThxEntity extends Entity
 {
     final float RAD_PER_DEG = 00.01745329f;
@@ -9,7 +7,7 @@ public class ThxEntity extends Entity
 
     boolean plog = true;
 
-    public boolean visible = true;
+    //public boolean visible = true;
     
     double prevMotionX;
     double prevMotionY;
@@ -22,18 +20,16 @@ public class ThxEntity extends Entity
     
     public ModelBase renderModel;
     
-    static int instanceCount;
-
     public ThxEntity(World world)
     {
         super(world);
         
-        instanceCount++;
-        
-        log("ThxEntity() called " + instanceCount);
-        
         preventEntitySpawning = true;
 
+        // lastTickPosX = 0.0; // ???
+        // lastTickPosY = 0.0; // ???
+        // lastTickPosZ = 0.0; // ???
+        
         prevPosX = posX = 0.0;
         prevPosY = posY = 0.0;
         prevPosZ = posZ = 0.0;
@@ -53,6 +49,13 @@ public class ThxEntity extends Entity
         super.onUpdate();
         
         //plog("onUpdate called, ticksExisted:" + ticksExisted);
+    }
+    
+    @Override
+    public void setEntityDead()
+    {
+        log("setEntityDead called");
+        super.setEntityDead();
     }
 
     @Override

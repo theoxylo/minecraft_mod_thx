@@ -2,15 +2,49 @@ package net.minecraft.src;
 
 public class ThxItemHelicopter extends Item
 {
+    final float RAD_PER_DEG = 00.01745329f;
+    final float PI          = 03.14159265f;
+   
     public static int shiftedId;
     
     public ThxItemHelicopter(int i)
     {
         super(i);
-        maxStackSize = 1;
+        maxStackSize = 16;
         shiftedId = shiftedIndex;
     }
 
+    public ItemStack onItemRightClick(ItemStack itemstack, World world, EntityPlayer entity)
+    {
+        itemstack.stackSize--;
+        world.playSoundAtEntity(entity, "random.bow", 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
+        if(!world.multiplayerWorld)
+        {
+            float yawRad = entity.rotationYaw * RAD_PER_DEG;
+            float pitchRad = entity.rotationPitch * RAD_PER_DEG;
+
+            float f1 = MathHelper.cos(-yawRad - PI);
+            float f3 = MathHelper.sin(-yawRad - PI);
+            float f5 = -MathHelper.cos(-pitchRad);
+            float f7 = MathHelper.sin(-pitchRad);
+            /*
+             * Vec3D thrust = Vec3D.createVector(f3 * f5, f7, f1 * f5);
+             * log("Missile thrust: " + thrust + ", speed: " + thrust.lengthVector());
+             */
+            double posX = entity.posX + f3 * f5 * 4.0;
+            double posY = entity.posY; // + entity.yOffset;
+            double posZ = entity.posZ + f1 * f5 * 4.0;
+            //float yaw = (entity.rotationYaw -90) % 360f;
+            float yaw = (entity.rotationYaw -45) % 360f;
+            
+            System.out.println("Entity - posX: " + entity.posX + ", posY: " + entity.posY + ", posZ: " + entity.posZ);
+
+            ThxEntity te = new ThxEntityHelicopter(world, posX, posY, posZ, yaw);
+            world.entityJoinedWorld(te);
+        }
+        return itemstack;
+    }
+    /*
     public ItemStack onItemRightClick(ItemStack itemstack, World world, EntityPlayer entityplayer)
     {
         float f = 1.0F;
@@ -41,10 +75,12 @@ public class ThxItemHelicopter extends Item
             double z = (double)movingobjectposition.blockZ + 0.5d;
             if(!world.multiplayerWorld)
             {
-                world.entityJoinedWorld(new ThxEntityHelicopter(world, x, y, z));
+                ThxEntity te = new ThxEntityHelicopter(world, x, y, z);
+                world.entityJoinedWorld(te);
             }
             itemstack.stackSize--;
         }
         return itemstack;
     }
+    */
 }

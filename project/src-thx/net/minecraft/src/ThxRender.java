@@ -17,8 +17,8 @@ public class ThxRender extends Render
     {
         ThxEntity entity = (ThxEntity) entityArg;
         
-        if (entity.visible)
-        {
+        //if (entity.visible)
+        //{
 	        GL11.glPushMatrix();
 	        
 	        GL11.glTranslatef((float)x, (float)y, (float)z);
@@ -36,6 +36,6 @@ public class ThxRender extends Render
 	        entity.renderModel.render(0.0f, 0.0f, -0.1f, 0.0f, 0.0f, 0.0625f);
         
 	        GL11.glPopMatrix();
-        }
+        //}
     }
 }

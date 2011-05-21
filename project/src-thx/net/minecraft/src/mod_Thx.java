@@ -59,7 +59,7 @@ public class mod_Thx extends BaseMod
     
     int getNexItemId()
     {
-        // return next available id starting at r
+        // return next available id
         for (int idx = 24000; idx + 256 < Item.itemsList.length; idx++)
         {
             if (Item.itemsList[idx + 256] == null) return idx;
