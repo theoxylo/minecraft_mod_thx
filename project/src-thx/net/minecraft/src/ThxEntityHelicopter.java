@@ -21,6 +21,7 @@ public class ThxEntityHelicopter extends ThxEntity
     static int KEY_ROTATE_LEFT;
     static int KEY_ROTATE_RIGHT;
     static int KEY_FIRE_MISSILE;
+    static int KEY_FIRE_ROCKET;
     static int KEY_ENTER_EXIT;
     static boolean ENABLE_LOOK_YAW;
     static boolean ENABLE_LOOK_PITCH;
@@ -28,7 +29,7 @@ public class ThxEntityHelicopter extends ThxEntity
     static boolean ENABLE_PILOT_AIM;
     static boolean ENABLE_AUTO_LEVEL;
 
-    final int MAX_HEALTH = 50;
+    final int MAX_HEALTH = 100;
 
     // handling properties
     final double MAX_ACCEL = 0.299; // very slowly sink when neutral throttle
@@ -65,20 +66,22 @@ public class ThxEntityHelicopter extends ThxEntity
     int _damage = 0;
     
     int _missileDelay = 0;
-    final int MISSILE_RELOAD = 90;
+    final int MISSILE_DELAY = 90;
 
-    // public float prevRotationRoll = 0f;
-    // public float rotationRoll = 0f;
+    int _rocketDelay = 0;
+    final int ROCKET_DELAY = 5;
+    
+    int _rocketCount = 0;
+    final int FULL_ROCKET_COUNT = 8;
+    
+    int _rocketReload = 0;
+    final int ROCKET_RELOAD = 90;
 
     double dronePilotPosX = 0.0;
     double dronePilotPosY = 0.0;
     double dronePilotPosZ = 0.0;
 
     public ThxEntityMissile missile = null;
-
-    // constructors:
-    // constructors:
-    // constructors:
 
     public ThxEntityHelicopter(World world)
     {
@@ -126,6 +129,8 @@ public class ThxEntityHelicopter extends ThxEntity
 
         if (_damage > 0) _damage--;
         if (_missileDelay > 0) _missileDelay--;
+        if (_rocketDelay > 0) _rocketDelay--;
+        if (_rocketReload > 0) _rocketReload--;
 
         prevPosX = posX;
         prevPosY = posY;
@@ -168,9 +173,39 @@ public class ThxEntityHelicopter extends ThxEntity
                 interact(pilot); // enter/exit vehicle
             }
 
+            if (Keyboard.isKeyDown(KEY_FIRE_ROCKET) && _rocketDelay == 0 && _rocketReload == 0)
+            {
+                _rocketCount++;
+                _rocketDelay = ROCKET_DELAY;
+                
+                if (_rocketCount == FULL_ROCKET_COUNT)
+                {
+                    // must reload before next volley
+                    _rocketReload = ROCKET_RELOAD;
+                    _rocketCount = 0;
+                }
+
+                if (ENABLE_PILOT_AIM && !ENABLE_DRONE_MODE)
+                {
+                    // use pilot look to aim
+                    
+                    //ThxEntityMissile newRocket = new ThxEntityRocket(worldObj, posX, posY, posZ, motionX * .1, motionY * .1, motionZ * .1, pilot.rotationYaw, pilot.rotationPitch);
+                    ThxEntityRocket newRocket = new ThxEntityRocket(worldObj, pilot);
+                    worldObj.entityJoinedWorld(newRocket);
+                }
+                else
+                {
+                    // use helicopter to aim
+                    // helicopter yaw reference is perpendicular
+                    
+                    ThxEntityRocket newRocket = new ThxEntityRocket(worldObj, pilot);
+                    worldObj.entityJoinedWorld(newRocket);
+                }
+            }
+
             if (Keyboard.isKeyDown(KEY_FIRE_MISSILE) && _missileDelay == 0)
             {
-                _missileDelay = MISSILE_RELOAD;
+                _missileDelay = MISSILE_DELAY;
 
                 if (ENABLE_PILOT_AIM && !ENABLE_DRONE_MODE)
                 {
@@ -469,9 +504,9 @@ public class ThxEntityHelicopter extends ThxEntity
 
         if (isDead) return true;
 
-        worldObj.playSoundAtEntity(this, "mob.ghast.fireball", 1.0f, 1.0f);
+        worldObj.playSoundAtEntity(this, "random.pop", 1.0f, 1.0f);
 
-        _damage += i * 10;
+        _damage += i * 20;
         log ("current damage percent: " + (100f * (float)_damage / (float)MAX_HEALTH));
         
         setBeenAttacked();
@@ -516,6 +551,7 @@ public class ThxEntityHelicopter extends ThxEntity
         KEY_ROTATE_LEFT = Keyboard.getKeyIndex(ThxConfig.getProperty("rotate_left"));
         KEY_ROTATE_RIGHT = Keyboard.getKeyIndex(ThxConfig.getProperty("rotate_right"));
         KEY_FIRE_MISSILE = Keyboard.getKeyIndex(ThxConfig.getProperty("key_fire_missile"));
+        KEY_FIRE_ROCKET = Keyboard.getKeyIndex(ThxConfig.getProperty("key_fire_rocket"));
         KEY_ENTER_EXIT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_enter_exit"));
 
         ENABLE_LOOK_YAW = ThxConfig.getBoolProperty("enable_look_yaw");

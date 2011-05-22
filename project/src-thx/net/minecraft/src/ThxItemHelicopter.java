@@ -32,13 +32,10 @@ public class ThxItemHelicopter extends Item
              * log("Missile thrust: " + thrust + ", speed: " + thrust.lengthVector());
              */
             double posX = entity.posX + f3 * f5 * 4.0;
-            double posY = entity.posY; // + entity.yOffset;
+            double posY = entity.posY;
             double posZ = entity.posZ + f1 * f5 * 4.0;
-            //float yaw = (entity.rotationYaw -90) % 360f;
             float yaw = (entity.rotationYaw -45) % 360f;
             
-            System.out.println("Entity - posX: " + entity.posX + ", posY: " + entity.posY + ", posZ: " + entity.posZ);
-
             ThxEntity te = new ThxEntityHelicopter(world, posX, posY, posZ, yaw);
             world.entityJoinedWorld(te);
         }

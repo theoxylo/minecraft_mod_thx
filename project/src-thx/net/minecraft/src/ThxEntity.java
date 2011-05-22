@@ -7,7 +7,7 @@ public class ThxEntity extends Entity
 
     boolean plog = true;
 
-    //public boolean visible = true;
+    public boolean visible = true;
     
     double prevMotionX;
     double prevMotionY;
@@ -52,6 +52,12 @@ public class ThxEntity extends Entity
     }
     
     @Override
+    public float getShadowSize()
+    {
+        return 0.0F;
+    }
+
+    @Override
     public void setEntityDead()
     {
         log("setEntityDead called");
@@ -73,6 +79,13 @@ public class ThxEntity extends Entity
     {
     }
 
+    public void createChicken()
+    {
+        EntityChicken entitychicken = new EntityChicken(worldObj);
+        entitychicken.setLocationAndAngles(posX, posY, posZ, rotationYaw, 0.0F);
+        worldObj.entityJoinedWorld(entitychicken);
+    }
+    
     void plog(String s) // periodic log
     {
         if (plog && ticksExisted % 60 == 0)
