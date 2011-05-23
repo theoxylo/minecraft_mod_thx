@@ -58,7 +58,8 @@ public class ThxEntityMissile extends ThxEntity
         prevPosY = posY;
         prevPosZ = posZ;
 
-        worldObj.playSoundAtEntity(this, "mob.ghast.fireball", 1.0f, 1.0f);
+        worldObj.playSoundAtEntity(this, "mob.ghast.fireball", 1f, 1f);
+        //worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f);
     }
 
     @Override

@@ -2,7 +2,7 @@ INTRODUCTION
 ------------
 If you just want to get the latest version of this mod to try it out, you can download the zip file from GitHub:
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.5_01_v003.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.5_01_v004.zip
 
 Just copy the zip file to your '%APPDATA%\.minecraft\mods' directory and start Minecraft normally (ModLoader v4 required).
 
@@ -26,9 +26,9 @@ Welcome to the Minecraft mod_thx Helicopter project! If you are still reading th
 6. An IDE or good text editor. Eclipse is recommended: http://www.eclipse.org/downloads
 
 
-CREDITS
--------
-Special thanks to the ModLoader and MCP projects, without which this project would not be possible!
+ACKNOWLEDGEMENTS
+----------------
+Special thanks to the ModLoader and MCP projects, without which this project would not be possible! And of course, thanks to Notch and the Mojang team for the pure goodness that is Minecraft.
 
 
 CHANGELOG
@@ -44,9 +44,9 @@ v003: added rotor speed property
 
 v004 (coming soon):
 v004: fixed pitch-up rendering bug?
-v004: add rockets, 8 of them?
-v004: better model from forum volunteer?
-v004: enable vehicle damage?
+v004: rockets, default R to fire
+v004: enabled vehicle damage
 v004: add collision sound?
 v004: add float on water?
 v004: carry passenger?
+v004: better model from forum volunteer?

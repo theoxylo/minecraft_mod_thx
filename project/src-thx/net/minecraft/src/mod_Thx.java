@@ -54,7 +54,7 @@ public class mod_Thx extends BaseMod
     @Override
     public String Version()
     {
-        return "mod_thx-beta_1.5_01_v003";
+        return "mod_thx-beta_1.5_01_v004";
     }
     
     int getNexItemId()
