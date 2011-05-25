@@ -1,6 +1,6 @@
 package net.minecraft.src;
 
-public class ThxModelHelicopter extends ModelBase
+public class ThxModelHelicopter extends ThxModel
 {
     int rotorOn = 1;
     float lastRotorRad = 0f;
@@ -9,9 +9,11 @@ public class ThxModelHelicopter extends ModelBase
     
     float SPIN_UP_TIME = 300f;
     float timeSpun = 0f;
-
+    
     public ThxModelHelicopter()
     {
+	    yawOffset = 90f;
+
         ENABLE_ROTOR = ThxConfig.getBoolProperty("enable_rotor");
         
         // dimensions -- adjusted and reused when adding each model box

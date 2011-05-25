@@ -14,7 +14,7 @@ public class ThxRender extends Render
 	        
 	        GL11.glTranslatef((float)x, (float)y, (float)z);
 	        
-	        GL11.glRotatef(180f - entity.rotationYaw, 0.0f, 1.0f, 0.0f);
+	        GL11.glRotatef(180f - entity.rotationYaw + entity.model.yawOffset, 0.0f, 1.0f, 0.0f);
 	        
 	        GL11.glRotatef(-entity.rotationPitch, 0.0f, 0.0f, 1.0f);
 	        
@@ -24,7 +24,7 @@ public class ThxRender extends Render
 
 	        GL11.glScalef(-1f, -1f, 1f);
 	        
-	        entity.renderModel.render(0.0f, 0.0f, -0.1f, 0.0f, 0.0f, 0.0625f);
+	        entity.model.render(0.0f, 0.0f, -0.1f, 0.0f, 0.0f, 0.0625f);
         
 	        GL11.glPopMatrix();
         }

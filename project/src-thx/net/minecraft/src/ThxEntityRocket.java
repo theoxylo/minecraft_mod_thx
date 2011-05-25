@@ -25,46 +25,7 @@ public class ThxEntityRocket  extends Entity
         setSize(0.25F, 0.25F);
     }
 
-    protected void entityInit()
-    {
-    }
-
-    public boolean isInRangeToRenderDist(double d)
-    {
-        double d1 = boundingBox.getAverageEdgeLength() * 4D;
-        d1 *= 64D;
-        return d < d1 * d1;
-    }
-
-    public ThxEntityRocket(World world, EntityLiving entityliving)
-    {
-        super(world);
-        
-        xTile = -1;
-        yTile = -1;
-        zTile = -1;
-        inTile = 0;
-        inGround = false;
-        shake = 0;
-        field_20049_i = 0;
-        owner = entityliving;
-        setSize(0.25F, 0.25F);
-        setLocationAndAngles(entityliving.posX, entityliving.posY + (double)entityliving.getEyeHeight(), entityliving.posZ, entityliving.rotationYaw, entityliving.rotationPitch);
-        posX -= MathHelper.cos((rotationYaw / 180F) * 3.141593F) * 0.16F;
-        posY -= 0.10000000149011612D;
-        posZ -= MathHelper.sin((rotationYaw / 180F) * 3.141593F) * 0.16F;
-        setPosition(posX, posY, posZ);
-        yOffset = 0.0F;
-        float acceleration = .6f; //0.4F;
-        motionX = -MathHelper.sin((rotationYaw / 180F) * 3.141593F) * MathHelper.cos((rotationPitch / 180F) * 3.141593F) * acceleration;
-        motionZ = MathHelper.cos((rotationYaw / 180F) * 3.141593F) * MathHelper.cos((rotationPitch / 180F) * 3.141593F) * acceleration;
-        motionY = -MathHelper.sin((rotationPitch / 180F) * 3.141593F) * acceleration;
-        setEggHeading(motionX, motionY, motionZ, 1.5F, 1.0F);
-        
-        worldObj.playSoundAtEntity(this, "random.fizz", 1f, 1f);
-    }
-
-    public ThxEntityRocket(World world, double x, double y, double z)
+    public ThxEntityRocket(World world, double x, double y, double z, double dx, double dy, double dz, float yaw, float pitch)
     {
         super(world);
         
@@ -77,10 +38,43 @@ public class ThxEntityRocket  extends Entity
         field_20049_i = 0;
         field_20050_h = 0;
         setSize(0.25F, 0.25F);
-        setPosition(x, y, z);
-        yOffset = 0.0F;
+        setLocationAndAngles(x, y, z, yaw, pitch);
+        //posX -= MathHelper.cos((rotationYaw / 180F) * 3.141593F) * 0.16F;
+        //posY -= 0.10000000149011612D;
+        //posZ -= MathHelper.sin((rotationYaw / 180F) * 3.141593F) * 0.16F;
+        //setPosition(posX, posY, posZ);
+        //yOffset = 0.0F;
+        
+        float acceleration = .6f; //0.4F;
+        motionX = -MathHelper.sin((rotationYaw / 180F) * 3.141593F) * MathHelper.cos((rotationPitch / 180F) * 3.141593F) * acceleration;
+        motionZ = MathHelper.cos((rotationYaw / 180F) * 3.141593F) * MathHelper.cos((rotationPitch / 180F) * 3.141593F) * acceleration;
+        motionY = -MathHelper.sin((rotationPitch / 180F) * 3.141593F) * acceleration;
+        
+        motionX += dx;
+        motionY += dy;
+        motionZ += dz;
+        
+        setEggHeading(motionX, motionY, motionZ, 1.5F, 1.0F);
+        
+        worldObj.playSoundAtEntity(this, "random.fizz", 1f, 1f);
     }
 
+    public ThxEntityRocket(World world, EntityLiving entityliving)
+    {
+        this(world, entityliving.posX, entityliving.posY + (double)entityliving.getEyeHeight(), entityliving.posZ, entityliving.motionX, entityliving.motionY, entityliving.motionZ, entityliving.rotationYaw, entityliving.rotationPitch);
+    }
+
+    protected void entityInit()
+    {
+    }
+
+    public boolean isInRangeToRenderDist(double d)
+    {
+        double d1 = boundingBox.getAverageEdgeLength() * 4D;
+        d1 *= 64D;
+        return d < d1 * d1;
+    }
+    
     public void setEggHeading(double d, double d1, double d2, float f, 
             float f1)
     {
@@ -143,8 +137,6 @@ public class ThxEntityRocket  extends Entity
                 if(field_20050_h == 1200)
                 {
                     setEntityDead();
-                    
-                    // out of range?
 		            worldObj.playSoundAtEntity(this, "random.pop", 1f, 1f);
                 }
                 return;
@@ -206,8 +198,7 @@ public class ThxEntityRocket  extends Entity
             }
             
             worldObj.spawnParticle("flame", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
-            
-            worldObj.playSoundAtEntity(this, "random.dr", 1f, 1f);
+            worldObj.playSoundAtEntity(this, "random.drr", 1f, 1f);
 
             setEntityDead();
         }
