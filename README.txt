@@ -4,7 +4,7 @@ If you just want to get the latest version of this mod to try it out, you can do
 
     https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.6.5_v004.zip
 
-Just copy the zip file to your '%APPDATA%\.minecraft\mods' directory and start Minecraft normally (ModLoader v4 required).
+Just copy the zip file to your '%APPDATA%\.minecraft\mods' directory and start Minecraft normally (ModLoader v6 required).
 
 After running at least once, check out the options in file '%APPDATA%\.minecraft\mods\mod_thx.options' for controls and other settings.
 
@@ -33,15 +33,6 @@ Special thanks to the ModLoader and MCP projects, without which this project wou
 
 CHANGELOG
 ---------
-v003: now using ModLoader v4
-v003: added rotor spin up/down
-v003: added model windshield
-v003: changed to pilot aim default
-v003: fixed 'wrong location' startup error
-v003: added flag for auto-level
-v003: added rotor speed property
-
-v004 (current release):
 v004: now supporting Minecraft beta 1.6.5 and ModLoader v6
 v004: fixed pitch-up rendering
 v004: added pitch-down  transparent panel
@@ -54,3 +45,12 @@ v004: fixed bogus fall damage to pilot
 v004: change vehicle exit
 v004: made helicopter item stackable to 16
 v004: now using delta time for variable framerates
+
+v003: now using ModLoader v4 for Minecraft 1.5_01
+v003: added rotor spin up/down
+v003: added model windshield
+v003: changed to pilot aim default
+v003: fixed 'wrong location' startup error
+v003: added flag for auto-level
+v003: added rotor speed property
+
