@@ -5,7 +5,9 @@ public class ThxModelMissile extends ThxModel
     public ModelRenderer box;
     
     public ThxModelMissile()
-    {
+    {       
+        yawOffset = 90f;
+
         float length = 16f;
         float width  = 4f;
         float height = 4f;

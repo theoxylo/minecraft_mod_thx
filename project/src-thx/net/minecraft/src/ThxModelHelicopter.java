@@ -2,7 +2,10 @@ package net.minecraft.src;
 
 public class ThxModelHelicopter extends ThxModel
 {
-    int rotorOn = 1;
+    float rotorSpeed = 0f;
+    
+    boolean bottomVisible = true;
+    
     float lastRotorRad = 0f;
     //float MAX_ROTOR_SPEED = .30f; //.66f;
     float MAX_ROTOR_SPEED = ((float)ThxConfig.getIntProperty("rotor_speed_percent")) / 100f;
@@ -21,8 +24,6 @@ public class ThxModelHelicopter extends ThxModel
         float width  = 0f;
         float height = 0f;
         
-        float xOff = 4f;
-
         boxes = new ModelRenderer[5];
         boxes[0] = new ModelRenderer(0, 8);
         boxes[1] = new ModelRenderer(0, 0);
@@ -36,6 +37,8 @@ public class ThxModelHelicopter extends ThxModel
         byte byte3 = 4;
         
         // body, based on original mc boat
+        
+        // bottom, make invisible for looking down
         boxes[0].addBox(-byte0 / 2, -byte2 / 2 + 2, -3F, byte0, byte2 - 4, 4);
         boxes[0].setPosition(0.0F, 0 + byte3, 0.0F);
         boxes[0].rotateAngleX = 1.570796F;
@@ -108,21 +111,26 @@ public class ThxModelHelicopter extends ThxModel
     @Override
     public void render(float f, float f1, float f2, float f3, float f4, float f5)
     {
+        
         for(int i = 0; i < 5; i++)
         {
+            if (i == 0 && !bottomVisible)
+            {
+                continue; // skip bottom for looking down
+            }
             boxes[i].render(f5);
         }
         
         if (ENABLE_ROTOR)
         {
-            if (rotorOn > 0)
+            if (rotorSpeed > 0)
             {
                 if (timeSpun < SPIN_UP_TIME)
                 {
-                    timeSpun += 1f;
+                    timeSpun += 3f;
                     rotor1.rotateAngleY += MAX_ROTOR_SPEED * timeSpun / SPIN_UP_TIME;
                 }
-                else rotor1.rotateAngleY += MAX_ROTOR_SPEED;
+                else rotor1.rotateAngleY += MAX_ROTOR_SPEED * rotorSpeed;
                 
                 rotor1.render(f5);
                 rotor1.rotateAngleY += 1.5707f; // add second blade perp

@@ -4,9 +4,12 @@ import org.lwjgl.opengl.GL11;
 
 public class ThxRender extends Render
 {
+    @Override
     public void doRender(Entity entityArg, double x, double y, double z, float yaw, float pitch)
     {
         ThxEntity entity = (ThxEntity) entityArg;
+        
+        //System.out.println("entity.pitch: " + entity.rotationPitch + ", pitch arg   : " + pitch);
         
         if (entity.visible)
         {

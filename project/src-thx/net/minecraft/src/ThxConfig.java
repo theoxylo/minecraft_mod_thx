@@ -88,7 +88,9 @@ public class ThxConfig
         writeFile = ensureDefault(props, "enable_pilot_aim", "true") || writeFile;
         writeFile = ensureDefault(props, "enable_rotor", "true") || writeFile;
         writeFile = ensureDefault(props, "enable_auto_level", "true") || writeFile;
-        writeFile = ensureDefault(props, "rotor_speed_percent", "30") || writeFile;
+        writeFile = ensureDefault(props, "enable_look_down_trans", "true") || writeFile;
+        writeFile = ensureDefault(props, "enable_auto_throttle_zero", "true") || writeFile;
+        writeFile = ensureDefault(props, "rotor_speed_percent", "40") || writeFile;
         
         System.out.println("mod_thx: Loaded properties: " + props);
         

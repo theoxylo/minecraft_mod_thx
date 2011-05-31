@@ -5,6 +5,7 @@ import java.util.List;
 import net.minecraft.client.Minecraft;
 
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.util.vector.Vector3f;
 
 public class ThxEntityHelicopter extends ThxEntity
 {
@@ -28,15 +29,17 @@ public class ThxEntityHelicopter extends ThxEntity
     static boolean ENABLE_DRONE_MODE;
     static boolean ENABLE_PILOT_AIM;
     static boolean ENABLE_AUTO_LEVEL;
+    static boolean ENABLE_LOOK_DOWN_TRANS;
+    static boolean ENABLE_AUTO_THROTTLE_ZERO;
 
     final int MAX_HEALTH = 100;
 
     // handling properties
-    final double MAX_ACCEL = 0.299; // very slowly sink when neutral throttle
-    final double MAX_VELOCITY = 0.40;
-    final double GRAVITY = 0.30;
+    final float MAX_ACCEL = 0.299f; // very slowly sink when neutral throttle
+    final float MAX_VELOCITY = 0.44f;
+    final float GRAVITY = 0.30f;
     final float TURN_SPEED_DEG = 2.00f;
-    final double FRICTION = 0.98;
+    final float FRICTION = 0.98f;
 
     // v02: final float MAX_PITCH = 50.00f;
     final float MAX_PITCH = 60.00f;
@@ -59,11 +62,15 @@ public class ThxEntityHelicopter extends ThxEntity
     }
 
     // Vectors for repeated calculations
-    Vec3D thrust;
-    Vec3D velocity;
+    Vector3f thrust;
+    Vector3f velocity;
+    
+    // amount of vehicle motion to transfer upon projectile launch
+    final float MOMENTUM = .2f;
 
     // total update count
     int _damage = 0;
+    int _sinceHit = 0;
     
     int _missileDelay = 0;
     final int MISSILE_DELAY = 64;
@@ -92,12 +99,12 @@ public class ThxEntityHelicopter extends ThxEntity
         model = new ThxModelHelicopter();
         renderTexture = "/thx/helicopter.png";
 
-        setSize(1.5F, 0.6F);
+        setSize(1.8f, 2f);
 
-        yOffset = .8f;
+        yOffset = .6f;
 
-        thrust = Vec3D.createVector(.0, .0, .0);
-        velocity = Vec3D.createVector(.0, .0, .0);
+        thrust = new Vector3f();
+        velocity = new Vector3f();
 
         instanceCount++;
         log("ThxEntityHelicopter instance count: " + instanceCount);
@@ -126,50 +133,57 @@ public class ThxEntityHelicopter extends ThxEntity
     public void onUpdate()
     {
         super.onUpdate();
-
-        //System.out.println("yaw: " + rotationYaw + ", posX: " + posX + ", posZ: " + posZ);
         
+        //log("yaw: " + rotationYaw + ", pitch: " + rotationPitch + ", forwardV: " + getForward());
+        //log("yaw: " + rotationYaw + ", pitch: " + rotationPitch + ", fwd     : " + fwd);
+        //log("roll: " + rotationRoll + ", pitch: " + rotationPitch + ", side  : " + side);
+
         if (_damage > 0) _damage--;
+        if (_sinceHit > 0) _sinceHit--;
         if (_missileDelay > 0) _missileDelay--;
         if (_rocketDelay > 0) _rocketDelay--;
         if (_rocketReload > 0) _rocketReload--;
 
-        prevPosX = posX;
-        prevPosY = posY;
-        prevPosZ = posZ;
-
-        prevMotionX = motionX;
-        prevMotionY = motionY;
-        prevMotionZ = motionZ;
-        
+        // if (ModLoader.isGUIOpen(null) && minecraft.thePlayer.ridingEntity == this)
         EntityPlayer pilot = getPilot();
-
-        Minecraft minecraft = ModLoader.getMinecraftInstance();
-        if (Keyboard.isKeyDown(KEY_ENTER_EXIT))
+        if (pilot != null) //minecraft.thePlayer.ridingEntity == this)
         {
-            // minecraft.displayInGameMenu();
-        }
-
-        // if (ModLoader.isGUIOpen(null) && minecraft.thePlayer.ridingEntity ==
-        // this)
-        if (minecraft.thePlayer.ridingEntity == this)
-        {
-            // if (pilot.isDead) riddenByEntity = null;
-
+            if (pilot.isDead) riddenByEntity = null;
+            
             if (onGround) // very slow on ground
             {
-                if (Math.abs(rotationPitch) > 1.0f) rotationPitch *= .70f;
-                if (Math.abs(rotationRoll) > 1.0f) rotationRoll *= .40f; // very little lateral
+                if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
+                if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
 
                 // double apply friction when on ground
                 motionX *= FRICTION;
                 motionY = 0.0;
                 motionZ *= FRICTION;
             }
+            else
+            {
+                if (ENABLE_LOOK_DOWN_TRANS)
+                {
+	                // hide bottom panel for looking down when in air
+	                //if (pilot.rotationPitch - rotationPitch > 60f)
+	                if (pilot.rotationPitch > 50f)
+	                {
+	                    ((ThxModelHelicopter) model).bottomVisible = false;
+	                }
+	                else
+	                {
+	                    ((ThxModelHelicopter) model).bottomVisible = true;
+	                }
+                }
+            }
 
             if (Keyboard.isKeyDown(KEY_ENTER_EXIT))
             {
+                ((ThxModelHelicopter) model).bottomVisible = true;
+                    
+                double exitDist = 1.9;
                 interact(pilot); // enter/exit vehicle
+                pilot.setPosition(posX + fwd.z * exitDist, posY + pilot.yOffset, posZ - fwd.x * exitDist);
             }
 
             if (Keyboard.isKeyDown(KEY_FIRE_ROCKET) && _rocketDelay == 0 && _rocketReload == 0)
@@ -177,7 +191,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 _rocketCount++;
                 _rocketDelay = ROCKET_DELAY;
                 
-                double leftRight = (_rocketCount % 2 == 0) ? -1.0 : 1.0;
+                float leftRight = (_rocketCount % 2 == 0) ? 1.0f : -1.0f;
                 
                 if (_rocketCount == FULL_ROCKET_COUNT)
                 {
@@ -186,41 +200,19 @@ public class ThxEntityHelicopter extends ThxEntity
                     _rocketCount = 0;
                 }
 
-                double leftRightOffsetX = (double) side.x * leftRight;
-                double leftRightOffsetY = (double) side.y * leftRight;
-                double leftRightOffsetZ = (double) side.z * leftRight;
+                float offsetX = side.x * leftRight + fwd.x;
+                float offsetY = side.y * leftRight + fwd.y;
+                float offsetZ = side.z * leftRight + fwd.z;
                     
-                ThxEntityRocket newRocket = new ThxEntityRocket(worldObj, posX + leftRightOffsetX, posY + leftRightOffsetY, posZ + leftRightOffsetZ, motionX * .3, motionY * .3, motionZ * .3, rotationYaw, rotationPitch); // 90
-                worldObj.entityJoinedWorld(newRocket);
-                
-                /*
+                float yaw = rotationYaw;
+                float pitch = rotationPitch;
                 if (ENABLE_PILOT_AIM && !ENABLE_DRONE_MODE)
                 {
-                    // use pilot look to aim
-                    
-                    // movement
-                    //double leftRightOffsetX = (double) MathHelper.sin(pilot.rotationYaw * RAD_PER_DEG) * leftRight;
-                    //double leftRightOffsetZ = (double) -MathHelper.cos(pilot.rotationYaw * RAD_PER_DEG) * leftRight;
-                    double leftRightOffsetX = (double) side.x * leftRight;
-                    double leftRightOffsetY = (double) side.y * leftRight;
-                    double leftRightOffsetZ = (double) side.z * leftRight;
-                    
-                    ThxEntityRocket newRocket = new ThxEntityRocket(worldObj, posX + leftRightOffsetX, posY + leftRightOffsetY, posZ + leftRightOffsetZ, motionX * .3, motionY * .3, motionZ * .3, pilot.rotationYaw, pilot.rotationPitch);
-                    //ThxEntityRocket newRocket = new ThxEntityRocket(worldObj, pilot);
-                    worldObj.entityJoinedWorld(newRocket);
+                    yaw = pilot.rotationYaw;
+                    pitch = pilot.rotationPitch;
                 }
-                else
-                {
-                    // use helicopter to aim
-                    // helicopter yaw reference is perpendicular to pilot's
-                    double leftRightOffsetX = (double) MathHelper.sin(yawRad) * leftRight;
-                    double leftRightOffsetY = (double) side.y * leftRight;
-                    double leftRightOffsetZ = (double) -MathHelper.cos(yawRad) * leftRight;
-                    
-                    ThxEntityRocket newRocket = new ThxEntityRocket(worldObj, posX + leftRightOffsetX, posY + leftRightOffsetY, posZ + leftRightOffsetZ, motionX * .3, motionY * .3, motionZ * .3, rotationYaw, rotationPitch);
-                    worldObj.entityJoinedWorld(newRocket);
-                }
-                */
+                ThxEntityRocket newRocket = new ThxEntityRocket(worldObj, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
+                worldObj.entityJoinedWorld(newRocket);
             }
 
             if (Keyboard.isKeyDown(KEY_FIRE_MISSILE) && _missileDelay == 0)
@@ -231,15 +223,15 @@ public class ThxEntityHelicopter extends ThxEntity
                 {
                     // use pilot look to aim
                     
-                    ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX, posY, posZ, motionX * .1, motionY * .1, motionZ * .1, pilot.rotationYaw, pilot.rotationPitch);
+                    ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX, posY -yOffset, posZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, pilot.rotationYaw, pilot.rotationPitch);
+                    //ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX, posY, posZ, 0.0, 0.0, 0.0, 0f, 0f);
                     worldObj.entityJoinedWorld(newMissile);
                 }
                 else
                 {
                     // use helicopter to aim
-                    // helicopter yaw reference is perpendicular
                     
-                    ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX, posY, posZ, motionX * .1, motionY * .1, motionZ * .1, rotationYaw, rotationPitch); // 90
+                    ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX, posY -yOffset, posZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, rotationYaw, rotationPitch);
                     worldObj.entityJoinedWorld(newMissile);
                 }
             }
@@ -289,8 +281,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 if (rotationPitch > MAX_PITCH) rotationPitch = MAX_PITCH;
                 if (rotationPitch < -MAX_PITCH) rotationPitch = -MAX_PITCH;
             }
-            else
-            // button pitch and roll
+            else // button pitch and roll
             {
                 if (Keyboard.isKeyDown(KEY_FORWARD))
                 {
@@ -340,76 +331,97 @@ public class ThxEntityHelicopter extends ThxEntity
             else
             {
                 // zero throttle
-                throttle *= .5; // quickly zero throttle
+                if (ENABLE_AUTO_THROTTLE_ZERO) throttle *= .6; // quickly zero throttle
             }
-            // set rotor speed on model
-            // if (throttle > .01f) ((ThxModelHelicopter)model).rotorSpeed
-            // = .33f + throttlePower();
+            
+            // adjust rotor speed
+	        //((ThxModelHelicopter) model).rotorSpeed = getThrottlePower() + .5f;
+	        ((ThxModelHelicopter) model).rotorSpeed = dT;
+            
+            // now calculate thrust and velocity based on yaw, pitch, roll, throttle
+            
+            ascendDescendLift:
+            {
+                // as pitch increases, lift decreases by fall-off function
+                thrust.y = MathHelper.cos(pitchRad) * MathHelper.cos(rollRad);
+            }
 
-            // start with zeroed thrust vector
-            thrust.xCoord = -up.x;
-            thrust.yCoord = up.y;
-            thrust.zCoord = -up.z;
+            forwardBack:
+            {
+                // as pitch increases, forward-back motion increases
+                // but sin function was too touchy so using 1-cos
+                float accel = 1f - MathHelper.cos(pitchRad);
+                if (pitchRad > 0f) accel *= -1f;
+                
+                thrust.x = -fwd.x * accel;
+                thrust.z = -fwd.z * accel;
+            }
+
+            strafeLeftRight:
+            {
+                // double strafe = (double) -MathHelper.sin(roll);
+                float strafe = 1f - MathHelper.cos(rollRad);
+                if (rollRad > 0f) strafe *= -1f;
+
+                // use perp of yaw and scale by roll
+                thrust.x -= fwd.z * strafe;
+                thrust.z += fwd.x * strafe;
+            }
 
             // start with current velocity
-            velocity.xCoord = motionX;
-            velocity.yCoord = motionY;
-            velocity.zCoord = motionZ;
+            velocity.set((float)motionX, (float)motionY, (float)motionZ);
 
             // friction, very little!
-            vectorScale(velocity, FRICTION);
+            velocity.scale(FRICTION);
 
-            // scale thrust by current throttle
-            vectorSetLength(thrust, MAX_ACCEL * (1.0 + throttle));
+            // scale thrust by current throttle and delta time
+            thrust.normalise().scale(MAX_ACCEL * (1f + throttle) * dT);
 
             // apply the thrust
-            vectorAdd(velocity, thrust);
+            Vector3f.add(velocity, thrust, velocity);
 
             // gravity is always straight down
-            velocity.yCoord -= GRAVITY;
+            velocity.y -= GRAVITY * dT;
 
             // limit max velocity
-            vectorLimit(velocity, MAX_VELOCITY);
+            if (velocity.lengthSquared() > MAX_VELOCITY * MAX_VELOCITY)
+            {
+                velocity.scale(MAX_VELOCITY / velocity.length());
+            }
 
             // apply velocity changes
-            motionX = velocity.xCoord;
-            motionY = velocity.yCoord;
-            motionZ = velocity.zCoord;
-
-            moveEntity(motionX, motionY, motionZ);
-            /*
-             * if (velocity.squareDistanceTo(.0, .0, .0) > .000001) {
-             * moveEntity(motionX, motionY, motionZ); }
-             */
+            motionX = velocity.x;
+            motionY = velocity.y;
+            motionZ = velocity.z;
         }
         else
         // no pilot -- slowly sink to the ground
         {
-            ((ThxModelHelicopter) model).rotorOn = 0;
+            ((ThxModelHelicopter) model).rotorSpeed = 0;
 
             if (onGround)
             {
                 // tend to stay put on ground
                 motionY = 0.;
-                motionX *= .7;
-                motionZ *= .7;
+                motionX *= .5;
+                motionZ *= .5;
             }
             else
             {
                 // settle back to ground slowly if pilot bails
                 motionX *= FRICTION;
-                motionY -= GRAVITY * .16;
+                motionY -= GRAVITY * .16f * dT;
                 motionZ *= FRICTION;
             }
 
             rotationPitch *= PITCH_RETURN;
             rotationRoll *= ROLL_RETURN;
-
-            moveEntity(motionX, motionY, motionZ);
         }
+        
+        // move in all cases
+        moveEntity(motionX, motionY, motionZ);
 
         // from EntityBoat class:
-
         detectCollisions:
         {
             List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(0.20000000298023224D, 0.0D, 0.20000000298023224D));
@@ -426,14 +438,32 @@ public class ThxEntityHelicopter extends ThxEntity
             }
         }
 
-        if (isCollidedHorizontally || isCollidedVertically && motionY > .005)
+        // crash, take damage and slow down
+        if (isCollidedHorizontally || isCollidedVertically)
         {
-            die();
+            
+	        double velSq = motionX * motionX + motionY * motionY + motionZ * motionZ;
+            log("crash velSq: " + velSq);
+            
+	        if (velSq > .01)
+	        {
+	            attackEntityFrom(this, 1);
+	            
+	            /*
+	            motionX *= .5;
+	            motionY *= .5;
+	            motionZ *= .5;
+	            */
+	        }
+            isCollidedHorizontally = false;
+            isCollidedVertically = false;
         }
     }
 
     public void die()
     {
+        riddenByEntity = null;
+        
         setEntityDead();
         dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0);
 
@@ -459,19 +489,22 @@ public class ThxEntityHelicopter extends ThxEntity
                 }
             }
         }
+        
     }
     
     @Override
     public boolean attackEntityFrom(Entity entity, int i)
     {
         log("attackEntityFrom called");
+        
+        if (_sinceHit > 0 || isDead) return true;
 
-        if (isDead) return true;
-
-        worldObj.playSoundAtEntity(this, "random.pop", 1.0f, 1.0f);
+        worldObj.playSoundAtEntity(this, "random.drr", 0.6f, 1.0f);
 
         _damage += i * 20;
         log ("current damage percent: " + (100f * (float)_damage / (float)MAX_HEALTH));
+        
+        _sinceHit = 10; // delay before this entity can be hit again
         
         setBeenAttacked();
 
@@ -505,6 +538,9 @@ public class ThxEntityHelicopter extends ThxEntity
     protected void entityInit()
     {
         log("EntityThxHelicopter entityInit called");
+        
+        // reload properties to pick up any changes
+        //ThxConfig.loadProperties();
 
         KEY_ASCEND = Keyboard.getKeyIndex(ThxConfig.getProperty("ascend"));
         KEY_DESCEND = Keyboard.getKeyIndex(ThxConfig.getProperty("descend"));
@@ -523,6 +559,8 @@ public class ThxEntityHelicopter extends ThxEntity
         ENABLE_DRONE_MODE = ThxConfig.getBoolProperty("enable_drone_mode");
         ENABLE_PILOT_AIM = ThxConfig.getBoolProperty("enable_pilot_aim");
         ENABLE_AUTO_LEVEL = ThxConfig.getBoolProperty("enable_auto_level");
+        ENABLE_LOOK_DOWN_TRANS = ThxConfig.getBoolProperty("enable_look_down_trans");
+        ENABLE_AUTO_THROTTLE_ZERO = ThxConfig.getBoolProperty("enable_auto_throttle_zero");
     }
 
     @Override
@@ -559,15 +597,12 @@ public class ThxEntityHelicopter extends ThxEntity
         {
             return true;
         }
-        if (!worldObj.multiplayerWorld)
-        {
-            ((ThxModelHelicopter) model).rotorOn = 1; // start at quarter
-                                                            // speed
-            player.mountEntity(this);
-        }
+        
+        ((ThxModelHelicopter) model).rotorSpeed = 1;
+        player.mountEntity(this);
 
         // if (riddenByEntity == null) player.mountEntity(this);
-        return true;
+        return false;
     }
 
     @Override
@@ -606,4 +641,79 @@ public class ThxEntityHelicopter extends ThxEntity
         // log("readEntityFromNBT called");
     }
 
+    public void debugControls()
+    {
+        Vector3f lookAt = getForward();
+        log("yaw: " + rotationYaw + ", pitch: " + rotationPitch + ", lookAt: " + lookAt);
+        
+        if (riddenByEntity == null) return;
+        
+        rotationYaw = riddenByEntity.rotationYaw;
+        rotationPitch = riddenByEntity.rotationPitch;
+        
+        if (riddenByEntity == null) return;
+        
+        Vector3f thrust = new Vector3f(lookAt); // start with look and transform
+        
+        // scale horizontal XZ thrust by tilt. needs smoothing?
+        thrust.x *= (1 - thrust.y);
+        thrust.z *= (1 - thrust.y);
+        
+        // debug controls
+        if (Keyboard.isKeyDown(KEY_FORWARD))
+        {
+            motionX += thrust.x * MAX_ACCEL;
+            motionZ += thrust.z * MAX_ACCEL;
+        }
+        else if (Keyboard.isKeyDown(KEY_BACK))
+        {
+            motionX -= thrust.x * MAX_ACCEL;
+            motionZ -= thrust.z * MAX_ACCEL;
+        }
+        if (Keyboard.isKeyDown(KEY_LEFT))
+        {
+            // take perp
+            motionX += thrust.z;
+            motionZ -= thrust.x;
+        }
+        else if (Keyboard.isKeyDown(KEY_RIGHT))
+        {
+            motionX -= thrust.z;
+            motionZ += thrust.x;
+        }
+        if (Keyboard.isKeyDown(KEY_ASCEND))
+        {
+            motionY += thrust.y;
+        }
+        else if (Keyboard.isKeyDown(KEY_DESCEND))
+        {
+            motionY -= thrust.y;
+        }
+    }
+    
+    @Override
+    protected void fall(float f)
+    {
+        // prevent damage from falling
+        
+        /*
+        if(riddenByEntity != null)
+        {
+            riddenByEntity.fall(f);
+        }
+        */
+    }
+
+    // enter upon contact
+    /*
+    public void onCollideWithPlayer(EntityPlayer player)
+    {
+        System.out.println("onCollideWithPlayer");
+        
+        if(riddenByEntity == null)
+        {
+            interact(player);
+        }
+    }
+    */
 }

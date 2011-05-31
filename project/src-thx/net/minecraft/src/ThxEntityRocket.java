@@ -45,7 +45,7 @@ public class ThxEntityRocket  extends Entity
         //setPosition(posX, posY, posZ);
         //yOffset = 0.0F;
         
-        float acceleration = .6f; //0.4F;
+        float acceleration = .7f; // 0.4f for mc egg
         motionX = -MathHelper.sin((rotationYaw / 180F) * 3.141593F) * MathHelper.cos((rotationPitch / 180F) * 3.141593F) * acceleration;
         motionZ = MathHelper.cos((rotationYaw / 180F) * 3.141593F) * MathHelper.cos((rotationPitch / 180F) * 3.141593F) * acceleration;
         motionY = -MathHelper.sin((rotationPitch / 180F) * 3.141593F) * acceleration;
@@ -72,7 +72,8 @@ public class ThxEntityRocket  extends Entity
     {
         double d1 = boundingBox.getAverageEdgeLength() * 4D;
         d1 *= 64D;
-        return d < d1 * d1;
+        //return d < d1 * d1;
+        return d < d1 * d1 * 2d;
     }
     
     public void setEggHeading(double d, double d1, double d2, float f, 
@@ -194,11 +195,11 @@ public class ThxEntityRocket  extends Entity
             if(movingobjectposition.entityHit != null)
             {
                 //if(!movingobjectposition.entityHit.attackEntityFrom(owner, 0));
-                movingobjectposition.entityHit.attackEntityFrom(owner, 1);
+                movingobjectposition.entityHit.attackEntityFrom(owner, 3);
             }
             
             worldObj.spawnParticle("flame", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
-            worldObj.playSoundAtEntity(this, "random.drr", 1f, 1f);
+            worldObj.playSoundAtEntity(this, "random.explode", .5f, 1f);
 
             setEntityDead();
         }
@@ -216,7 +217,7 @@ public class ThxEntityRocket  extends Entity
         rotationPitch = prevRotationPitch + (rotationPitch - prevRotationPitch) * 0.2F;
         rotationYaw = prevRotationYaw + (rotationYaw - prevRotationYaw) * 0.2F;
         float f1 = 0.99F;
-        if(func_27013_ag())
+        if(isInWater())
         {
             for(int l = 0; l < 4; l++)
             {

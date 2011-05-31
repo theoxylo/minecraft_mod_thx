@@ -11,6 +11,11 @@ public class ThxEntity extends Entity
 
     boolean visible = true;
     
+    long time;
+    long prevTime;
+    float deltaTime;
+    float dT;
+    
     double prevMotionX;
     double prevMotionY;
     double prevMotionZ;
@@ -27,6 +32,10 @@ public class ThxEntity extends Entity
     String renderTexture;
     
     ThxModel model;
+    
+    Vector3f pos;
+    Vector3f vel;
+    Vector3f ypr;
     
     Vector3f fwd;
     Vector3f side;
@@ -50,20 +59,40 @@ public class ThxEntity extends Entity
         prevMotionY = motionY = 0.0;
         prevMotionZ = motionZ = 0.0;
         
+        // new fields available for use by subclasses:
         yawRad   = prevRotationYaw   = rotationYaw   = 0f;
         pitchRad = prevRotationPitch = rotationPitch = 0f;
         rollRad  = prevRotationRoll  = rotationRoll  = 0f;
         
-	    fwd = new Vector3f(1f, 0f, 0f);
-	    side = new Vector3f(0f, 0f, 1f);
-	    up = new Vector3f(0f, -1f, 0f);
+        // vectors relative to entity orientation
+	    fwd  = new Vector3f(0f, 0f, 0f);
+	    side = new Vector3f(0f, 0f, 0f);
+	    up   = new Vector3f(0f, 0f, 0f);
+	    
+	    pos = new Vector3f(0f, 0f, 0f);
+	    vel = new Vector3f(0f, 0f, 0f);
+	    ypr = new Vector3f(0f, 0f, 0f);
+	    
+	    prevTime = System.nanoTime();
     }
     
     @Override
     public void onUpdate()
     {
+        time = System.nanoTime();
+        deltaTime = (float) (time - prevTime) / 1000000000f; // convert to sec
+        dT = deltaTime / .025f; // relative to 40 fps
+        //deltaTime = time - prevTime;
+        prevTime = time;
+        //System.out.println("delta time sec: " + deltaTime);
+        
         super.onUpdate();
-
+        updateRotation();
+        updateVectors();
+    }
+ 
+    public void updateRotation()
+    {
         rotationYaw   %= 360f;
         if (rotationYaw > 180f) rotationYaw -= 360f;
         else if (rotationYaw < -180f) rotationYaw += 360f;
@@ -78,59 +107,54 @@ public class ThxEntity extends Entity
         if (rotationRoll > 180f) rotationRoll -= 360f;
         else if (rotationRoll < -180f) rotationRoll += 360f;
         rollRad = rotationRoll  * RAD_PER_DEG;
-
-        /*
-        rotationDidChange = false;
+    }
+    
+    public void updateVectors()
+    {
+        float cosRoll  = (float) MathHelper.cos(-rollRad);
+        float sinRoll  = (float) MathHelper.sin(-rollRad);
+        float sinYaw   = (float) MathHelper.sin(-yawRad - PI);
+        float cosYaw   = (float) MathHelper.cos(-yawRad - PI);
+        float sinPitch = (float) MathHelper.sin(-pitchRad);
+        float cosPitch = (float) MathHelper.cos(-pitchRad);
         
-        float deltaYaw = rotationYaw - prevRotationYaw;
-        if (deltaYaw > 180f) deltaYaw -= 360f;
-        else if (deltaYaw < -180f) deltaYaw += 360f;
-        if (Math.abs(deltaYaw) > .001f)
-        {
-            prevRotationYaw = rotationYaw;
-	        yawRad = rotationYaw   * RAD_PER_DEG;
-            rotationDidChange = true;
-        }
-        float deltaPitch = rotationPitch - prevRotationPitch;
-        if (deltaPitch > 180f) deltaPitch -= 360f;
-        else if (deltaPitch < -180f) deltaPitch += 360f;
-        if (Math.abs(deltaPitch) > .001f || rotationDidChange)
-        {
-            prevRotationPitch = rotationPitch;
-	        pitchRad = rotationPitch * RAD_PER_DEG;
-            rotationDidChange = true;
-        }
-        float deltaRoll = rotationRoll - prevRotationRoll;
-        if (deltaRoll > 180f) deltaRoll -= 360f;
-        else if (deltaRoll < -180f) deltaRoll += 360f;
-        if (Math.abs(deltaRoll) > .001f || rotationDidChange)
-        {
-            prevRotationRoll = rotationRoll;
-	        rollRad = rotationRoll  * RAD_PER_DEG;
-            rotationDidChange = true;
-        }
-        
-        if (rotationDidChange)
-        {
-        }
-        */
-        
-        float cosYaw = MathHelper.cos(yawRad);
-        float cosPitch = MathHelper.cos(-pitchRad);
-        float cosRoll = MathHelper.cos(rollRad);
-        float sinYaw = MathHelper.sin(yawRad);
-        float sinPitch = MathHelper.sin(-pitchRad);
-        float sinRoll = MathHelper.sin(rollRad);
-            
-        fwd.x = sinYaw * cosPitch;
+        fwd.x = -sinYaw * cosPitch;
         fwd.y = sinPitch;
         fwd.z = -cosYaw * cosPitch;
+        
+        //System.out.println(this + ": forward delta: " + Vector3f.sub(fwd, getForward(), null));
+        
+        side.x = cosYaw * cosRoll;
+        side.y = -sinRoll;
+        side.z = -sinYaw * cosRoll;
+        
+        //up.x = cosYaw * sinRoll - sinYaw * sinPitch * cosRoll; 
+        //up.y = cosPitch * cosRoll;
+        //up.z = -sinYaw * sinRoll - sinPitch * cosRoll * cosYaw;
             
-        up.x = -cosYaw * sinRoll - sinYaw * sinPitch * cosRoll; 
-        up.y = cosPitch * cosRoll;
-        up.z = -sinYaw * sinRoll - sinPitch * cosRoll * -cosYaw;
-            
-        Vector3f.cross(fwd, up, side);
+        Vector3f.cross(fwd, side, up);
+        
+        // refresh 
+        pos.x = (float) posX;
+        pos.y = (float) posY;
+        pos.z = (float) posZ;
+        
+        vel.x = (float) motionX;
+        vel.y = (float) motionY;
+        vel.z = (float) motionZ;
+        
+        ypr.z = rotationYaw;
+        ypr.y = rotationPitch;
+        ypr.z = rotationRoll;
+    }
+    
+    public Vector3f getForward()
+    {
+        float f3 = MathHelper.sin(-rotationYaw * 0.01745329F - 3.141593F);
+        float f1 = MathHelper.cos(-rotationYaw * 0.01745329F - 3.141593F);
+        float f5 = -MathHelper.cos(-rotationPitch * 0.01745329F);
+        float f7 = MathHelper.sin(-rotationPitch * 0.01745329F);
+        return new Vector3f(f3 * f5, f7, f1 * f5);
     }
     
     @Override
@@ -187,51 +211,4 @@ public class ThxEntity extends Entity
         return this.getClass().getSimpleName() + " " + entityId;
     }
 
-    void vectorAdd(Vec3D vec, Vec3D arg)
-    {
-        vec.xCoord += arg.xCoord;
-        vec.yCoord += arg.yCoord;
-        vec.zCoord += arg.zCoord;
-    }
-
-    void vectorScale(Vec3D vec, double factor)
-    {
-        double lengthSq = vec.xCoord * vec.xCoord + vec.yCoord * vec.yCoord + vec.zCoord * vec.zCoord;
-
-        // if (lengthSq < .0001 && factor < 1.0) return; // already very short
-
-        vec.xCoord *= factor;
-        vec.yCoord *= factor;
-        vec.zCoord *= factor;
-    }
-
-    void vectorLimit(Vec3D vec, double max)
-    {
-        double lengthSq = vec.xCoord * vec.xCoord + vec.yCoord * vec.yCoord + vec.zCoord * vec.zCoord;
-
-        // if (lengthSq < .0001) return; // already very short
-
-        if (lengthSq > max * max)
-        {
-            double scale = max / Math.sqrt(lengthSq);
-            vec.xCoord *= scale;
-            vec.yCoord *= scale;
-            vec.zCoord *= scale;
-        }
-    }
-
-    void vectorSetLength(Vec3D vec, double newLength)
-    {
-        double lengthSq = vec.xCoord * vec.xCoord + vec.yCoord * vec.yCoord + vec.zCoord * vec.zCoord;
-
-        // if (lengthSq < .0001) return; // already very short
-
-        if (lengthSq > newLength * newLength)
-        {
-            double scale = newLength / Math.sqrt(lengthSq);
-            vec.xCoord *= scale;
-            vec.yCoord *= scale;
-            vec.zCoord *= scale;
-        }
-    }
 }
