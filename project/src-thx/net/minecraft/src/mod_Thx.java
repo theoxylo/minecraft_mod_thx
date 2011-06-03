@@ -25,7 +25,7 @@ public class mod_Thx extends BaseMod
         
         helicopterItem:
         {
-	        int itemId = getNexItemId();
+	        int itemId = getNextItemId();
 	        log("Setting up inventory item for helicopter with item id " + itemId);
 		    Item item = new ThxItemHelicopter(itemId);
 	
@@ -54,10 +54,10 @@ public class mod_Thx extends BaseMod
     @Override
     public String Version()
     {
-        return "mod_thx-beta_1.6.5_v004";
+        return "mod_thx-beta_1.6.6_v005";
     }
     
-    int getNexItemId()
+    int getNextItemId()
     {
         // return next available id
         for (int idx = 24000; idx + 256 < Item.itemsList.length; idx++)

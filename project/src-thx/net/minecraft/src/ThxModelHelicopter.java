@@ -2,15 +2,13 @@ package net.minecraft.src;
 
 public class ThxModelHelicopter extends ThxModel
 {
-    float rotorSpeed = 0f;
-    
     boolean bottomVisible = true;
     
+    float rotorSpeed = 0f;
     float lastRotorRad = 0f;
-    //float MAX_ROTOR_SPEED = .30f; //.66f;
     float MAX_ROTOR_SPEED = ((float)ThxConfig.getIntProperty("rotor_speed_percent")) / 100f;
     
-    float SPIN_UP_TIME = 300f;
+    float SPIN_UP_TIME = 10f;
     float timeSpun = 0f;
     
     public ThxModelHelicopter()
@@ -40,23 +38,23 @@ public class ThxModelHelicopter extends ThxModel
         
         // bottom, make invisible for looking down
         boxes[0].addBox(-byte0 / 2, -byte2 / 2 + 2, -3F, byte0, byte2 - 4, 4);
-        boxes[0].setPosition(0.0F, 0 + byte3, 0.0F);
+        boxes[0].setRotationPoint(0.0F, 0 + byte3, 0.0F);
         boxes[0].rotateAngleX = 1.570796F;
         
         boxes[1].addBox(-byte0 / 2 + 2, -byte1 - 1, -1F, byte0 - 4, byte1, 2);
-        boxes[1].setPosition(-byte0 / 2 + 1, 0 + byte3, 0.0F);
+        boxes[1].setRotationPoint(-byte0 / 2 + 1, 0 + byte3, 0.0F);
         boxes[1].rotateAngleY = 4.712389F;
         
         boxes[2].addBox(-byte0 / 2 + 2, -byte1 - 1, -1F, byte0 - 4, byte1, 2);
-        boxes[2].setPosition(byte0 / 2 - 1, 0 + byte3, 0.0F);
+        boxes[2].setRotationPoint(byte0 / 2 - 1, 0 + byte3, 0.0F);
         boxes[2].rotateAngleY = 1.570796F;
         
         boxes[3].addBox(-byte0 / 2 + 2, -byte1 - 1, -1F, byte0 - 4, byte1, 2);
-        boxes[3].setPosition(0.0F, 0 + byte3, -byte2 / 2 + 1);
+        boxes[3].setRotationPoint(0.0F, 0 + byte3, -byte2 / 2 + 1);
         boxes[3].rotateAngleY = 3.141593F;
         
         boxes[4].addBox(-byte0 / 2 + 2, -byte1 - 1, -1F, byte0 - 4, byte1, 2);
-        boxes[4].setPosition(0.0F, 0 + byte3, byte2 / 2 - 1);
+        boxes[4].setRotationPoint(0.0F, 0 + byte3, byte2 / 2 - 1);
 
         // rotor
         length = 2f;
@@ -64,7 +62,7 @@ public class ThxModelHelicopter extends ThxModel
         height = 1f;
         rotor1 = new ModelRenderer(0, 0);
         rotor1.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
-        rotor1.setPosition(0f, -24f, 0f);
+        rotor1.setRotationPoint(0f, -24f, 0f);
         rotor1.rotateAngleY = 1.75f; // start off axis for realism
 
         // rotor vertical support
@@ -73,7 +71,7 @@ public class ThxModelHelicopter extends ThxModel
         height = 24f;
         rotor2 = new ModelRenderer(0, 0);
         rotor2.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
-        rotor2.setPosition(14f, -9f, 0f);
+        rotor2.setRotationPoint(14f, -9f, 0f);
 
         // rotor horizontal support
         length = 32f;
@@ -81,7 +79,7 @@ public class ThxModelHelicopter extends ThxModel
         height = 2f;
         rotor3 = new ModelRenderer(0, 0);
         rotor3.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
-        rotor3.setPosition(14f, -22, 0f);
+        rotor3.setRotationPoint(14f, -22, 0f);
 
         // cockpit1 vertical support
         length = 1f;
@@ -89,7 +87,7 @@ public class ThxModelHelicopter extends ThxModel
         height = 13f;
         cockpit1 = new ModelRenderer(0, 0);
         cockpit1.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
-        cockpit1.setPosition(-10f, -9f, 9f);
+        cockpit1.setRotationPoint(-10f, -9f, 9f);
         
         // cockpit2 vertical support
         length = 1f;
@@ -97,7 +95,7 @@ public class ThxModelHelicopter extends ThxModel
         height = 13f;
         cockpit2 = new ModelRenderer(0, 0);
         cockpit2.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
-        cockpit2.setPosition(-10f, -9f, -9f);
+        cockpit2.setRotationPoint(-10f, -9f, -9f);
         
         // cockpit3 horizontal support
         length = 1f;
@@ -105,12 +103,15 @@ public class ThxModelHelicopter extends ThxModel
         height = 1f;
         cockpit3 = new ModelRenderer(0, 0);
         cockpit3.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
-        cockpit3.setPosition(-10f, -16f, 0f);
+        cockpit3.setRotationPoint(-10f, -16f, 0f);
     }
 
     @Override
     public void render(float f, float f1, float f2, float f3, float f4, float f5)
     {
+        super.render(f, f1, f2, f3, f4, f5);
+        
+        if (!visible) return;
         
         for(int i = 0; i < 5; i++)
         {
@@ -127,10 +128,10 @@ public class ThxModelHelicopter extends ThxModel
             {
                 if (timeSpun < SPIN_UP_TIME)
                 {
-                    timeSpun += 3f;
-                    rotor1.rotateAngleY += MAX_ROTOR_SPEED * timeSpun / SPIN_UP_TIME;
+                    timeSpun += deltaTime * 3f;
+                    rotor1.rotateAngleY += dT * MAX_ROTOR_SPEED * timeSpun / SPIN_UP_TIME;
                 }
-                else rotor1.rotateAngleY += MAX_ROTOR_SPEED * rotorSpeed;
+                else rotor1.rotateAngleY += dT * MAX_ROTOR_SPEED * rotorSpeed;
                 
                 rotor1.render(f5);
                 rotor1.rotateAngleY += 1.5707f; // add second blade perp
@@ -141,8 +142,8 @@ public class ThxModelHelicopter extends ThxModel
             {
                 if (timeSpun > 0f)
                 {
-                    timeSpun -= 1f;
-                    rotor1.rotateAngleY += MAX_ROTOR_SPEED * (1 - MathHelper.cos(timeSpun / SPIN_UP_TIME));
+                    timeSpun -= deltaTime;
+                    rotor1.rotateAngleY += dT * MAX_ROTOR_SPEED * (1 - MathHelper.cos(timeSpun / SPIN_UP_TIME));
 	                lastRotorRad = rotor1.rotateAngleY;
                 }
                 else rotor1.rotateAngleY = lastRotorRad;

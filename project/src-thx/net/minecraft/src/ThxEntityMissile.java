@@ -6,13 +6,15 @@ public class ThxEntityMissile extends ThxEntity
 {
     static int instanceCount = 0;
 
-    final float MISSILE_ACCEL = .10f;
-    final float MAX_VELOCITY  = .70f;
-    final float GRAVITY       = .01f;
+    final float MISSILE_ACCEL = .14f;
+    final float MAX_VELOCITY  = .80f;
+    final float GRAVITY       = .004f;
+    
+    final int maxAge = 6000;
     
     Vector3f thrust;
     
-    boolean launched = false;
+    boolean enableHeavyWeapons = false;
 
     public ThxEntityMissile(World world)
     {
@@ -50,21 +52,6 @@ public class ThxEntityMissile extends ThxEntity
         thrust.y = (float) (fwd.y * MISSILE_ACCEL * 2f + dy);
         thrust.z = (float) (fwd.z * MISSILE_ACCEL * 2f + dz);
 
-        // give an extra height boost
-        thrust.y += .01f;
-        
-        // set initial position out a bit
-        // set previous pos to detect when stopped
-        //double start = 5.0;
-        //prevPosX = posX = x + motionX * start;
-        //prevPosY = posY = y + motionY * start;
-        //prevPosZ = posZ = z + motionZ * start;
-        
-        //log("posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
-        //log("motionX: " + motionX + ", motionY: " + motionY + ", motionZ: " + motionZ);
-        
-        log("constructor done");
-
         worldObj.playSoundAtEntity(this, "mob.ghast.fireball", 1f, 1f);
     }
 
@@ -77,8 +64,6 @@ public class ThxEntityMissile extends ThxEntity
     @Override
     public void onUpdate()
     {
-        //if (!launched) return;
-        
         super.onUpdate();
         
         prevPosX = posX;
@@ -86,7 +71,8 @@ public class ThxEntityMissile extends ThxEntity
         prevPosZ = posZ;
         
         // gravity pull
-        if (motionY > -.09) motionY -= GRAVITY;
+        //if (motionY > -.09) motionY -= GRAVITY;
+        motionY -= GRAVITY * dT;
 
         // following is a cheap check but note that it doesn't
         // allow for any way to slow or change course once max'ed
@@ -106,31 +92,23 @@ public class ThxEntityMissile extends ThxEntity
         Vector3f dPos = new Vector3f(dx, dy, dz);
         
         Vector3f courseChange = Vector3f.sub(dPos, motion, null);
-        if (courseChange.lengthSquared() > .001)
+        if (courseChange.lengthSquared() > .001 || ticksExisted > maxAge)
         {
-            worldObj.newExplosion(this, posX, posY, posZ, 1.0F, true);
+            float power = 1.7f;
+            if (enableHeavyWeapons) power = 20;
+            worldObj.newExplosion(this, posX, posY, posZ, power, true);
             setEntityDead();
-            //System.out.println("missile has stopped, deltaPosSQ: " + deltaPosSqXZ + ", deltaY: " + dy);
         }
 
         // gradual constant pitch down until 20 deg
-        if (rotationPitch < 20f) rotationPitch += .4f;
+        //if (rotationPitch < 20f) rotationPitch += .4f;
+        
+        // following is not working, off by 90 deg?
+        //float f1 = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
+        //prevRotationYaw = rotationYaw = (float)((Math.atan2(motionX, motionZ) * 180D) / 3.1415927410125732D);
+        //prevRotationPitch = rotationPitch = (float)((Math.atan2(motionY, f1) * 180D) / 3.1415927410125732D);
         
         // spiral
-        rotationRoll += 9f;
+        //rotationRoll += 9f;
     }
-
-    @Override
-    public String toString()
-    {
-        return "Missile " + entityId;
-    }
-
-    /*
-    @Override
-    public void finalize()
-    {
-        System.out.println("Missile finalize for " + this);
-    }
-    */
 }

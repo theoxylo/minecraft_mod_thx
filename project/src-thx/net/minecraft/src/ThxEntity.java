@@ -81,10 +81,10 @@ public class ThxEntity extends Entity
     {
         time = System.nanoTime();
         deltaTime = (float) (time - prevTime) / 1000000000f; // convert to sec
-        dT = deltaTime / .025f; // relative to 40 fps
-        //deltaTime = time - prevTime;
+        dT = deltaTime / .05f; // relative to 20 fps
         prevTime = time;
         //System.out.println("delta time sec: " + deltaTime);
+        //System.out.println("dT: " + dT);
         
         super.onUpdate();
         updateRotation();
@@ -162,11 +162,17 @@ public class ThxEntity extends Entity
     {
         return 0.0F;
     }
-
+    
+    @Override
+    public boolean isInRangeToRenderDist(double d)
+    {
+        return d < 128.0 * 128.0;
+    }
+    
     @Override
     public void setEntityDead()
     {
-        log("setEntityDead called");
+        //log("setEntityDead called");
         super.setEntityDead();
     }
 
@@ -187,9 +193,9 @@ public class ThxEntity extends Entity
 
     void createChicken()
     {
-        EntityChicken entitychicken = new EntityChicken(worldObj);
-        entitychicken.setLocationAndAngles(posX, posY, posZ, rotationYaw, 0.0F);
-        worldObj.entityJoinedWorld(entitychicken);
+        EntityChicken chicken = new EntityChicken(worldObj);
+        chicken.setLocationAndAngles(posX, posY, posZ, rotationYaw, 0.0F);
+        worldObj.entityJoinedWorld(chicken);
     }
     
     void plog(String s) // periodic log

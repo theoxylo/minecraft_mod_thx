@@ -9,8 +9,9 @@ import java.util.Random;
 //            ItemStack, EntityLiving, NBTTagCompound, MovingObjectPosition, 
 //            EntityChicken
 
-public class ThxEntityRocket  extends Entity
+public class ThxEntityRocket  extends ThxEntity
 {
+    boolean enableHeavyWeapons = false;
 
     public ThxEntityRocket(World world)
     {
@@ -20,32 +21,17 @@ public class ThxEntityRocket  extends Entity
         zTile = -1;
         inTile = 0;
         inGround = false;
-        shake = 0;
-        field_20049_i = 0;
         setSize(0.25F, 0.25F);
     }
 
-    public ThxEntityRocket(World world, double x, double y, double z, double dx, double dy, double dz, float yaw, float pitch)
+    public ThxEntityRocket(Entity entity, double x, double y, double z, double dx, double dy, double dz, float yaw, float pitch)
     {
-        super(world);
+        this(entity.worldObj);
         
-        xTile = -1;
-        yTile = -1;
-        zTile = -1;
-        inTile = 0;
-        inGround = false;
-        shake = 0;
-        field_20049_i = 0;
         field_20050_h = 0;
-        setSize(0.25F, 0.25F);
         setLocationAndAngles(x, y, z, yaw, pitch);
-        //posX -= MathHelper.cos((rotationYaw / 180F) * 3.141593F) * 0.16F;
-        //posY -= 0.10000000149011612D;
-        //posZ -= MathHelper.sin((rotationYaw / 180F) * 3.141593F) * 0.16F;
-        //setPosition(posX, posY, posZ);
-        //yOffset = 0.0F;
         
-        float acceleration = .7f; // 0.4f for mc egg
+        float acceleration = .7f;
         motionX = -MathHelper.sin((rotationYaw / 180F) * 3.141593F) * MathHelper.cos((rotationPitch / 180F) * 3.141593F) * acceleration;
         motionZ = MathHelper.cos((rotationYaw / 180F) * 3.141593F) * MathHelper.cos((rotationPitch / 180F) * 3.141593F) * acceleration;
         motionY = -MathHelper.sin((rotationPitch / 180F) * 3.141593F) * acceleration;
@@ -54,29 +40,12 @@ public class ThxEntityRocket  extends Entity
         motionY += dy;
         motionZ += dz;
         
-        setEggHeading(motionX, motionY, motionZ, 1.5F, 1.0F);
+        setHeading(motionX, motionY, motionZ, 1.5f, 1.0f);
         
         worldObj.playSoundAtEntity(this, "random.fizz", 1f, 1f);
     }
 
-    public ThxEntityRocket(World world, EntityLiving entityliving)
-    {
-        this(world, entityliving.posX, entityliving.posY + (double)entityliving.getEyeHeight(), entityliving.posZ, entityliving.motionX, entityliving.motionY, entityliving.motionZ, entityliving.rotationYaw, entityliving.rotationPitch);
-    }
-
-    protected void entityInit()
-    {
-    }
-
-    public boolean isInRangeToRenderDist(double d)
-    {
-        double d1 = boundingBox.getAverageEdgeLength() * 4D;
-        d1 *= 64D;
-        //return d < d1 * d1;
-        return d < d1 * d1 * 2d;
-    }
-    
-    public void setEggHeading(double d, double d1, double d2, float f, 
+    public void setHeading(double d, double d1, double d2, float f, 
             float f1)
     {
         float f2 = MathHelper.sqrt_double(d * d + d1 * d1 + d2 * d2);
@@ -116,13 +85,13 @@ public class ThxEntityRocket  extends Entity
         lastTickPosX = posX;
         lastTickPosY = posY;
         lastTickPosZ = posZ;
+        
         super.onUpdate();
-        if(shake > 0)
-        {
-            shake--;
-        }
+        
         if(inGround)
         {
+            log("inGround: " + inGround);
+            
             int i = worldObj.getBlockId(xTile, yTile, zTile);
             if(i != inTile)
             {
@@ -131,21 +100,19 @@ public class ThxEntityRocket  extends Entity
                 motionY *= rand.nextFloat() * 0.2F;
                 motionZ *= rand.nextFloat() * 0.2F;
                 field_20050_h = 0;
-                field_20049_i = 0;
-            } else
+            } 
+            else
             {
                 field_20050_h++;
                 if(field_20050_h == 1200)
                 {
                     setEntityDead();
 		            worldObj.playSoundAtEntity(this, "random.pop", 1f, 1f);
+		            log("field_20050_h: " + field_20050_h);
                 }
                 return;
             }
-        } else
-        {
-            field_20049_i++;
-        }
+        } 
         Vec3D vec3d = Vec3D.createVector(posX, posY, posZ);
         Vec3D vec3d1 = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
         MovingObjectPosition movingobjectposition = worldObj.rayTraceBlocks(vec3d, vec3d1);
@@ -161,11 +128,11 @@ public class ThxEntityRocket  extends Entity
         {
             Entity entity = null;
             List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.addCoord(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
-            double d = 0.0D;
+            double d = 0.0;
             for(int i1 = 0; i1 < list.size(); i1++)
             {
                 Entity entity1 = (Entity)list.get(i1);
-                if(!entity1.canBeCollidedWith() || entity1 == owner && field_20049_i < 50)
+                if(!entity1.canBeCollidedWith() || entity1 == owner) // && field_20049_i < 50)
                 {
                     continue;
                 }
@@ -201,9 +168,16 @@ public class ThxEntityRocket  extends Entity
             worldObj.spawnParticle("flame", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
             worldObj.playSoundAtEntity(this, "random.explode", .5f, 1f);
 
+	        if (enableHeavyWeapons)
+	        {
+		        float power = .2f;
+		        if (enableHeavyWeapons) power = 2f;
+		        worldObj.newExplosion(this, posX, posY, posZ, power, true);
+	        }
+	        
             setEntityDead();
         }
-        
+
         posX += motionX;
         posY += motionY;
         posZ += motionZ;
@@ -243,7 +217,6 @@ public class ThxEntityRocket  extends Entity
         nbttagcompound.setShort("yTile", (short)yTile);
         nbttagcompound.setShort("zTile", (short)zTile);
         nbttagcompound.setByte("inTile", (byte)inTile);
-        nbttagcompound.setByte("shake", (byte)shake);
         nbttagcompound.setByte("inGround", (byte)(inGround ? 1 : 0));
     }
 
@@ -253,27 +226,8 @@ public class ThxEntityRocket  extends Entity
         yTile = nbttagcompound.getShort("yTile");
         zTile = nbttagcompound.getShort("zTile");
         inTile = nbttagcompound.getByte("inTile") & 0xff;
-        shake = nbttagcompound.getByte("shake") & 0xff;
         inGround = nbttagcompound.getByte("inGround") == 1;
     }
-
-    // picked up by player upon contact?
-    /*
-    public void onCollideWithPlayer(EntityPlayer entityplayer)
-    {
-        if(inGround 
-                && owner == entityplayer 
-                && shake <= 0 
-                && entityplayer.inventory.addItemStackToInventory(new ItemStack(Item.arrow, 1)))
-        {
-            worldObj.playSoundAtEntity(this, "random.pop", 0.2F, ((rand.nextFloat() - rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
-            
-            entityplayer.onItemPickup(this, 1);
-            
-            setEntityDead();
-        }
-    }
-    */
 
     public float getShadowSize()
     {
@@ -285,9 +239,7 @@ public class ThxEntityRocket  extends Entity
     private int zTile;
     private int inTile;
     private boolean inGround;
-    public int shake;
-    private EntityLiving owner;
+    private Entity owner;
     private int field_20050_h;
-    private int field_20049_i;
 }
 

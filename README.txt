@@ -2,7 +2,7 @@ INTRODUCTION
 ------------
 If you just want to get the latest version of this mod to try it out, you can download the zip file from GitHub:
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.6.5_v004.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.6.6_v005.zip
 
 Just copy the zip file to your '%APPDATA%\.minecraft\mods' directory and start Minecraft normally (ModLoader v6 required).
 
@@ -13,11 +13,11 @@ DEVELOPMENT
 -----------
 Welcome to the Minecraft mod_thx Helicopter project! If you are still reading then we will assume you are a modder or would like to become one. Here's what you need to develop, build, test, and play:
 
-1. Minecraft (full version, beta 1.6.5): http://www.minecraft.net
+1. Minecraft (full version, beta 1.6.6): http://www.minecraft.net
 
-2. ModLoader (v6 for beta 1.6.5): http://www.minecraftforum.net/viewtopic.php?f=25&t=80246#p1223009
+2. ModLoader (v6 for beta 1.6.6): http://www.minecraftforum.net/viewtopic.php?f=25&t=80246#p1223009
 
-3. MCP (version 3.3 for beta 1.6.5): http://mcp.ocean-labs.de/index.php/Main_Page
+3. MCP (version 3.4 for beta 1.6.6): http://mcp.ocean-labs.de/index.php/Main_Page
 
 4. Mod_thx source code and project files: git://github.com/theoxylo/minecraft_mod_thx.git
 
@@ -33,6 +33,9 @@ Special thanks to the ModLoader and MCP projects, without which this project wou
 
 CHANGELOG
 ---------
+v005: now supporting Minecraft beta 1.6.6 and ModLoader v6
+v005: fixed projectile collision with self?
+
 v004: now supporting Minecraft beta 1.6.5 and ModLoader v6
 v004: fixed pitch-up rendering
 v004: added pitch-down  transparent panel

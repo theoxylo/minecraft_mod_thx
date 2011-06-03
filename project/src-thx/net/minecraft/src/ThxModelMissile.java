@@ -14,7 +14,7 @@ public class ThxModelMissile extends ThxModel
 
         box = new ModelRenderer(0, 0);
         box.addBox(-length/2f, -width/2f, -height/2f, (int)length, (int)width, (int)height);
-        box.setPosition(0f, 0f, 0f);
+        box.setRotationPoint(0f, 0f, 0f);
     }
 
     @Override
