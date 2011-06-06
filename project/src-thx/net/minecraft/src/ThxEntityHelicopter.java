@@ -13,27 +13,29 @@ public class ThxEntityHelicopter extends ThxEntity
 
     // controls and options
     // set from mod_thx.properties
-    static int KEY_ASCEND;
-    static int KEY_DESCEND;
-    static int KEY_FORWARD;
-    static int KEY_BACK;
-    static int KEY_LEFT;
-    static int KEY_RIGHT;
-    static int KEY_ROTATE_LEFT;
-    static int KEY_ROTATE_RIGHT;
-    static int KEY_FIRE_MISSILE;
-    static int KEY_FIRE_ROCKET;
-    static int KEY_HUD_MODE;
-    static int KEY_AUTO_LEVEL;
-    static boolean ENABLE_LOOK_YAW;
-    static boolean ENABLE_LOOK_PITCH;
-    static boolean ENABLE_DRONE_MODE;
-    static boolean ENABLE_PILOT_AIM;
-    static boolean ENABLE_AUTO_LEVEL;
-    static boolean ENABLE_LOOK_DOWN_TRANS;
-    static boolean ENABLE_AUTO_THROTTLE_ZERO;
-    static boolean ENABLE_HEAVY_WEAPONS;
-
+    static int KEY_ASCEND = Keyboard.getKeyIndex(ThxConfig.getProperty("key_ascend"));
+    static int KEY_DESCEND = Keyboard.getKeyIndex(ThxConfig.getProperty("key_descend"));
+    static int KEY_FORWARD = Keyboard.getKeyIndex(ThxConfig.getProperty("key_forward"));
+    static int KEY_BACK = Keyboard.getKeyIndex(ThxConfig.getProperty("key_back"));
+    static int KEY_LEFT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_left"));
+    static int KEY_RIGHT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_right"));
+    static int KEY_ROTATE_LEFT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_rotate_left"));
+    static int KEY_ROTATE_RIGHT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_rotate_right"));
+    static int KEY_FIRE_MISSILE = Keyboard.getKeyIndex(ThxConfig.getProperty("key_fire_missile"));
+    static int KEY_FIRE_ROCKET = Keyboard.getKeyIndex(ThxConfig.getProperty("key_fire_rocket"));
+    static int KEY_HUD_MODE = Keyboard.getKeyIndex(ThxConfig.getProperty("key_hud_mode"));
+    static int KEY_AUTO_LEVEL = Keyboard.getKeyIndex(ThxConfig.getProperty("key_auto_level"));
+    static int KEY_EXIT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_exit"));
+        
+    static boolean ENABLE_LOOK_YAW = ThxConfig.getBoolProperty("enable_look_yaw");
+    static boolean ENABLE_LOOK_PITCH = ThxConfig.getBoolProperty("enable_look_pitch");
+    static boolean ENABLE_DRONE_MODE = ThxConfig.getBoolProperty("enable_drone_mode");
+    static boolean ENABLE_PILOT_AIM = ThxConfig.getBoolProperty("enable_pilot_aim");
+    static boolean ENABLE_AUTO_LEVEL = ThxConfig.getBoolProperty("enable_auto_level");
+    static boolean ENABLE_LOOK_DOWN_TRANS = ThxConfig.getBoolProperty("enable_look_down_trans");
+    static boolean ENABLE_AUTO_THROTTLE_ZERO = ThxConfig.getBoolProperty("enable_auto_throttle_zero");
+    static boolean ENABLE_HEAVY_WEAPONS = ThxConfig.getBoolProperty("enable_heavy_weapons");
+        
     final int MAX_HEALTH = 100;
 
     // handling properties
@@ -89,6 +91,9 @@ public class ThxEntityHelicopter extends ThxEntity
     
     int _rocketReload = 0;
     final int ROCKET_RELOAD = 32;
+    
+    float autoLevelDelay = 0f; // seconds remaining, not cycles
+    float exitDelay = 0f; // seconds remaining, not cycles
 
     double dronePilotPosX = 0.0;
     double dronePilotPosY = 0.0;
@@ -166,7 +171,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 {
 	                // hide bottom panel for looking down when in air
 	                //if (pilot.rotationPitch - rotationPitch > 60f)
-	                if (pilot.rotationPitch > 50f)
+	                if (pilot.rotationPitch > 60f)
 	                {
 	                    ((ThxModelHelicopter) model).bottomVisible = false;
 	                }
@@ -182,6 +187,13 @@ public class ThxEntityHelicopter extends ThxEntity
             {
                 model.visible = !model.visible;
                 hudDelay = 10;
+            }
+
+            exitDelay -= deltaTime;
+            if (Keyboard.isKeyDown(KEY_EXIT) && exitDelay < 0f)
+            {
+                exitDelay = 1f; // seconds, not update cycles
+                pilotExit();
             }
 
             if (Keyboard.isKeyDown(KEY_FIRE_ROCKET) && _rocketDelay == 0 && _rocketReload == 0)
@@ -282,11 +294,17 @@ public class ThxEntityHelicopter extends ThxEntity
             }
             else // button pitch and roll
             {
-	            if (Keyboard.isKeyDown(KEY_AUTO_LEVEL))
+                if (autoLevelDelay > 0)
+                {
+                    autoLevelDelay -= deltaTime;
+                    if (Math.abs(rotationPitch) > 1f) rotationPitch *= .8f;
+                    else rotationPitch = 0f;
+                    if (Math.abs(rotationRoll) > 1f) rotationRoll *= .8f;
+                    else rotationRoll = 0f;
+                }
+                else if (Keyboard.isKeyDown(KEY_AUTO_LEVEL))
 	            {
-                    rotationPitch *= PITCH_RETURN;
-                    rotationPitch *= PITCH_RETURN;
-                    if (rotationPitch < 1f) rotationPitch = 0f;
+	                autoLevelDelay = 1f; // seconds, not update cycles
 	            }
 	            else if (Keyboard.isKeyDown(KEY_FORWARD))
                 {
@@ -499,7 +517,7 @@ public class ThxEntityHelicopter extends ThxEntity
         log("attackEntityFrom called");
         
         
-        if (_sinceHit > 0 || isDead) return true;
+        if (_sinceHit > 0 || isDead || riddenByEntity == entity) return false;
         
         _damage += i * 20;
         log ("current damage percent: " + (100f * (float)_damage / (float)MAX_HEALTH));
@@ -508,13 +526,13 @@ public class ThxEntityHelicopter extends ThxEntity
         
         setBeenAttacked();
 
-        worldObj.playSoundAtEntity(this, "random.drr", 0.6f, 1.0f);
+        worldObj.playSoundAtEntity(this, "random.drr", 0.8f, 1.0f);
 
         if (_damage > MAX_HEALTH)
         {
             die();
         }
-        return true;
+        return true; // the hit landed
     }
 
     @Override
@@ -544,27 +562,6 @@ public class ThxEntityHelicopter extends ThxEntity
         // reload properties to pick up any changes
         //ThxConfig.loadProperties();
 
-        KEY_ASCEND = Keyboard.getKeyIndex(ThxConfig.getProperty("ascend"));
-        KEY_DESCEND = Keyboard.getKeyIndex(ThxConfig.getProperty("descend"));
-        KEY_FORWARD = Keyboard.getKeyIndex(ThxConfig.getProperty("forward"));
-        KEY_BACK = Keyboard.getKeyIndex(ThxConfig.getProperty("back"));
-        KEY_LEFT = Keyboard.getKeyIndex(ThxConfig.getProperty("left"));
-        KEY_RIGHT = Keyboard.getKeyIndex(ThxConfig.getProperty("right"));
-        KEY_ROTATE_LEFT = Keyboard.getKeyIndex(ThxConfig.getProperty("rotate_left"));
-        KEY_ROTATE_RIGHT = Keyboard.getKeyIndex(ThxConfig.getProperty("rotate_right"));
-        KEY_FIRE_MISSILE = Keyboard.getKeyIndex(ThxConfig.getProperty("key_fire_missile"));
-        KEY_FIRE_ROCKET = Keyboard.getKeyIndex(ThxConfig.getProperty("key_fire_rocket"));
-        KEY_HUD_MODE = Keyboard.getKeyIndex(ThxConfig.getProperty("key_hud_mode"));
-        KEY_AUTO_LEVEL = Keyboard.getKeyIndex(ThxConfig.getProperty("key_auto_level"));
-        
-        ENABLE_LOOK_YAW = ThxConfig.getBoolProperty("enable_look_yaw");
-        ENABLE_LOOK_PITCH = ThxConfig.getBoolProperty("enable_look_pitch");
-        ENABLE_DRONE_MODE = ThxConfig.getBoolProperty("enable_drone_mode");
-        ENABLE_PILOT_AIM = ThxConfig.getBoolProperty("enable_pilot_aim");
-        ENABLE_AUTO_LEVEL = ThxConfig.getBoolProperty("enable_auto_level");
-        ENABLE_LOOK_DOWN_TRANS = ThxConfig.getBoolProperty("enable_look_down_trans");
-        ENABLE_AUTO_THROTTLE_ZERO = ThxConfig.getBoolProperty("enable_auto_throttle_zero");
-        ENABLE_HEAVY_WEAPONS = ThxConfig.getBoolProperty("enable_heavy_weapons");
     }
 
     @Override
@@ -590,26 +587,24 @@ public class ThxEntityHelicopter extends ThxEntity
     {
         //log("interact called");
 
-        if (ENABLE_DRONE_MODE)
+        if (riddenByEntity == null)
         {
-            dronePilotPosX = player.posX;
-            dronePilotPosY = player.posY;
-            dronePilotPosZ = player.posZ;
+            // new pilot boarding
+	        player.mountEntity(this);
+	        
+	        if (ENABLE_DRONE_MODE)
+	        {
+	            // store original position of pilot
+	            dronePilotPosX = player.posX;
+	            dronePilotPosY = player.posY;
+	            dronePilotPosZ = player.posZ;
+	        }
+	        else
+	        {
+		        player.rotationYaw = rotationYaw;
+	        }
         }
-        
-        player.mountEntity(this);
-
-        if (riddenByEntity == null) // exit
-        {
-            double exitDist = 1.9;
-            // use fwd XZ perp: x = z; z = -x;
-            player.setPosition(posX + fwd.z * exitDist, posY + player.yOffset, posZ - fwd.x * exitDist);
-        }
-        else // enter
-        {
-	        player.prevRotationYaw = player.rotationYaw = rotationYaw;
-	        // position will be handled of upon update
-        }
+        else pilotExit();
         
         return true;
     }
@@ -637,6 +632,32 @@ public class ThxEntityHelicopter extends ThxEntity
         }
     }
 
+    private void pilotExit()
+    {
+        Entity pilot = getPilot();
+        
+        model.visible = true; // hard to find otherwise!
+        
+        if (ENABLE_DRONE_MODE) // end drone mode
+        {
+	        pilot.mountEntity(this); // riddenByEntity is now null
+	        ((ThxModelHelicopter) model).rotorSpeed = 0; // turn off rotor, it will spin down slowly
+	        
+	        // place pilot at position where drone mode was engaged
+	        pilot.setPosition(dronePilotPosX, dronePilotPosY, dronePilotPosZ);
+	        
+	        return;
+        }
+
+        pilot.mountEntity(this); // riddenByEntity is now null
+        ((ThxModelHelicopter) model).rotorSpeed = 0; // turn off rotor, it will spin down slowly
+        
+        // use fwd XZ perp to exit left: x = z; z = -x;
+        double exitDist = 1.9 ;
+        pilot.setPosition(posX + fwd.z * exitDist, posY + pilot.yOffset, posZ - fwd.x * exitDist);
+    }
+
+ 
     @Override
     protected void writeEntityToNBT(NBTTagCompound nbttagcompound)
     {

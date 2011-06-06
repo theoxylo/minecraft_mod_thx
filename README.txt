@@ -57,3 +57,13 @@ v003: fixed 'wrong location' startup error
 v003: added flag for auto-level
 v003: added rotor speed property
 
+
+ISSUES
+------
+Issue 1: firing rockets affects helicopter position/velocity
+Issue 2: helicopter sinks in water and can even fly under water -- it should float instead
+Issue 3: missile becomes invisible after launch (need to increase render distance)
+Issue 4: drone mode - exit teleports player to drone location
+Issue 5: missile texture placement is off
+Issue 6: missiles and rockets sometimes hit helicopter while firing on the move 
+

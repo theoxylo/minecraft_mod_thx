@@ -109,6 +109,6 @@ public class ThxEntityMissile extends ThxEntity
         //prevRotationPitch = rotationPitch = (float)((Math.atan2(motionY, f1) * 180D) / 3.1415927410125732D);
         
         // spiral
-        //rotationRoll += 9f;
+        rotationRoll += 9f;
     }
 }

@@ -71,19 +71,20 @@ public class ThxConfig
         
         // add any missing properties using default values
         writeFile = ensureDefault(props, "enable_logging", "false") || writeFile;
-        writeFile = ensureDefault(props, "ascend", Keyboard.getKeyName(Keyboard.KEY_SPACE)) || writeFile;
-        writeFile = ensureDefault(props, "descend", Keyboard.getKeyName(Keyboard.KEY_X)) || writeFile;
-        writeFile = ensureDefault(props, "forward", Keyboard.getKeyName(Keyboard.KEY_W)) || writeFile;
-        writeFile = ensureDefault(props, "back", Keyboard.getKeyName(Keyboard.KEY_S)) || writeFile;
-        writeFile = ensureDefault(props, "left", Keyboard.getKeyName(Keyboard.KEY_A)) || writeFile;
-        writeFile = ensureDefault(props, "right", Keyboard.getKeyName(Keyboard.KEY_D)) || writeFile;
-        writeFile = ensureDefault(props, "rotate_left", Keyboard.getKeyName(Keyboard.KEY_G)) || writeFile;
-        writeFile = ensureDefault(props, "rotate_right", Keyboard.getKeyName(Keyboard.KEY_H)) || writeFile;
+        writeFile = ensureDefault(props, "key_ascend", Keyboard.getKeyName(Keyboard.KEY_SPACE)) || writeFile;
+        writeFile = ensureDefault(props, "key_descend", Keyboard.getKeyName(Keyboard.KEY_LSHIFT)) || writeFile;
+        writeFile = ensureDefault(props, "key_forward", Keyboard.getKeyName(Keyboard.KEY_W)) || writeFile;
+        writeFile = ensureDefault(props, "key_back", Keyboard.getKeyName(Keyboard.KEY_S)) || writeFile;
+        writeFile = ensureDefault(props, "key_left", Keyboard.getKeyName(Keyboard.KEY_A)) || writeFile;
+        writeFile = ensureDefault(props, "key_right", Keyboard.getKeyName(Keyboard.KEY_D)) || writeFile;
+        writeFile = ensureDefault(props, "key_rotate_left", Keyboard.getKeyName(Keyboard.KEY_G)) || writeFile;
+        writeFile = ensureDefault(props, "key_rotate_right", Keyboard.getKeyName(Keyboard.KEY_H)) || writeFile;
         writeFile = ensureDefault(props, "key_fire_missile", Keyboard.getKeyName(Keyboard.KEY_M)) || writeFile;
         writeFile = ensureDefault(props, "key_fire_rocket", Keyboard.getKeyName(Keyboard.KEY_R)) || writeFile;
         writeFile = ensureDefault(props, "key_hud_mode", Keyboard.getKeyName(Keyboard.KEY_L)) || writeFile;
         writeFile = ensureDefault(props, "key_auto_level", Keyboard.getKeyName(Keyboard.KEY_K)) || writeFile;
-        writeFile = ensureDefault(props, "rotor_speed_percent", "60") || writeFile;
+        writeFile = ensureDefault(props, "key_exit", Keyboard.getKeyName(Keyboard.KEY_Y)) || writeFile;
+        writeFile = ensureDefault(props, "rotor_speed_percent", "70") || writeFile;
         writeFile = ensureDefault(props, "enable_look_yaw", "true") || writeFile;
         writeFile = ensureDefault(props, "enable_look_pitch", "false") || writeFile;
         writeFile = ensureDefault(props, "enable_drone_mode", "false") || writeFile;
