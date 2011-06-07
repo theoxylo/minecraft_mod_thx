@@ -40,7 +40,7 @@ public class ThxEntityHelicopter extends ThxEntity
 
     // handling properties
     final float MAX_ACCEL    = 0.30f; // very slowly sink when neutral throttle
-    final float GRAVITY      = 0.3001f;
+    final float GRAVITY      = 0.301f;
     final float MAX_VELOCITY = 0.44f;
     final float TURN_SPEED_DEG = 2.00f;
     final float FRICTION = 0.98f;
@@ -59,7 +59,7 @@ public class ThxEntityHelicopter extends ThxEntity
     final float THROTTLE_MIN = -.03f;
     //final float THROTTLE_MIN = -.04f;
     //final float THROTTLE_MAX = .10f;
-    final float THROTTLE_MAX = .05f;
+    final float THROTTLE_MAX = .07f;
     final float THROTTLE_INC = .005f;
 
     public float getThrottlePower()
@@ -75,31 +75,31 @@ public class ThxEntityHelicopter extends ThxEntity
     final float MOMENTUM = .2f;
 
     // total update count
-    int _damage = 0;
-    int _sinceHit = 0;
+    int _damage;
+    float timeSinceHit;
     
-    int hudDelay = 0;
+    float hudDelay;
     
-    int _missileDelay = 0;
-    final int MISSILE_DELAY = 64;
+    float missileDelay;
+    final float MISSILE_DELAY = 3f;
 
-    int _rocketDelay = 0;
-    final int ROCKET_DELAY = 4;
+    float rocketDelay;
+    final float ROCKET_DELAY = .12f;
     
-    int _rocketCount = 0;
-    final int FULL_ROCKET_COUNT = 8;
+    int rocketCount;
+    final int FULL_ROCKET_COUNT = 12;
     
-    int _rocketReload = 0;
-    final int ROCKET_RELOAD = 32;
+    float rocketReload;
+    final float ROCKET_RELOAD = 2f;
     
-    float autoLevelDelay = 0f; // seconds remaining, not cycles
-    float exitDelay = 0f; // seconds remaining, not cycles
+    float autoLevelDelay; // seconds remaining, not cycles
+    float exitDelay; // seconds remaining, not cycles
 
-    double dronePilotPosX = 0.0;
-    double dronePilotPosY = 0.0;
-    double dronePilotPosZ = 0.0;
-
-    public ThxEntityMissile missile = null;
+    double dronePilotPosX;
+    double dronePilotPosY;
+    double dronePilotPosZ;
+    
+    boolean prevThirdPersonView;
 
     public ThxEntityHelicopter(World world)
     {
@@ -142,10 +142,13 @@ public class ThxEntityHelicopter extends ThxEntity
         //log("roll: " + rotationRoll + ", pitch: " + rotationPitch + ", side  : " + side);
 
         if (_damage > 0) _damage--;
-        if (_sinceHit > 0) _sinceHit--;
-        if (_missileDelay > 0) _missileDelay--;
-        if (_rocketDelay > 0) _rocketDelay--;
-        if (_rocketReload > 0) _rocketReload--;
+        
+        timeSinceHit -= deltaTime;
+        missileDelay -= deltaTime;
+        rocketDelay -= deltaTime;
+        rocketReload -= deltaTime;
+        
+        Minecraft minecraft = ModLoader.getMinecraftInstance();
 
         // if (ModLoader.isGUIOpen(null) && minecraft.thePlayer.ridingEntity == this)
         EntityPlayer pilot = getPilot();
@@ -163,7 +166,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 motionY = 0.0;
                 motionZ *= FRICTION;
                 
-                model.visible = true;
+                //model.visible = true;
             }
             else
             {
@@ -182,12 +185,36 @@ public class ThxEntityHelicopter extends ThxEntity
                 }
             }
 
-            hudDelay--;
-            if (Keyboard.isKeyDown(KEY_HUD_MODE) && hudDelay < 0 && !ENABLE_DRONE_MODE)
+            hudDelay -= deltaTime;
+            if (Keyboard.isKeyDown(KEY_HUD_MODE) && hudDelay < 0f && !ENABLE_DRONE_MODE)
             {
-                model.visible = !model.visible;
-                hudDelay = 10;
+                hudDelay = .5f;
+                
+                // toggle hud
+                if (model.visible)
+                {
+                    // engage hud
+                    model.visible = false;
+                    
+                    //Minecraft.isGuiEnabled();
+                    //if(ModLoader.isGUIOpen(null) && minecraft.thePlayer.ridingEntity != null && minecraft.thePlayer.ridingEntity == this)
+
+                    minecraft.ingameGUI.addChatMessage("PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY);
+                    
+                    prevThirdPersonView = minecraft.gameSettings.thirdPersonView;
+                    minecraft.gameSettings.thirdPersonView = false;
+
+                }
+                else
+                {
+                    // turn off hud
+                    model.visible = true;
+                    minecraft.gameSettings.thirdPersonView = prevThirdPersonView;
+                }
             }
+            
+            // view could be switched by player
+            if (minecraft.gameSettings.thirdPersonView) model.visible = true;
 
             exitDelay -= deltaTime;
             if (Keyboard.isKeyDown(KEY_EXIT) && exitDelay < 0f)
@@ -196,12 +223,12 @@ public class ThxEntityHelicopter extends ThxEntity
                 pilotExit();
             }
 
-            if (Keyboard.isKeyDown(KEY_FIRE_ROCKET) && _rocketDelay == 0 && _rocketReload == 0)
+            if (Keyboard.isKeyDown(KEY_FIRE_ROCKET) && rocketDelay < 0f && rocketReload < 0f)
             {
-                _rocketCount++;
-                _rocketDelay = ROCKET_DELAY;
+                rocketCount++;
+                rocketDelay = ROCKET_DELAY;
                 
-                float leftRight = (_rocketCount % 2 == 0) ? 1.0f : -1.0f;
+                float leftRight = (rocketCount % 2 == 0) ? 1.0f : -1.0f;
                 
                 // starting position of rocket relative to helicopter, out in front quite a bit to avoid collision
                 float offsetX = side.x * leftRight + fwd.x * 2f;
@@ -219,17 +246,17 @@ public class ThxEntityHelicopter extends ThxEntity
                 if (ENABLE_HEAVY_WEAPONS) newRocket.enableHeavyWeapons = true;
                 worldObj.entityJoinedWorld(newRocket);
                 
-                if (_rocketCount == FULL_ROCKET_COUNT)
+                if (rocketCount == FULL_ROCKET_COUNT)
                 {
                     // must reload before next volley
-                    _rocketReload = ROCKET_RELOAD;
-                    _rocketCount = 0;
+                    rocketReload = ROCKET_RELOAD;
+                    rocketCount = 0;
                 }
             }
 
-            if (Keyboard.isKeyDown(KEY_FIRE_MISSILE) && _missileDelay == 0)
+            if (Keyboard.isKeyDown(KEY_FIRE_MISSILE) && missileDelay < 0f)
             {
-                _missileDelay = MISSILE_DELAY;
+                missileDelay = MISSILE_DELAY;
                 
                 float offX = fwd.x * 2f;
                 float offY = fwd.y * 2f;
@@ -517,12 +544,12 @@ public class ThxEntityHelicopter extends ThxEntity
         log("attackEntityFrom called");
         
         
-        if (_sinceHit > 0 || isDead || riddenByEntity == entity) return false;
+        if (timeSinceHit > 0 || isDead || riddenByEntity == entity) return false;
         
         _damage += i * 20;
         log ("current damage percent: " + (100f * (float)_damage / (float)MAX_HEALTH));
         
-        _sinceHit = 10; // delay before this entity can be hit again
+        timeSinceHit = 1f; // sec delay before this entity can be hit again
         
         setBeenAttacked();
 
@@ -591,6 +618,7 @@ public class ThxEntityHelicopter extends ThxEntity
         {
             // new pilot boarding
 	        player.mountEntity(this);
+            prevThirdPersonView = ModLoader.getMinecraftInstance().gameSettings.thirdPersonView;
 	        
 	        if (ENABLE_DRONE_MODE)
 	        {
@@ -649,6 +677,9 @@ public class ThxEntityHelicopter extends ThxEntity
 	        return;
         }
 
+        // restore former view setting
+        ModLoader.getMinecraftInstance().gameSettings.thirdPersonView = prevThirdPersonView;
+        
         pilot.mountEntity(this); // riddenByEntity is now null
         ((ThxModelHelicopter) model).rotorSpeed = 0; // turn off rotor, it will spin down slowly
         

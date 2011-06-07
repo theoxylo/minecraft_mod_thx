@@ -7,8 +7,8 @@ public class ThxEntityMissile extends ThxEntity
     static int instanceCount = 0;
 
     final float MISSILE_ACCEL = .14f;
-    final float MAX_VELOCITY  = .80f;
-    final float GRAVITY       = .004f;
+    final float MAX_VELOCITY  = .90f;
+    final float GRAVITY       = .002f;
     
     final int maxAge = 6000;
     

@@ -124,7 +124,7 @@ public class ThxModelHelicopter extends ThxModel
         
         if (ENABLE_ROTOR)
         {
-            if (rotorSpeed > 0)
+            if (rotorSpeed > 0f)
             {
                 if (timeSpun < SPIN_UP_TIME)
                 {
@@ -140,6 +140,8 @@ public class ThxModelHelicopter extends ThxModel
             }
             else
             {
+                rotorSpeed = 0f;
+                
                 if (timeSpun > 0f)
                 {
                     timeSpun -= deltaTime;
