@@ -2,11 +2,18 @@ INTRODUCTION
 ------------
 If you just want to get the latest version of this prototype mod to try it out, you can download the zip file from GitHub:
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.6.6_v005.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.6.6_v006.zip
 
 Just copy the zip file to your '.minecraft\mods' directory and start Minecraft normally (Minecraft and ModLoader beta 1.6.6 required).
 
 After running at least once, check out the options in file '%APPDATA%\.minecraft\mods\mod_thx.options' for controls and other settings (see end of this file for annotated listing).
+
+Please keep in mind that this is an early build prototype of a mod under construction. Even though no corruption issues have been reported, please back-up your worlds before using (always a good idea). SMP multi-player is not supported and has not been tested in any way. Please make sure that Minecraft and ModLoader are working properly before installing this mod. 
+
+Please visit the forum thread to discuss, report issues, leave feedback, etc:
+
+    http://www.minecraftforum.net/topic/246531-reqidea-helicopter-mod-gracefully-take-to-the-skies
+
 
 
 DEVELOPMENT
@@ -28,11 +35,16 @@ Welcome to the Minecraft mod_thx Helicopter project! If you are still reading th
 
 ACKNOWLEDGEMENTS
 ----------------
-Special thanks to the ModLoader and MCP projects, without which this project would not be possible! And of course, thanks to Notch and the Mojang team for the pure goodness that is Minecraft.
+Thanks to DannyBoy007 for managing the forum topic and recruiting.
+Thanks to all forum participants.
+Special thanks to the ModLoader and MCP projects, without which this project would not be possible! 
+And of course, thanks to Notch and the Mojang team for the pure goodness that is Minecraft.
 
 
 CHANGELOG
 ---------
+v006:
+
 v005: now on Minecraft and ModLoader beta 1.6.6
 v005: using delta time for smoother entity updates
 v005: improved missile movement and collision, increased damage
