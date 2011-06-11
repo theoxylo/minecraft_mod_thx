@@ -66,6 +66,9 @@ public class ThxEntityMissile extends ThxEntity
     {
         super.onUpdate();
         
+        // short circuit for testing model
+        //if (true) return;
+        
         prevPosX = posX;
         prevPosY = posY;
         prevPosZ = posZ;
@@ -107,8 +110,5 @@ public class ThxEntityMissile extends ThxEntity
         //float f1 = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
         //prevRotationYaw = rotationYaw = (float)((Math.atan2(motionX, motionZ) * 180D) / 3.1415927410125732D);
         //prevRotationPitch = rotationPitch = (float)((Math.atan2(motionY, f1) * 180D) / 3.1415927410125732D);
-        
-        // spiral
-        rotationRoll += 9f;
     }
 }

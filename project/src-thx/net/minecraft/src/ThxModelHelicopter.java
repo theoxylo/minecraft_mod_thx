@@ -6,15 +6,14 @@ public class ThxModelHelicopter extends ThxModel
     
     float rotorSpeed = 0f;
     float lastRotorRad = 0f;
-    float MAX_ROTOR_SPEED = ((float)ThxConfig.getIntProperty("rotor_speed_percent")) / 100f;
+    float lastTailRotorRad = 0f;
+    float MAX_ROTOR_SPEED = 18f * ((float)ThxConfig.getIntProperty("rotor_speed_percent")) / 100f;
     
     float SPIN_UP_TIME = 10f;
     float timeSpun = 0f;
     
     public ThxModelHelicopter()
     {
-	    yawOffset = 90f;
-
         ENABLE_ROTOR = ThxConfig.getBoolProperty("enable_rotor");
         
         // dimensions -- adjusted and reused when adding each model box
@@ -64,6 +63,14 @@ public class ThxModelHelicopter extends ThxModel
         rotor1.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
         rotor1.setRotationPoint(0f, -24f, 0f);
         rotor1.rotateAngleY = 1.75f; // start off axis for realism
+        
+        // tail rotor
+        length = 14f;
+        width  = 1f;
+        height = 2f;
+        tailRotor = new ModelRenderer(0, 0);
+        tailRotor.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
+        tailRotor.setRotationPoint(28f, -22f, 3f);
 
         // rotor vertical support
         length = 4f;
@@ -128,15 +135,26 @@ public class ThxModelHelicopter extends ThxModel
             {
                 if (timeSpun < SPIN_UP_TIME)
                 {
-                    timeSpun += deltaTime * 3f;
-                    rotor1.rotateAngleY += dT * MAX_ROTOR_SPEED * timeSpun / SPIN_UP_TIME;
+                    timeSpun += deltaTime * 3f; // spin up faster than spin down
+                    
+                    rotor1.rotateAngleY    += deltaTime * MAX_ROTOR_SPEED * rotorSpeed * timeSpun / SPIN_UP_TIME;
+			        tailRotor.rotateAngleZ -= deltaTime * MAX_ROTOR_SPEED * timeSpun / SPIN_UP_TIME; // not linked to throttle
                 }
-                else rotor1.rotateAngleY += dT * MAX_ROTOR_SPEED * rotorSpeed;
+                else
+                {
+                    rotor1.rotateAngleY    += deltaTime * MAX_ROTOR_SPEED * rotorSpeed;
+                    tailRotor.rotateAngleZ -= deltaTime * MAX_ROTOR_SPEED;
+                }
                 
+		        if (rotor1.rotateAngleY > 2*PI) rotor1.rotateAngleY -= 2*PI;
                 rotor1.render(f5);
                 rotor1.rotateAngleY += 1.5707f; // add second blade perp
                 rotor1.render(f5);
 
+		        if (tailRotor.rotateAngleZ < 2*PI) tailRotor.rotateAngleZ += 2*PI;
+		        tailRotor.render(f5);
+                tailRotor.rotateAngleZ -= 1.5707f; // add second blade perp
+                tailRotor.render(f5);
             }
             else
             {
@@ -145,14 +163,27 @@ public class ThxModelHelicopter extends ThxModel
                 if (timeSpun > 0f)
                 {
                     timeSpun -= deltaTime;
-                    rotor1.rotateAngleY += dT * MAX_ROTOR_SPEED * (1 - MathHelper.cos(timeSpun / SPIN_UP_TIME));
+                    
+                    rotor1.rotateAngleY += deltaTime * MAX_ROTOR_SPEED * (1 - MathHelper.cos(timeSpun / SPIN_UP_TIME));
+                    tailRotor.rotateAngleZ += deltaTime * MAX_ROTOR_SPEED * (1 - MathHelper.cos(timeSpun / SPIN_UP_TIME));
+                    
+                    // remember stopping position
 	                lastRotorRad = rotor1.rotateAngleY;
+	                lastTailRotorRad = tailRotor.rotateAngleZ;
                 }
-                else rotor1.rotateAngleY = lastRotorRad;
+                else
+                {
+                    rotor1.rotateAngleY = lastRotorRad;
+                    tailRotor.rotateAngleZ = lastTailRotorRad;
+                }
                 
                 rotor1.render(f5);
                 rotor1.rotateAngleY += 1.5707f; // add second blade perp
                 rotor1.render(f5);
+                
+		        tailRotor.render(f5);
+                tailRotor.rotateAngleZ -= 1.5707f; // add second blade perp
+                tailRotor.render(f5);
             }
         }
         else
@@ -162,6 +193,11 @@ public class ThxModelHelicopter extends ThxModel
             rotor1.render(f5);
             rotor1.rotateAngleY += 1.5707f;
             rotor1.render(f5);
+            
+            tailRotor.rotateAngleZ = 0.7854f;
+            tailRotor.render(f5);
+            tailRotor.rotateAngleZ += 1.5707f;
+            tailRotor.render(f5);
         }
         
         rotor2.render(f5);
@@ -170,7 +206,6 @@ public class ThxModelHelicopter extends ThxModel
         cockpit1.render(f5);
         cockpit2.render(f5);
         cockpit3.render(f5);
-
     }
 
     boolean ENABLE_ROTOR;
@@ -183,4 +218,6 @@ public class ThxModelHelicopter extends ThxModel
     public ModelRenderer cockpit3;
 
     public ModelRenderer boxes[];
+    
+    public ModelRenderer tailRotor;
 }
