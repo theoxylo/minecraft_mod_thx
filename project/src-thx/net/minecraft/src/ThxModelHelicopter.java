@@ -61,16 +61,27 @@ public class ThxModelHelicopter extends ThxModel
         height = 1f;
         rotor1 = new ModelRenderer(0, 0);
         rotor1.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
-        rotor1.setRotationPoint(0f, -24f, 0f);
+        //rotor1.setRotationPoint(0f, -24f, 0f);
+        rotor1.setRotationPoint(6f, -24f, 0f);
         rotor1.rotateAngleY = 1.75f; // start off axis for realism
         
         // tail rotor
-        length = 14f;
+        length = 16f;
         width  = 1f;
         height = 2f;
         tailRotor = new ModelRenderer(0, 0);
         tailRotor.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
-        tailRotor.setRotationPoint(28f, -22f, 3f);
+        //tailRotor.setRotationPoint(28f, -22f, 3f);
+        // good: tailRotor.setRotationPoint(34, -14f, 3f);
+        tailRotor.setRotationPoint(36f, -14f, 3f);
+
+        // tail
+        length = 22f;
+        width = 4f;
+        height = 4f;
+        tail = new ModelRenderer(0, 0);
+        tail.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
+        tail.setRotationPoint(27, -14, 0f);
 
         // rotor vertical support
         length = 4f;
@@ -81,12 +92,12 @@ public class ThxModelHelicopter extends ThxModel
         rotor2.setRotationPoint(14f, -9f, 0f);
 
         // rotor horizontal support
-        length = 32f;
+        length = 12;
         width = 4f;
         height = 2f;
         rotor3 = new ModelRenderer(0, 0);
         rotor3.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
-        rotor3.setRotationPoint(14f, -22, 0f);
+        rotor3.setRotationPoint(10, -22, 0f);
 
         // cockpit1 vertical support
         length = 1f;
@@ -200,6 +211,7 @@ public class ThxModelHelicopter extends ThxModel
             tailRotor.render(f5);
         }
         
+        tail.render(f5);
         rotor2.render(f5);
         rotor3.render(f5);
         
@@ -219,5 +231,6 @@ public class ThxModelHelicopter extends ThxModel
 
     public ModelRenderer boxes[];
     
+    public ModelRenderer tail;
     public ModelRenderer tailRotor;
 }

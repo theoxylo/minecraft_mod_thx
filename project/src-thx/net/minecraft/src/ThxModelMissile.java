@@ -24,7 +24,7 @@ public class ThxModelMissile extends ThxModel
         
         // spiral
         box.rotateAngleX += deltaTime * 5f; // per sec
-        
+        if (box.rotateAngleX > 2*PI) box.rotateAngleX -= 2*PI;
         box.render(f5);
     }
 }
