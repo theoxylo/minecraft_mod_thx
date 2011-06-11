@@ -2,7 +2,7 @@ package net.minecraft.src;
 
 public class ThxModelMissile extends ThxModel
 {
-    public ModelRenderer box;
+    public ModelRenderer missile;
     
     public ThxModelMissile()
     {       
@@ -10,9 +10,9 @@ public class ThxModelMissile extends ThxModel
         float z_width  = 4f;
         float y_height = 4f;
 
-        box = new ModelRenderer(0, 0);
-        box.addBox(-x_length/2f, -z_width/2f, -y_height/2f, (int)x_length, (int)z_width, (int)y_height);
-        box.setRotationPoint(0f, 0f, 0f);
+        missile = new ModelRenderer(0, 0);
+        missile.addBox(-x_length/2f, -z_width/2f, -y_height/2f, (int)x_length, (int)z_width, (int)y_height);
+        missile.setRotationPoint(0f, 0f, 0f);
     }
 
     @Override
@@ -23,8 +23,8 @@ public class ThxModelMissile extends ThxModel
         if (!visible) return;
         
         // spiral
-        box.rotateAngleX += deltaTime * 5f; // per sec
-        if (box.rotateAngleX > 2*PI) box.rotateAngleX -= 2*PI;
-        box.render(f5);
+        missile.rotateAngleX += deltaTime * 5f; // per sec
+        if (missile.rotateAngleX > 2*PI) missile.rotateAngleX -= 2*PI;
+        missile.render(f5);
     }
 }
