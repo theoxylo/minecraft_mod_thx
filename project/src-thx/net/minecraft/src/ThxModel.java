@@ -7,20 +7,19 @@ public class ThxModel extends ModelBase
 
     boolean visible = true;
     
-    long time;
     long prevTime;
     float deltaTime;
 
-    @Override
-    public void render(float f, float f1, float f2, float f3, float f4, float f5)
+    /**
+     *  deltaTime is used to render model movement more smoothly
+     */
+    public void updateDeltaTime()
     {
-	    time = System.nanoTime();
+	    long time = System.nanoTime();
 	    deltaTime = (float) (time - prevTime) / 1000000000f; // convert to sec
-	    //dT = deltaTime / .05f; // relative to 20 fps
 	    prevTime = time;
-
-	    //System.out.println("delta time sec: " + deltaTime);
-	    //System.out.println("dT: " + dT);
+	    
+	    // this happens when we haven't rendered in awhile (e.g. out of view)
+	    if (deltaTime > .1f) deltaTime = .015f; // default to ~60 fps
     }
-
 }

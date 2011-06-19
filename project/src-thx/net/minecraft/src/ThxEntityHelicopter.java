@@ -165,9 +165,19 @@ public class ThxEntityHelicopter extends ThxEntity
                 motionX *= FRICTION;
                 motionY = 0.0;
                 motionZ *= FRICTION;
-                
-                //model.visible = true;
             }
+            else if (inWater)
+	        {
+                if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
+                if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
+                
+	            motionX *= .7;
+	            motionY *= .7;
+	            motionZ *= .7;
+	            
+	            // float up
+	            motionY += 0.02;
+	        }
             else
             {
                 if (ENABLE_LOOK_DOWN_TRANS)
@@ -203,7 +213,6 @@ public class ThxEntityHelicopter extends ThxEntity
                     
                     prevThirdPersonView = minecraft.gameSettings.thirdPersonView;
                     minecraft.gameSettings.thirdPersonView = false;
-
                 }
                 else
                 {
@@ -447,25 +456,31 @@ public class ThxEntityHelicopter extends ThxEntity
         else
         // no pilot -- slowly sink to the ground
         {
+            model.visible = true;
             ((ThxModelHelicopter) model).rotorSpeed = 0;
+            ((ThxModelHelicopter) model).bottomVisible = true;
 
-            if (onGround)
+            if (onGround || inWater)
             {
+                if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
+                if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
+                
                 // tend to stay put on ground
                 motionY = 0.;
-                motionX *= .5;
-                motionZ *= .5;
+                motionX *= .7;
+                motionZ *= .7;
             }
             else
             {
-                // settle back to ground slowly if pilot bails
+                // settle back to ground naturally if pilot bails
+                
+	            rotationPitch *= PITCH_RETURN;
+	            rotationRoll *= ROLL_RETURN;
+                
                 motionX *= FRICTION;
                 motionY -= GRAVITY * .16f * dT;
                 motionZ *= FRICTION;
             }
-
-            rotationPitch *= PITCH_RETURN;
-            rotationRoll *= ROLL_RETURN;
         }
         
         // move in all cases
@@ -474,7 +489,7 @@ public class ThxEntityHelicopter extends ThxEntity
         /*
         detectCollisionsAndBounce:
         {
-            List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(0.20000000298023224D, 0.0D, 0.20000000298023224D));
+            List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(0.2, 0.2 0.2));
             if (list != null && list.size() > 0)
             {
                 for (int j1 = 0; j1 < list.size(); j1++)
@@ -553,7 +568,7 @@ public class ThxEntityHelicopter extends ThxEntity
         
         setBeenAttacked();
 
-        worldObj.playSoundAtEntity(this, "random.drr", 0.8f, 1.0f);
+        worldObj.playSoundAtEntity(this, "random.drr", 1.0f, 1.0f);
 
         if (_damage > MAX_HEALTH)
         {
@@ -634,7 +649,7 @@ public class ThxEntityHelicopter extends ThxEntity
         }
         else pilotExit();
         
-        return true;
+        return false;
     }
 
     @Override
@@ -653,11 +668,18 @@ public class ThxEntityHelicopter extends ThxEntity
         if (ENABLE_DRONE_MODE)
         {
             pilot.setPosition(dronePilotPosX, dronePilotPosY, dronePilotPosZ);
+            return;
         }
-        else
+        
+        pilot.setPosition(posX, posY + pilot.getYOffset() + getMountedYOffset(), posZ);
+            
+        /* very jumpy!
+        if (!ENABLE_PILOT_AIM)
         {
-            pilot.setPosition(posX, posY + pilot.getYOffset() + getMountedYOffset(), posZ);
+            // attempt to lock view to vehicle pitch
+            pilot.rotationPitch = rotationPitch;
         }
+        */
     }
 
     private void pilotExit()

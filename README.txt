@@ -2,11 +2,11 @@ INTRODUCTION
 ------------
 If you just want to get the latest version of this prototype mod to try it out, you can download the zip file from GitHub:
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.6.6_v006rc.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.6.6_v006.zip
 
 Just copy the zip file to your '.minecraft\mods' directory and start Minecraft normally (Minecraft and ModLoader beta 1.6.6 required).
 
-After running at least once, check out the options in file '%APPDATA%\.minecraft\mods\mod_thx.options' for controls and other settings (see end of this file for annotated listing).
+After running at least once, check out the options in file '.minecraft\mods\mod_thx.options' for controls and other settings (see end of this file for annotated listing).
 
 Please keep in mind that this is an early build prototype of a mod under construction. Even though no corruption issues have been reported, please back-up your worlds before using (always a good idea). SMP multi-player is not supported and has not been tested in any way. Please make sure that Minecraft and ModLoader are working properly before installing this mod. 
 
@@ -43,7 +43,11 @@ And of course, thanks to Notch and the Mojang team for the pure goodness that is
 
 CHANGELOG
 ---------
-v006:
+v006: still on Minecraft and ModLoader beta 1.6.6
+v006: added tail rotor
+v006: added water check and float
+v006: added blue camo texture (customize by replacing helicopter.png)
+v006: fixed rendering delta time bug (backward rotor)
 
 v005: now on Minecraft and ModLoader beta 1.6.6
 v005: using delta time for smoother entity updates
@@ -118,7 +122,7 @@ key_rotate_left=G
 key_hud_mode=L
 
 # exits the helicopter 1.9 blocks to the left - use with caution while flying!
-# also used to cut power when in drone (rc) mode
+# also used to cut power when in drone (RC) mode
 key_exit=Y
 
 # fires a powerful missile that will take out a few stone blocks and up to

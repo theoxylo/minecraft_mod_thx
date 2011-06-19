@@ -41,6 +41,8 @@ public class ThxEntity extends Entity
     Vector3f side;
     Vector3f up;
     
+    boolean inWater;
+    
     public ThxEntity(World world)
     {
         super(world);
@@ -89,6 +91,9 @@ public class ThxEntity extends Entity
         super.onUpdate();
         updateRotation();
         updateVectors();
+        
+        // check for water
+        inWater = worldObj.isAABBInMaterial(boundingBox.expand(.0, -.4, .0), Material.water);
     }
  
     public void updateRotation()
