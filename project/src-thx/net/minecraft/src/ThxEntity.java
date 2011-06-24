@@ -23,11 +23,11 @@ public class ThxEntity extends Entity
     float rotationRoll;
     float prevRotationRoll;
     
-    boolean rotationDidChange;
-    
     float yawRad;
     float pitchRad;
     float rollRad;
+    
+    float yawSpeed;
 
     String renderTexture;
     
@@ -85,7 +85,6 @@ public class ThxEntity extends Entity
         deltaTime = (float) (time - prevTime) / 1000000000f; // convert to sec
         dT = deltaTime / .05f; // relative to 20 fps
         prevTime = time;
-        //System.out.println("delta time sec: " + deltaTime);
         //System.out.println("dT: " + dT);
         
         super.onUpdate();

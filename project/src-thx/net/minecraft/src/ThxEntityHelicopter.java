@@ -26,6 +26,7 @@ public class ThxEntityHelicopter extends ThxEntity
     static int KEY_HUD_MODE = Keyboard.getKeyIndex(ThxConfig.getProperty("key_hud_mode"));
     static int KEY_AUTO_LEVEL = Keyboard.getKeyIndex(ThxConfig.getProperty("key_auto_level"));
     static int KEY_EXIT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_exit"));
+    static int KEY_LOOK_BACK = Keyboard.getKeyIndex(ThxConfig.getProperty("key_look_back"));
         
     static boolean ENABLE_LOOK_YAW = ThxConfig.getBoolProperty("enable_look_yaw");
     static boolean ENABLE_LOOK_PITCH = ThxConfig.getBoolProperty("enable_look_pitch");
@@ -42,7 +43,6 @@ public class ThxEntityHelicopter extends ThxEntity
     final float MAX_ACCEL    = 0.30f; // very slowly sink when neutral throttle
     final float GRAVITY      = 0.301f;
     final float MAX_VELOCITY = 0.44f;
-    final float TURN_SPEED_DEG = 2.00f;
     final float FRICTION = 0.98f;
 
     // v02: final float MAX_PITCH = 50.00f;
@@ -80,6 +80,10 @@ public class ThxEntityHelicopter extends ThxEntity
     
     float hudDelay;
     
+    boolean lookBack;
+    boolean toggleLookBack;
+    float toggleLookBackDelay;
+    
     float missileDelay;
     final float MISSILE_DELAY = 3f;
 
@@ -100,6 +104,8 @@ public class ThxEntityHelicopter extends ThxEntity
     double dronePilotPosZ;
     
     boolean prevThirdPersonView;
+    
+    final float TURN_SPEED_DEG = -2.00f;
 
     public ThxEntityHelicopter(World world)
     {
@@ -108,7 +114,7 @@ public class ThxEntityHelicopter extends ThxEntity
         // new Exception("EntityThxHelicopter call stack:").printStackTrace();
 
         model = new ThxModelHelicopter();
-        renderTexture = "/thx/helicopter.png";
+        model.renderTexture = "/thx/helicopter.png";
 
         setSize(1.8f, 2f);
 
@@ -136,6 +142,8 @@ public class ThxEntityHelicopter extends ThxEntity
     public void onUpdate()
     {
         super.onUpdate();
+
+        //System.out.println("Entity delta time sec: " + deltaTime);
         
         //log("yaw: " + rotationYaw + ", pitch: " + rotationPitch + ", forwardV: " + getForward());
         //log("yaw: " + rotationYaw + ", pitch: " + rotationPitch + ", fwd     : " + fwd);
@@ -195,6 +203,14 @@ public class ThxEntityHelicopter extends ThxEntity
                 }
             }
 
+            toggleLookBackDelay -= deltaTime;
+            if (Keyboard.isKeyDown(KEY_LOOK_BACK) && toggleLookBackDelay < 0f && !ENABLE_DRONE_MODE)
+            {
+                lookBack = !lookBack;
+                toggleLookBack = true;
+                toggleLookBackDelay = .5f;
+            }
+                
             hudDelay -= deltaTime;
             if (Keyboard.isKeyDown(KEY_HUD_MODE) && hudDelay < 0f && !ENABLE_DRONE_MODE)
             {
@@ -279,6 +295,7 @@ public class ThxEntityHelicopter extends ThxEntity
                     pitch = pilot.rotationPitch;
                 }
                 ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
+                //ThxEntityAgent newMissile = new ThxEntityAgent(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
                 if (ENABLE_HEAVY_WEAPONS) newMissile.enableHeavyWeapons = true;
                 worldObj.entityJoinedWorld(newMissile);
             }
@@ -286,11 +303,19 @@ public class ThxEntityHelicopter extends ThxEntity
             if (ENABLE_LOOK_YAW && !ENABLE_DRONE_MODE)
             {
                 // input from look control (mouse or analog stick)
-                float deltaYawDeg = rotationYaw - pilot.rotationYaw; // 90
+                float deltaYawDeg = rotationYaw - pilot.rotationYaw;
+                if (lookBack) deltaYawDeg += 180f;
 
                 while (deltaYawDeg > 180f) deltaYawDeg -= 360f;
                 while (deltaYawDeg < -180f) deltaYawDeg += 360f;
 
+                //rotationYaw += deltaYawDeg * TURN_SPEED_DEG * .04f;
+                yawSpeed = deltaYawDeg * TURN_SPEED_DEG; // saving this for render use
+                if (yawSpeed > 90) yawSpeed = 90;
+                if (yawSpeed < -90) yawSpeed = -90;
+                rotationYaw += yawSpeed * deltaTime;
+            
+                /*
                 if (deltaYawDeg < -15f)
                 {
                     rotationYaw += TURN_SPEED_DEG;
@@ -302,6 +327,7 @@ public class ThxEntityHelicopter extends ThxEntity
                     rotationYaw -= TURN_SPEED_DEG;
                     if (deltaYawDeg > 45f) rotationYaw -= TURN_SPEED_DEG * 2f;
                 }
+                */
             }
             else
             // buttonYaw:
@@ -309,11 +335,11 @@ public class ThxEntityHelicopter extends ThxEntity
                 // button yaw
                 if (Keyboard.isKeyDown(KEY_ROTATE_LEFT)) // g, rotate left
                 {
-                    rotationYaw -= TURN_SPEED_DEG;
+                    rotationYaw -= TURN_SPEED_DEG * deltaTime;
                 }
                 if (Keyboard.isKeyDown(KEY_ROTATE_RIGHT)) // h, rotate right
                 {
-                    rotationYaw += TURN_SPEED_DEG;
+                    rotationYaw += TURN_SPEED_DEG * deltaTime;
                 }
             }
             
@@ -673,6 +699,13 @@ public class ThxEntityHelicopter extends ThxEntity
         
         pilot.setPosition(posX, posY + pilot.getYOffset() + getMountedYOffset(), posZ);
             
+        if (toggleLookBack)
+        {
+            toggleLookBack = false;
+	        pilot.prevRotationYaw = pilot.rotationYaw = pilot.rotationYaw -180;
+	        if (ENABLE_LOOK_PITCH) pilot.prevRotationPitch = pilot.rotationPitch = -pilot.rotationPitch;
+        }
+        
         /* very jumpy!
         if (!ENABLE_PILOT_AIM)
         {

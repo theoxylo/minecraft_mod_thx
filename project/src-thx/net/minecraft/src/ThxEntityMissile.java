@@ -21,7 +21,7 @@ public class ThxEntityMissile extends ThxEntity
         super(world);
         
         model = new ThxModelMissile();
-        renderTexture = "/thx/missile.png";
+        model.renderTexture = "/thx/missile.png";
 
         setSize(0.25f, 0.25f);
 

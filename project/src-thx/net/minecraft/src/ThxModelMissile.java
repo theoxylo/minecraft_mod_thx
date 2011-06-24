@@ -15,10 +15,9 @@ public class ThxModelMissile extends ThxModel
         missile.setRotationPoint(0f, 0f, 0f);
     }
 
-    @Override
-    public void render(float f, float f1, float f2, float f3, float f4, float f5)
+    public void render()
     {
-        updateDeltaTime();
+        update();
         
         if (!visible) return;
         
@@ -26,6 +25,6 @@ public class ThxModelMissile extends ThxModel
         missile.rotateAngleX += deltaTime * 5f; // radians per sec
         if (missile.rotateAngleX > 2*PI) missile.rotateAngleX -= 2*PI;
         
-        missile.render(f5);
+        missile.render(0.0625f);
     }
 }

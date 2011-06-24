@@ -124,10 +124,13 @@ public class ThxModelHelicopter extends ThxModel
         cockpit3.setRotationPoint(-10f, -16f, 0f);
     }
 
-    @Override
-    public void render(float f, float f1, float f2, float f3, float f4, float f5)
+    public void render()
     {
-        updateDeltaTime();
+        update();
+        
+        float f5 = 0.0625f;
+        
+        //System.out.println("Model delta time sec: " + deltaTime);
         
         if (!visible) return;
         
