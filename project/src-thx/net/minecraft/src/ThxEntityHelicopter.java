@@ -143,12 +143,6 @@ public class ThxEntityHelicopter extends ThxEntity
     {
         super.onUpdate();
 
-        //System.out.println("Entity delta time sec: " + deltaTime);
-        
-        //log("yaw: " + rotationYaw + ", pitch: " + rotationPitch + ", forwardV: " + getForward());
-        //log("yaw: " + rotationYaw + ", pitch: " + rotationPitch + ", fwd     : " + fwd);
-        //log("roll: " + rotationRoll + ", pitch: " + rotationPitch + ", side  : " + side);
-
         if (_damage > 0) _damage--;
         
         timeSinceHit -= deltaTime;
@@ -310,10 +304,10 @@ public class ThxEntityHelicopter extends ThxEntity
                 while (deltaYawDeg < -180f) deltaYawDeg += 360f;
 
                 //rotationYaw += deltaYawDeg * TURN_SPEED_DEG * .04f;
-                yawSpeed = deltaYawDeg * TURN_SPEED_DEG; // saving this for render use
-                if (yawSpeed > 90) yawSpeed = 90;
-                if (yawSpeed < -90) yawSpeed = -90;
-                rotationYaw += yawSpeed * deltaTime;
+                rotationYawSpeed = deltaYawDeg * TURN_SPEED_DEG; // saving this for render use
+                if (rotationYawSpeed > 90) rotationYawSpeed = 90;
+                if (rotationYawSpeed < -90) rotationYawSpeed = -90;
+                rotationYaw += rotationYawSpeed * deltaTime;
             
                 /*
                 if (deltaYawDeg < -15f)
@@ -371,7 +365,7 @@ public class ThxEntityHelicopter extends ThxEntity
 	            else if (Keyboard.isKeyDown(KEY_FORWARD))
                 {
                     // zero pitch is level, positive pitch is leaning forward
-                    rotationPitch += PITCH_SPEED_DEG;
+                    rotationPitch += PITCH_SPEED_DEG; // * deltaTime;
                     if (rotationPitch > MAX_PITCH) rotationPitch = MAX_PITCH;
                 }
                 else if (Keyboard.isKeyDown(KEY_BACK))
@@ -495,6 +489,8 @@ public class ThxEntityHelicopter extends ThxEntity
                 motionY = 0.;
                 motionX *= .7;
                 motionZ *= .7;
+                
+                rotationYawSpeed = 0f;
             }
             else
             {
@@ -736,6 +732,7 @@ public class ThxEntityHelicopter extends ThxEntity
         ModLoader.getMinecraftInstance().gameSettings.thirdPersonView = prevThirdPersonView;
         
         pilot.mountEntity(this); // riddenByEntity is now null
+        
         ((ThxModelHelicopter) model).rotorSpeed = 0; // turn off rotor, it will spin down slowly
         
         // use fwd XZ perp to exit left: x = z; z = -x;

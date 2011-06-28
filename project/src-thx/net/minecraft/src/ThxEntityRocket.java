@@ -162,18 +162,18 @@ public class ThxEntityRocket  extends ThxEntity
             if(movingobjectposition.entityHit != null)
             {
                 //if(!movingobjectposition.entityHit.attackEntityFrom(owner, 0));
-                movingobjectposition.entityHit.attackEntityFrom(owner, 3);
+                movingobjectposition.entityHit.attackEntityFrom(owner, 5);
             }
             
-            worldObj.spawnParticle("flame", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
+            //worldObj.spawnParticle("flame", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
             worldObj.playSoundAtEntity(this, "random.explode", .5f, 1f);
 
-	        if (enableHeavyWeapons)
-	        {
-		        float power = .2f;
+	        //if (enableHeavyWeapons)
+	        //{
+		        float power = .3f;
 		        if (enableHeavyWeapons) power = 2f;
 		        worldObj.newExplosion(this, posX, posY, posZ, power, true);
-	        }
+	        //}
 	        
             setEntityDead();
         }

@@ -18,26 +18,29 @@ public class ThxRender extends Render
             return;
         }
         
-        //if (!entity.visible) return;
-        
         GL11.glPushMatrix();
         
+        // following translation is relative to player position
         GL11.glTranslatef((float)x, (float)y, (float)z);
         
-        // now calling this in model render() method
-        //GL11.glRotatef(-90f - entity.rotationYaw, 0.0f, 1.0f, 0.0f);
-        //GL11.glRotatef(-entity.rotationPitch, 0.0f, 0.0f, 1.0f);
-        //GL11.glRotatef(-entity.rotationRoll, 1.0f, 0.0f, 0.0f);
+        if (entity.model.entityPrevTime < entity.prevTime)
+        {
+            // entity was updated (usually at ~20 fps)
+            entity.model.entityPrevTime = entity.prevTime;
+	        
+	        entity.model.rotationYaw = entity.rotationYaw;
+	        entity.model.rotationYawSpeed = entity.rotationYawSpeed;
+	        
+	        entity.model.rotationPitch = entity.rotationPitch;
+	        entity.model.rotationPitchSpeed = entity.rotationPitchSpeed;
+	        
+	        entity.model.rotationRoll  = entity.rotationRoll;
+	        entity.model.rotationRollSpeed  = entity.rotationRollSpeed;
+        }
         
-        //loadTexture(entity.renderTexture);
-        //GL11.glScalef(-1f, -1f, 1f);
-        
-        //entity.model.rotationYawSpeed = entity.yawSpeed;
-        entity.model.rotationYaw   = entity.rotationYaw;
-        entity.model.rotationPitch = entity.rotationPitch;
-        entity.model.rotationRoll  = entity.rotationRoll;
-        entity.model.renderManager = renderManager;
-        
+        int texture = renderManager.renderEngine.getTexture(entity.model.renderTexture);
+        renderManager.renderEngine.bindTexture(texture);
+
         entity.model.render();
         
         GL11.glPopMatrix();

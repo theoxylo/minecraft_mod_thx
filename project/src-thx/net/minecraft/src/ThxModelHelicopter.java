@@ -55,13 +55,21 @@ public class ThxModelHelicopter extends ThxModel
         boxes[4].addBox(-byte0 / 2 + 2, -byte1 - 1, -1F, byte0 - 4, byte1, 2);
         boxes[4].setRotationPoint(0.0F, 0 + byte3, byte2 / 2 - 1);
 
+        // new body, large enough to hide player model in 3rd person view.
+        // in 1st person view, it is invisible
+        //length = 28f;
+        //width  = 20f;
+        //height = 24f;
+        //body = new ModelRenderer(0, 0);
+        //body.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
+        //body.setRotationPoint(0f, -9f, 0f);
+        
         // rotor
         length = 2f;
         width = 64f;
         height = 1f;
         rotor1 = new ModelRenderer(0, 0);
         rotor1.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
-        //rotor1.setRotationPoint(0f, -24f, 0f);
         rotor1.setRotationPoint(6f, -24f, 0f);
         rotor1.rotateAngleY = 1.75f; // start off axis for realism
         
@@ -221,6 +229,8 @@ public class ThxModelHelicopter extends ThxModel
         cockpit1.render(f5);
         cockpit2.render(f5);
         cockpit3.render(f5);
+        
+        //body.render(f5);
     }
 
     boolean ENABLE_ROTOR;
@@ -236,4 +246,6 @@ public class ThxModelHelicopter extends ThxModel
     
     public ModelRenderer tail;
     public ModelRenderer tailRotor;
+    
+    //public ModelRenderer body;
 }

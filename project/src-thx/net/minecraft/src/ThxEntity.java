@@ -11,7 +11,6 @@ public class ThxEntity extends Entity
 
     boolean visible = true;
     
-    long time;
     long prevTime;
     float deltaTime;
     float dT;
@@ -27,7 +26,9 @@ public class ThxEntity extends Entity
     float pitchRad;
     float rollRad;
     
-    float yawSpeed;
+    float rotationYawSpeed;
+    float rotationPitchSpeed;
+    float rotationRollSpeed;
 
     String renderTexture;
     
@@ -81,8 +82,8 @@ public class ThxEntity extends Entity
     @Override
     public void onUpdate()
     {
-        time = System.nanoTime();
-        deltaTime = (float) (time - prevTime) / 1000000000f; // convert to sec
+        long time = System.nanoTime();
+        deltaTime = ((float)(time - prevTime)) / 1000000000f; // convert to sec
         dT = deltaTime / .05f; // relative to 20 fps
         prevTime = time;
         //System.out.println("dT: " + dT);
