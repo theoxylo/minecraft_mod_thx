@@ -2,7 +2,7 @@ INTRODUCTION
 ------------
 If you just want to get the latest version of this prototype mod to try it out, you can download the zip file from GitHub:
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.6.6_v007.zip (coming soon)
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.6.6_v007.zip 
 
 Just copy the zip file to your '.minecraft\mods' directory and start Minecraft normally (Minecraft and ModLoader beta 1.6.6 required).
 
@@ -43,7 +43,11 @@ And of course, thanks to Notch and the Mojang team for the pure goodness that is
 
 CHANGELOG
 ---------
-v007:
+v007: now updating helicopter rotation rendering at 60 fps
+v007: added look back function, U key by default
+v007: some tuning to look-pitch mode
+v007: rockets now damage trees and snow
+v007: added 'disable_helicopter_item_image' option for Mo'Createures compatibility
 
 v006: still on Minecraft and ModLoader beta 1.6.6
 v006: added tail rotor
