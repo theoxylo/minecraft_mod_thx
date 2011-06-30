@@ -46,7 +46,7 @@ public class ThxConfig
         }
         catch (Exception e)
         {
-            System.out.println("Error loading boolean property '" + name + "'");
+            System.out.println("Boolean property '" + name + "' not found");
             return false;
         }
     }

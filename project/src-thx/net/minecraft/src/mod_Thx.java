@@ -8,6 +8,8 @@ public class mod_Thx extends BaseMod
     
     public mod_Thx()
     {
+        ThxConfig.loadProperties();
+        
         ModLoader.SetInGameHook(this, true, true);
         
         // register entity classes
@@ -36,7 +38,14 @@ public class mod_Thx extends BaseMod
 	        log("Setting up inventory item for helicopter with item id " + itemId);
 		    Item item = new ThxItemHelicopter(itemId);
 	
-		    item.setIconIndex(ModLoader.addOverride("/gui/items.png", "/thx/helicopter_icon.png"));
+		    if (ThxConfig.getBoolProperty("disable_helicopter_item_image"))
+		    {
+			    item.setIconIndex(92); // hard-code to cookie icon for compatibility
+		    }
+		    else
+		    {
+			    item.setIconIndex(ModLoader.addOverride("/gui/items.png", "/thx/helicopter_icon.png"));
+		    }
 		    item.setItemName("thxHelicopter");
 	        ModLoader.AddName(item, "THX Helicopter Prototype");
 	        
@@ -45,8 +54,6 @@ public class mod_Thx extends BaseMod
 	        Object[] recipe = new Object[] {" X ", "X X", "XXX", Character.valueOf('X'), Block.planks};
 	        ModLoader.AddRecipe(itemStack, recipe);
         }
-        
-        ThxConfig.loadProperties();
         
         log("Done loading " + Version());
     }

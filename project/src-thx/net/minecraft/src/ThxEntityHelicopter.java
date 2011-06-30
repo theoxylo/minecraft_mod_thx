@@ -47,12 +47,12 @@ public class ThxEntityHelicopter extends ThxEntity
 
     // v02: final float MAX_PITCH = 50.00f;
     final float MAX_PITCH = 60.00f;
-    final float PITCH_SPEED_DEG = 1.80f;
+    final float PITCH_SPEED_DEG = 40f;
     final float PITCH_RETURN = 0.98f;
 
     // v02: final float MAX_ROLL = 18.00f;
     final float MAX_ROLL = 30.00f;
-    final float ROLL_SPEED_DEG = 2.00f;
+    final float ROLL_SPEED_DEG = 40f;
     final float ROLL_RETURN = 0.92f;
 
     float throttle = 0.0f;
@@ -308,20 +308,6 @@ public class ThxEntityHelicopter extends ThxEntity
                 if (rotationYawSpeed > 90) rotationYawSpeed = 90;
                 if (rotationYawSpeed < -90) rotationYawSpeed = -90;
                 rotationYaw += rotationYawSpeed * deltaTime;
-            
-                /*
-                if (deltaYawDeg < -15f)
-                {
-                    rotationYaw += TURN_SPEED_DEG;
-                    if (deltaYawDeg < -45f) rotationYaw += TURN_SPEED_DEG * 2f;
-                }
-
-                if (deltaYawDeg > 15f)
-                {
-                    rotationYaw -= TURN_SPEED_DEG;
-                    if (deltaYawDeg > 45f) rotationYaw -= TURN_SPEED_DEG * 2f;
-                }
-                */
             }
             else
             // buttonYaw:
@@ -341,12 +327,25 @@ public class ThxEntityHelicopter extends ThxEntity
 
             // the cyclic (tilt) controls
             // only affects pitch and roll, acceleration done later
+            // zero pitch is level, positive pitch is leaning forward
             if (ENABLE_LOOK_PITCH && !ENABLE_DRONE_MODE)
             {
-                rotationPitch = pilot.rotationPitch;
-                // rotationPitch %= 360f;
-                if (rotationPitch > MAX_PITCH) rotationPitch = MAX_PITCH;
-                if (rotationPitch < -MAX_PITCH) rotationPitch = -MAX_PITCH;
+                if (rotationPitch > MAX_PITCH)
+                {
+                    rotationPitch = MAX_PITCH;
+                    rotationPitchSpeed = 0f;
+                }
+                else
+                {
+                    rotationPitchSpeed = pilot.rotationPitch - 20 - rotationPitch;
+                    rotationPitch += rotationPitchSpeed * deltaTime;
+                }
+                
+                if (rotationPitch > MAX_PITCH) // check again to prevent judder
+                {
+                    rotationPitch = MAX_PITCH;
+                    rotationPitchSpeed = 0f;
+                }
             }
             else // button pitch and roll
             {
@@ -364,44 +363,104 @@ public class ThxEntityHelicopter extends ThxEntity
 	            }
 	            else if (Keyboard.isKeyDown(KEY_FORWARD))
                 {
-                    // zero pitch is level, positive pitch is leaning forward
-                    rotationPitch += PITCH_SPEED_DEG; // * deltaTime;
-                    if (rotationPitch > MAX_PITCH) rotationPitch = MAX_PITCH;
+                    if (rotationPitch > MAX_PITCH)
+                    {
+                        rotationPitch = MAX_PITCH;
+	                    rotationPitchSpeed = 0f;
+                    }
+                    else
+                    {
+	                    rotationPitchSpeed = PITCH_SPEED_DEG;
+                        rotationPitch += rotationPitchSpeed * deltaTime;
+                    }
+                    
+                    if (rotationPitch > MAX_PITCH) // check again to prevent judder
+                    {
+                        rotationPitch = MAX_PITCH;
+	                    rotationPitchSpeed = 0f;
+                    }
                 }
                 else if (Keyboard.isKeyDown(KEY_BACK))
                 {
-                    rotationPitch -= PITCH_SPEED_DEG;
-                    if (rotationPitch < -MAX_PITCH) rotationPitch = -MAX_PITCH;
+                    if (rotationPitch < -MAX_PITCH)
+                    {
+                        rotationPitch = -MAX_PITCH;
+	                    rotationPitchSpeed = 0f;
+                    }
+                    else
+                    {
+	                    rotationPitchSpeed = -PITCH_SPEED_DEG;
+                        rotationPitch += rotationPitchSpeed * deltaTime;
+                    }
+                    if (rotationPitch < -MAX_PITCH) // check again to prevent judder
+                    {
+                        rotationPitch = -MAX_PITCH;
+	                    rotationPitchSpeed = 0f;
+                    }
                 }
                 else
                 {
-                    if (ENABLE_AUTO_LEVEL) rotationPitch *= PITCH_RETURN;
+                    if (ENABLE_AUTO_LEVEL)
+                    {
+		                rotationPitchSpeed = -rotationPitch * .5f;
+		                rotationPitch += rotationPitchSpeed * deltaTime;
+                    }
                 }
             }
 
             if (Keyboard.isKeyDown(KEY_LEFT))
             {
-                rotationRoll += ROLL_SPEED_DEG;
-                if (rotationRoll > MAX_ROLL) rotationRoll = MAX_ROLL;
+                if (rotationRoll > MAX_ROLL)
+                {
+                    rotationRoll = MAX_ROLL;
+                    rotationRollSpeed = 0f;
+                }
+                else
+                {
+	                rotationRollSpeed = ROLL_SPEED_DEG;
+	                rotationRoll += rotationRollSpeed * deltaTime;
+                }
+                if (rotationRoll > MAX_ROLL)
+                {
+                    rotationRoll = MAX_ROLL;
+                    rotationRollSpeed = 0f;
+                }
             }
             else if (Keyboard.isKeyDown(KEY_RIGHT))
             {
-                rotationRoll -= ROLL_SPEED_DEG;
-                if (rotationRoll < -MAX_ROLL) rotationRoll = -MAX_ROLL;
+                if (rotationRoll < -MAX_ROLL) 
+                {
+                    rotationRoll = -MAX_ROLL;
+                    rotationRollSpeed = 0f;
+                }
+                else
+                {
+	                rotationRollSpeed = -ROLL_SPEED_DEG;
+	                rotationRoll += rotationRollSpeed * deltaTime;
+                }
+                if (rotationRoll < -MAX_ROLL) 
+                {
+                    rotationRoll = -MAX_ROLL;
+                    rotationRollSpeed = 0f;
+                }
             }
             else
             {
-                rotationRoll *= ROLL_RETURN;
+                // auto-level roll
+                rotationRollSpeed = -rotationRoll * .6f;
+                rotationRoll += rotationRollSpeed * deltaTime;
             }
 
             // collective (throttle) control
-            if (Keyboard.isKeyDown(KEY_ASCEND)) // space, increase throttle
+            if (Keyboard.isKeyDown(KEY_ASCEND) // default space, increase throttle
+                    || (Keyboard.isKeyDown(KEY_FORWARD) && ENABLE_LOOK_PITCH && !ENABLE_DRONE_MODE)) 
             {
                 if (throttle < THROTTLE_MAX) throttle += THROTTLE_INC;
                 if (throttle > THROTTLE_MAX) throttle = THROTTLE_MAX;
                 // throttle = THROTTLE_MAX;
             }
-            else if (Keyboard.isKeyDown(KEY_DESCEND))
+            else if (Keyboard.isKeyDown(KEY_DESCEND)
+                    || (Keyboard.isKeyDown(KEY_BACK) && ENABLE_LOOK_PITCH && !ENABLE_DRONE_MODE)) 
             {
                 if (throttle > THROTTLE_MIN) throttle -= THROTTLE_INC;
                 if (throttle < THROTTLE_MIN) throttle = THROTTLE_MIN;
@@ -701,14 +760,6 @@ public class ThxEntityHelicopter extends ThxEntity
 	        pilot.prevRotationYaw = pilot.rotationYaw = pilot.rotationYaw -180;
 	        if (ENABLE_LOOK_PITCH) pilot.prevRotationPitch = pilot.rotationPitch = -pilot.rotationPitch;
         }
-        
-        /* very jumpy!
-        if (!ENABLE_PILOT_AIM)
-        {
-            // attempt to lock view to vehicle pitch
-            pilot.rotationPitch = rotationPitch;
-        }
-        */
     }
 
     private void pilotExit()

@@ -1,5 +1,9 @@
 package net.minecraft.src;
 
+import java.util.Date;
+
+import net.minecraft.client.Minecraft;
+
 import org.lwjgl.opengl.GL11;
 
 public class ThxRender extends Render
@@ -23,7 +27,9 @@ public class ThxRender extends Render
         // following translation is relative to player position
         GL11.glTranslatef((float)x, (float)y, (float)z);
         
-        if (entity.model.entityPrevTime < entity.prevTime)
+        
+        
+        if (entity.prevTime > entity.model.entityPrevTime)
         {
             // entity was updated (usually at ~20 fps)
             entity.model.entityPrevTime = entity.prevTime;
@@ -37,6 +43,14 @@ public class ThxRender extends Render
 	        entity.model.rotationRoll  = entity.rotationRoll;
 	        entity.model.rotationRollSpeed  = entity.rotationRollSpeed;
         }
+        else if (entity.model.prevTime - entity.prevTime > 100000000)
+        {
+            // entity is not updating, game may be paused
+	        entity.model.rotationYawSpeed = 0f;
+	        entity.model.rotationPitchSpeed = 0f;
+	        entity.model.rotationRollSpeed = 0f;
+        }
+        
         
         int texture = renderManager.renderEngine.getTexture(entity.model.renderTexture);
         renderManager.renderEngine.bindTexture(texture);

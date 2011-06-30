@@ -34,9 +34,9 @@ public class ThxEntity extends Entity
     
     ThxModel model;
     
-    Vector3f pos;
+    //Vector3f pos;
     Vector3f vel;
-    Vector3f ypr;
+    //Vector3f ypr;
     
     Vector3f fwd;
     Vector3f side;
@@ -54,27 +54,27 @@ public class ThxEntity extends Entity
         // lastTickPosY = 0.0; // ???
         // lastTickPosZ = 0.0; // ???
         
-        prevPosX = posX = 0.0;
-        prevPosY = posY = 0.0;
-        prevPosZ = posZ = 0.0;
+        //prevPosX = posX = 0.0;
+        //prevPosY = posY = 0.0;
+        //prevPosZ = posZ = 0.0;
 
-        prevMotionX = motionX = 0.0;
-        prevMotionY = motionY = 0.0;
-        prevMotionZ = motionZ = 0.0;
+        //prevMotionX = motionX = 0.0;
+        //prevMotionY = motionY = 0.0;
+        //prevMotionZ = motionZ = 0.0;
         
         // new fields available for use by subclasses:
-        yawRad   = prevRotationYaw   = rotationYaw   = 0f;
-        pitchRad = prevRotationPitch = rotationPitch = 0f;
-        rollRad  = prevRotationRoll  = rotationRoll  = 0f;
+        //yawRad   = prevRotationYaw   = rotationYaw   = 0f;
+        //pitchRad = prevRotationPitch = rotationPitch = 0f;
+        //rollRad  = prevRotationRoll  = rotationRoll  = 0f;
         
         // vectors relative to entity orientation
 	    fwd  = new Vector3f(0f, 0f, 0f);
 	    side = new Vector3f(0f, 0f, 0f);
 	    up   = new Vector3f(0f, 0f, 0f);
 	    
-	    pos = new Vector3f(0f, 0f, 0f);
+	    //pos = new Vector3f(0f, 0f, 0f);
 	    vel = new Vector3f(0f, 0f, 0f);
-	    ypr = new Vector3f(0f, 0f, 0f);
+	    //ypr = new Vector3f(0f, 0f, 0f);
 	    
 	    prevTime = System.nanoTime();
     }
@@ -140,17 +140,17 @@ public class ThxEntity extends Entity
         Vector3f.cross(fwd, side, up);
         
         // refresh 
-        pos.x = (float) posX;
-        pos.y = (float) posY;
-        pos.z = (float) posZ;
+        //pos.x = (float) posX;
+        //pos.y = (float) posY;
+        //pos.z = (float) posZ;
         
         vel.x = (float) motionX;
         vel.y = (float) motionY;
         vel.z = (float) motionZ;
         
-        ypr.z = rotationYaw;
-        ypr.y = rotationPitch;
-        ypr.z = rotationRoll;
+        //ypr.z = rotationYaw;
+        //ypr.y = rotationPitch;
+        //ypr.z = rotationRoll;
     }
     
     public Vector3f getForward()

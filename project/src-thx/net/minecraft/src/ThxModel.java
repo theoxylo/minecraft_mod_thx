@@ -61,16 +61,16 @@ public abstract class ThxModel //extends ModelBase
             // sync the rotation yaw value and use adjusted delta for turn
             float adjustedDeltaTime = ((float)(time - entityPrevTime)) / 1000000000f; // divide by a billion to convert to sec
             rotationYaw += rotationYawSpeed * adjustedDeltaTime;
-            //rotationPitch += rotationPitchSpeed * adjustedDeltaTime;
-            //rotationRoll += rotationRollSpeed * adjustedDeltaTime;
+            rotationPitch += rotationPitchSpeed * adjustedDeltaTime;
+            rotationRoll += rotationRollSpeed * adjustedDeltaTime;
             
             //entityPrevTime = 0L; // reset until updated from entity again
         }
         else 
         {
             rotationYaw   += rotationYawSpeed   * deltaTime;
-            //rotationPitch += rotationPitchSpeed * deltaTime;
-            //rotationRoll  += rotationRollSpeed  * deltaTime;
+            rotationPitch += rotationPitchSpeed * deltaTime;
+            rotationRoll  += rotationRollSpeed  * deltaTime;
         }
 	    prevTime = time;
         
@@ -80,18 +80,6 @@ public abstract class ThxModel //extends ModelBase
         GL11.glRotatef(-rotationRoll, 1.0f, 0.0f, 0.0f);
         
         GL11.glScalef(-1f, -1f, 1f);
-        
-	    //log.append("\trotationYawSpeed " + rotationYawSpeed);
-	    //log.append("\trotationYaw after " + rotationYaw);
-	    //log.append("\n");
-	    
-	    //if (updateCount % 300 == 0) // flush log every ~5 second
-	    //{
-		    //log.append("\n");
-	        //System.out.println(log);
-	        
-	        //log.setLength(0);
-	    //}
     }
     
     abstract void render();
