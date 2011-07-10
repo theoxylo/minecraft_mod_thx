@@ -43,10 +43,11 @@ And of course, thanks to Notch and the Mojang team for the pure goodness that is
 
 CHANGELOG
 ---------
-v008: now on Minecraft and ModLoader beta 1.7.3
+v008: built for Minecraft and ModLoader beta 1.7.3
+v008: updated README.txt :)
 
 v007: now updating helicopter rotation rendering at 60 fps
-v007: added look back function, U key by default
+v007: added rear view and 'key_look_back' option, U key by default
 v007: some tuning to look-pitch mode
 v007: rockets now damage trees and snow
 v007: added 'disable_helicopter_item_image' option for Mo'Createures compatibility
@@ -177,3 +178,9 @@ enable_pilot_aim=true
 enable_rotor=true
 # set rotors relative speed
 rotor_speed_percent=70
+
+# work-around for Mo'Creatures ModLoader gui.png override bug
+disable_helicopter_item_image=true
+
+# toggle rear view
+key_look_back=U
