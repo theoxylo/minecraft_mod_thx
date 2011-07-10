@@ -2,9 +2,9 @@ INTRODUCTION
 ------------
 If you just want to get the latest version of this prototype mod to try it out, you can download the zip file from GitHub:
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.6.6_v007.zip 
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.7.3_v008.zip 
 
-Just copy the zip file to your '.minecraft\mods' directory and start Minecraft normally (Minecraft and ModLoader beta 1.6.6 required).
+Just copy the zip file to your '.minecraft\mods' directory and start Minecraft normally (full Minecraft and ModLoader required).
 
 After running at least once, check out the options in file '.minecraft\mods\mod_thx.options' for controls and other settings (see end of this file for annotated listing).
 
@@ -20,11 +20,11 @@ DEVELOPMENT
 -----------
 Welcome to the Minecraft mod_thx Helicopter project! If you are still reading then we will assume you are a modder or would like to become one. Here's what you need to develop, build, test, and play:
 
-1. Minecraft (full version, beta 1.6.6): http://www.minecraft.net
+1. Minecraft (full version): http://www.minecraft.net
 
-2. ModLoader (v6 for beta 1.6.6): http://www.minecraftforum.net/viewtopic.php?f=25&t=80246#p1223009
+2. ModLoader: http://www.minecraftforum.net/viewtopic.php?f=25&t=80246#p1223009
 
-3. MCP (version 3.4 for beta 1.6.6): http://mcp.ocean-labs.de/index.php/Main_Page
+3. MCP: http://mcp.ocean-labs.de/index.php/Main_Page
 
 4. Mod_thx source code and project files: git://github.com/theoxylo/minecraft_mod_thx.git
 
@@ -43,6 +43,8 @@ And of course, thanks to Notch and the Mojang team for the pure goodness that is
 
 CHANGELOG
 ---------
+v008: now on Minecraft and ModLoader beta 1.7.3
+
 v007: now updating helicopter rotation rendering at 60 fps
 v007: added look back function, U key by default
 v007: some tuning to look-pitch mode
