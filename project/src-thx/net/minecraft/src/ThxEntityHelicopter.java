@@ -198,7 +198,7 @@ public class ThxEntityHelicopter extends ThxEntity
             }
 
             toggleLookBackDelay -= deltaTime;
-            if (Keyboard.isKeyDown(KEY_LOOK_BACK) && toggleLookBackDelay < 0f && !ENABLE_DRONE_MODE)
+            if (Keyboard.isKeyDown(KEY_LOOK_BACK) && toggleLookBackDelay < 0f && !ENABLE_DRONE_MODE && !ENABLE_LOOK_PITCH)
             {
                 lookBack = !lookBack;
                 toggleLookBack = true;
@@ -325,7 +325,7 @@ public class ThxEntityHelicopter extends ThxEntity
             
             rotationYaw %= 360f;
 
-            // the cyclic (tilt) controls
+            // the cyclic (tilt control)
             // only affects pitch and roll, acceleration done later
             // zero pitch is level, positive pitch is leaning forward
             if (ENABLE_LOOK_PITCH && !ENABLE_DRONE_MODE)
@@ -335,9 +335,14 @@ public class ThxEntityHelicopter extends ThxEntity
                     rotationPitch = MAX_PITCH;
                     rotationPitchSpeed = 0f;
                 }
+                else if (rotationPitch < -MAX_PITCH)
+                {
+                    rotationPitch = -MAX_PITCH;
+                    rotationPitchSpeed = 0f;
+                }
                 else
                 {
-                    rotationPitchSpeed = pilot.rotationPitch - 20 - rotationPitch;
+                    rotationPitchSpeed = 4f * (pilot.rotationPitch - rotationPitch -20f); // look down slightly on level helicopter in 3rd person view
                     rotationPitch += rotationPitchSpeed * deltaTime;
                 }
                 
@@ -346,11 +351,17 @@ public class ThxEntityHelicopter extends ThxEntity
                     rotationPitch = MAX_PITCH;
                     rotationPitchSpeed = 0f;
                 }
+                else if (rotationPitch < -MAX_PITCH)
+                {
+                    rotationPitch = -MAX_PITCH;
+                    rotationPitchSpeed = 0f;
+                }
             }
             else // button pitch and roll
             {
                 if (autoLevelDelay > 0)
                 {
+                    // TODO: need to use delta time to adjust for framerate
                     autoLevelDelay -= deltaTime;
                     if (Math.abs(rotationPitch) > 1f) rotationPitch *= .8f;
                     else rotationPitch = 0f;
@@ -758,7 +769,7 @@ public class ThxEntityHelicopter extends ThxEntity
         {
             toggleLookBack = false;
 	        pilot.prevRotationYaw = pilot.rotationYaw = pilot.rotationYaw -180;
-	        if (ENABLE_LOOK_PITCH) pilot.prevRotationPitch = pilot.rotationPitch = -pilot.rotationPitch;
+	        //if (ENABLE_LOOK_PITCH) pilot.prevRotationPitch = pilot.rotationPitch = -pilot.rotationPitch;
         }
     }
 
@@ -779,6 +790,14 @@ public class ThxEntityHelicopter extends ThxEntity
 	        return;
         }
 
+        // cancel look back for next entry
+        toggleLookBack = false;
+        if (lookBack)
+        {
+	        lookBack = false;
+	        pilot.prevRotationYaw = pilot.rotationYaw = pilot.rotationYaw -180;
+        }
+        
         // restore former view setting
         ModLoader.getMinecraftInstance().gameSettings.thirdPersonView = prevThirdPersonView;
         
