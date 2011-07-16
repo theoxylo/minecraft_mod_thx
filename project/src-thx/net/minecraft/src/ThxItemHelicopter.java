@@ -33,7 +33,7 @@ public class ThxItemHelicopter extends Item
         double posZ = player.posZ + f1 * f5 * 3.0;
         float yaw = (player.rotationYaw -45) % 360f;
             
-        ThxEntity te = new ThxEntityHelicopter(world, posX, posY, posZ, yaw);
+        ThxEntityHelicopter te = new ThxEntityHelicopter(world, posX, posY, posZ, yaw);
         world.entityJoinedWorld(te);
         
         return false;

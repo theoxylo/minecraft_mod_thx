@@ -34,7 +34,7 @@ public class ThxEntity extends Entity
     
     ThxModel model;
     
-    //Vector3f pos;
+    Vector3f pos;
     Vector3f vel;
     //Vector3f ypr;
     
@@ -72,7 +72,7 @@ public class ThxEntity extends Entity
 	    side = new Vector3f(0f, 0f, 0f);
 	    up   = new Vector3f(0f, 0f, 0f);
 	    
-	    //pos = new Vector3f(0f, 0f, 0f);
+	    pos = new Vector3f(0f, 0f, 0f);
 	    vel = new Vector3f(0f, 0f, 0f);
 	    //ypr = new Vector3f(0f, 0f, 0f);
 	    
@@ -140,9 +140,9 @@ public class ThxEntity extends Entity
         Vector3f.cross(fwd, side, up);
         
         // refresh 
-        //pos.x = (float) posX;
-        //pos.y = (float) posY;
-        //pos.z = (float) posZ;
+        pos.x = (float) posX;
+        pos.y = (float) posY;
+        pos.z = (float) posZ;
         
         vel.x = (float) motionX;
         vel.y = (float) motionY;

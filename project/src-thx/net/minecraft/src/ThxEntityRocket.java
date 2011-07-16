@@ -239,7 +239,7 @@ public class ThxEntityRocket  extends ThxEntity
     private int zTile;
     private int inTile;
     private boolean inGround;
-    private Entity owner;
+    public Entity owner;
     private int field_20050_h;
 }
 
