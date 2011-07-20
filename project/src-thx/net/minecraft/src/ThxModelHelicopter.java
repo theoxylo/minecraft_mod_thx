@@ -22,7 +22,7 @@ public class ThxModelHelicopter extends ThxModel
         float height = 0f;
         
         boxes = new ModelRenderer[5];
-        boxes[0] = new ModelRenderer(0, 8);
+        boxes[0] = new ModelRenderer(0, 16);
         boxes[1] = new ModelRenderer(0, 0);
         boxes[2] = new ModelRenderer(0, 0);
         boxes[3] = new ModelRenderer(0, 0);
@@ -36,7 +36,7 @@ public class ThxModelHelicopter extends ThxModel
         // body, based on original mc boat
         
         // bottom, make invisible for looking down
-        boxes[0].addBox(-byte0 / 2, -byte2 / 2 + 2, -3F, byte0, byte2 - 4, 4);
+        boxes[0].addBox(/*-byte0 / 2*/ -10, -byte2 / 2 + 2, -3F, /*byte0*/ 20, byte2 - 4, 4);
         boxes[0].setRotationPoint(0.0F, 0 + byte3, 0.0F);
         boxes[0].rotateAngleX = 1.570796F;
         

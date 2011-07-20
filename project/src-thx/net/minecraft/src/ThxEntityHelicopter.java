@@ -37,7 +37,7 @@ public class ThxEntityHelicopter extends ThxEntity
     static boolean ENABLE_AUTO_THROTTLE_ZERO = ThxConfig.getBoolProperty("enable_auto_throttle_zero");
     static boolean ENABLE_HEAVY_WEAPONS = ThxConfig.getBoolProperty("enable_heavy_weapons");
         
-    final float MAX_HEALTH = 100f;
+    final float MAX_HEALTH = 80f;
 
     // handling properties
     final float MAX_ACCEL    = 0.30f; // very slowly sink when neutral throttle
@@ -146,7 +146,8 @@ public class ThxEntityHelicopter extends ThxEntity
     {
         super.onUpdate();
 
-        if (_damage > 0f) _damage -= 10f * deltaTime; // heal rate 10
+        // for auto-heal: 
+        if (_damage > 0f) _damage -= deltaTime; // heal rate: 1 pt / sec
         
         timeSinceHit -= deltaTime;
         missileDelay -= deltaTime;
@@ -225,7 +226,7 @@ public class ThxEntityHelicopter extends ThxEntity
                     //Minecraft.isGuiEnabled();
                     //if(ModLoader.isGUIOpen(null) && minecraft.thePlayer.ridingEntity != null && minecraft.thePlayer.ridingEntity == this)
 
-                    minecraft.ingameGUI.addChatMessage("PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY);
+                    minecraft.ingameGUI.addChatMessage("PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(_damage * 100 / MAX_HEALTH) + "%");
                     
                     prevThirdPersonView = minecraft.gameSettings.thirdPersonView;
                     minecraft.gameSettings.thirdPersonView = false;
@@ -254,12 +255,13 @@ public class ThxEntityHelicopter extends ThxEntity
                 Vector3f deltaPos = Vector3f.add(targetHelicopter.pos, pos.negate(null), null);
                 thd = deltaPos.length();
             }
-            if (((targetHelicopter != null && thd < 20f && thd > 10f && Math.abs(targetHelicopter.posY - posY) < 2f) 
+            if (((targetHelicopter != null && thd < 20f && thd > 5f && Math.abs(targetHelicopter.posY - posY) < 2f) 
                 || Keyboard.isKeyDown(KEY_FIRE_ROCKET)) 
                     && rocketDelay < 0f && rocketReload < 0f)
             {
                 rocketCount++;
                 rocketDelay = ROCKET_DELAY;
+                if (targetHelicopter != null) rocketDelay *= 2f;
                 
                 float leftRight = (rocketCount % 2 == 0) ? 1.0f : -1.0f;
                 
@@ -288,9 +290,10 @@ public class ThxEntityHelicopter extends ThxEntity
                 }
             }
 
-            if (targetHelicopter != null && _damage > MAX_HEALTH -20f && missileDelay < 0f) // ai fire missle when low health
+            if (targetHelicopter != null && missileDelay < 0f && _damage > MAX_HEALTH / 2f) // ai fire missle when low health
             {
-                missileDelay = MISSILE_DELAY;
+                // ai will fire missiles once it is damaged
+                missileDelay = MISSILE_DELAY * 2; // nerf fire rate
                 
                 float offX = fwd.x * 2f;
                 float offY = fwd.y * 2f;
@@ -340,14 +343,16 @@ public class ThxEntityHelicopter extends ThxEntity
             else if (ENABLE_LOOK_YAW && !ENABLE_DRONE_MODE)
             {
                 // input from look control (mouse or analog stick)
-                float deltaYawDeg = rotationYaw - pilot.rotationYaw;
+                //float deltaYawDeg = rotationYaw - pilot.rotationYaw;
+                float deltaYawDeg = pilot.rotationYaw - rotationYaw;
                 if (lookBack) deltaYawDeg += 180f;
 
                 while (deltaYawDeg > 180f) deltaYawDeg -= 360f;
                 while (deltaYawDeg < -180f) deltaYawDeg += 360f;
 
                 //rotationYaw += deltaYawDeg * TURN_SPEED_DEG * .04f;
-                rotationYawSpeed = deltaYawDeg * TURN_SPEED_DEG; // saving this for render use
+                //rotationYawSpeed = deltaYawDeg * TURN_SPEED_DEG; // saving this for render use
+                rotationYawSpeed = deltaYawDeg * 3f; // saving this for render use
                 if (rotationYawSpeed > 90) rotationYawSpeed = 90;
                 if (rotationYawSpeed < -90) rotationYawSpeed = -90;
                 rotationYaw += rotationYawSpeed * deltaTime;
@@ -358,12 +363,21 @@ public class ThxEntityHelicopter extends ThxEntity
                 // button yaw
                 if (Keyboard.isKeyDown(KEY_ROTATE_LEFT)) // g, rotate left
                 {
-                    rotationYaw -= TURN_SPEED_DEG * deltaTime;
+                    //rotationYaw -= TURN_SPEED_DEG * deltaTime;
+                    rotationYawSpeed -= 8f;
                 }
-                if (Keyboard.isKeyDown(KEY_ROTATE_RIGHT)) // h, rotate right
+                else if (Keyboard.isKeyDown(KEY_ROTATE_RIGHT)) // h, rotate right
                 {
-                    rotationYaw += TURN_SPEED_DEG * deltaTime;
+                    //rotationYaw += TURN_SPEED_DEG * deltaTime;
+                    rotationYawSpeed += 8f;
                 }
+                else
+                {
+                    rotationYawSpeed *= .9f;
+                }
+                if (rotationYawSpeed > 80) rotationYawSpeed = 80;
+                if (rotationYawSpeed < -80) rotationYawSpeed = -80;
+                rotationYaw += rotationYawSpeed * deltaTime;
             }
             
             rotationYaw %= 360f;
@@ -380,6 +394,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 if (distance > 30f) rotationPitch = 45f; // at max distance, go full speed
                 else if (distance > 10f) rotationPitch = 45f * (distance - 10) / 20f;
                 //else rotationPitch = -45f * (1f - (distance / 10f));
+                //else rotationPitch = -20f;
             }
             else if (ENABLE_LOOK_PITCH && !ENABLE_DRONE_MODE)
             {
@@ -671,14 +686,14 @@ public class ThxEntityHelicopter extends ThxEntity
         if (isCollidedHorizontally || isCollidedVertically)
         {
 	        double velSq = motionX * motionX + motionY * motionY + motionZ * motionZ;
-	        if (velSq > .1)
+	        if (velSq > .06)
 	        {
 	            log("crash velSq: " + velSq);
-	            attackEntityFrom(this, 1);
+	            attackEntityFrom(this, 4);
 	            
-	            motionX *= .5;
-	            motionY *= .5;
-	            motionZ *= .5;
+	            motionX *= .7;
+	            motionY *= .7;
+	            motionZ *= .7;
 	        }
             isCollidedHorizontally = false;
             isCollidedVertically = false;
@@ -723,29 +738,41 @@ public class ThxEntityHelicopter extends ThxEntity
         
         log("attacked by entity: " + entity);
         
+        // take damage sound
+        worldObj.playSoundAtEntity(this, "random.drr", 1.0f, 1.0f);
+
         if (timeSinceHit > 0 || isDead || riddenByEntity == entity) return false;
         
         //if (riddenByEntity == null && targetHelicopter == null && entity instanceof ThxEntityHelicopter)
         if (riddenByEntity == null && entity instanceof ThxEntityHelicopter)
         {
-            // wake up ai if empty helicopter is attacked!
-            targetHelicopter = (ThxEntityHelicopter) entity;
-            worldObj.playSoundAtEntity(entity, "random.fuse", 1.0f, 1.0f);
-            return true;
+            if (targetHelicopter == null && entity != this) // crashing takes damage from self
+            {
+	            // wake up ai if empty helicopter is attacked!
+	            targetHelicopter = (ThxEntityHelicopter) entity;
+	            worldObj.playSoundAtEntity(entity, "random.fuse", 1.0f, 1.0f);
+	            return true;
+            }
         }
                
-        _damage += (float)i * 10f;
+        _damage += (float)i * 4f;
         log ("current damage percent: " + (100f * _damage / MAX_HEALTH));
         
-        timeSinceHit = .3f; // sec delay before this entity can be hit again
+        Minecraft minecraft = ModLoader.getMinecraftInstance();
+        if (riddenByEntity != null)
+        {
+            minecraft.ingameGUI.addChatMessage("Damage: " + (int) (_damage * 100 / MAX_HEALTH) + "%");
+        }
+        timeSinceHit = .2f; // sec delay before this entity can be hit again
         
         setBeenAttacked();
-
-        worldObj.playSoundAtEntity(this, "random.drr", 1.0f, 1.0f);
 
         if (_damage > MAX_HEALTH)
         {
             die();
+            if (riddenByEntity == null) minecraft.ingameGUI.addChatMessage("Killed " + this);
+            
+            worldObj.newExplosion(this, posX, posY, posZ, 3f, true);
         }
         return true; // the hit landed
     }
@@ -837,7 +864,8 @@ public class ThxEntityHelicopter extends ThxEntity
 
         // this will tell the default impl in pilot.updateRidden
         // that no adjustment need be made to the pilot's yaw or pitch
-        // as a direct result of riding this helicopter entity
+        // as a direct result of riding this helicopter entity.
+        // rather, we let the player rotate the pilot and the helicopter follows
         prevRotationYaw = rotationYaw;
         prevRotationPitch = rotationPitch;
 

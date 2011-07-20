@@ -11,6 +11,8 @@ public class ThxEntityMissile extends ThxEntity
     final float GRAVITY       = .002f;
     
     final int maxAge = 6000;
+    final float exhaustTimer = .04f;
+    float exhaustTime = 0f;
     
     Vector3f thrust;
     
@@ -66,6 +68,12 @@ public class ThxEntityMissile extends ThxEntity
     {
         super.onUpdate();
         
+        exhaustTime += deltaTime;
+        if (exhaustTime > exhaustTimer)
+        {
+            exhaustTime = 0f;
+            worldObj.spawnParticle("smoke", posX, posY, posZ, 0.0, 0.0, 0.0);
+        }
         // short circuit for testing model
         //if (true) return;
         
@@ -97,8 +105,8 @@ public class ThxEntityMissile extends ThxEntity
         Vector3f courseChange = Vector3f.sub(dPos, motion, null);
         if (courseChange.lengthSquared() > .001 || ticksExisted > maxAge)
         {
-            float power = 1.7f;
-            if (enableHeavyWeapons) power = 20;
+            float power = 2f;
+            if (enableHeavyWeapons) power = 20f;
             worldObj.newExplosion(this, posX, posY, posZ, power, true);
             setEntityDead();
         }

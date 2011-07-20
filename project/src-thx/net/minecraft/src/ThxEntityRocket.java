@@ -113,13 +113,11 @@ public class ThxEntityRocket  extends ThxEntity
                 return;
             }
         } 
+        
         Vec3D vec3d = Vec3D.createVector(posX, posY, posZ);
         Vec3D vec3d1 = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
         MovingObjectPosition movingobjectposition = worldObj.rayTraceBlocks(vec3d, vec3d1);
-        /*
-        vec3d = Vec3D.createVector(posX, posY, posZ);
-        vec3d1 = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
-        */
+        
         if(movingobjectposition != null)
         {
             vec3d1 = Vec3D.createVector(movingobjectposition.hitVec.xCoord, movingobjectposition.hitVec.yCoord, movingobjectposition.hitVec.zCoord);
@@ -165,31 +163,62 @@ public class ThxEntityRocket  extends ThxEntity
                 movingobjectposition.entityHit.attackEntityFrom(owner, 5);
             }
             
+            // for hit markers
             //worldObj.spawnParticle("flame", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
-            worldObj.playSoundAtEntity(this, "random.explode", .5f, 1f);
+            //worldObj.playSoundAtEntity(this, "random.explode", .3f, 1f);
 
-	        //if (enableHeavyWeapons)
-	        //{
-		        float power = .3f;
-		        if (enableHeavyWeapons) power = 2f;
-		        worldObj.newExplosion(this, posX, posY, posZ, power, true);
-	        //}
+	        float power = .5f;
+	        if (enableHeavyWeapons) power = 2f;
+	        
+	        worldObj.newExplosion(owner, posX, posY, posZ, power, true);
 	        
             setEntityDead();
+            
+            return;
         }
 
         posX += motionX;
         posY += motionY;
         posZ += motionZ;
-        float f = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
-        rotationYaw = (float)((Math.atan2(motionX, motionZ) * 180D) / 3.1415927410125732D);
-        for(rotationPitch = (float)((Math.atan2(motionY, f) * 180D) / 3.1415927410125732D); 
-        rotationPitch - prevRotationPitch < -180F; prevRotationPitch -= 360F) { }
-        for(; rotationPitch - prevRotationPitch >= 180F; prevRotationPitch += 360F) { }
-        for(; rotationYaw - prevRotationYaw < -180F; prevRotationYaw -= 360F) { }
-        for(; rotationYaw - prevRotationYaw >= 180F; prevRotationYaw += 360F) { }
-        rotationPitch = prevRotationPitch + (rotationPitch - prevRotationPitch) * 0.2F;
-        rotationYaw = prevRotationYaw + (rotationYaw - prevRotationYaw) * 0.2F;
+        
+        setPosition(posX, posY, posZ);
+        
+        if(!enteredWater && isInWater())
+        {
+            enteredWater = true;
+            
+            worldObj.playSoundAtEntity(this, "random.splash", 1f, 1f);
+            for(int l = 0; l < 4; l++)
+            {
+                float f3 = 0.25F;
+                worldObj.spawnParticle("bubble", posX - motionX * (double)f3, posY - motionY * (double)f3, posZ - motionZ * (double)f3, motionX, motionY, motionZ);
+            }
+        }
+        
+        // pitch and yaw
+        if (!launched)
+        {
+            launched = true;
+            float f = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
+            rotationYaw = (float) ((Math.atan2(motionX, motionZ) * 180D) / 3.1415927410125732D);
+            for (rotationPitch = (float) ((Math.atan2(motionY, f) * 180D) / 3.1415927410125732D); rotationPitch - prevRotationPitch < -180F; prevRotationPitch -= 360F)
+            {
+            }
+            for (; rotationPitch - prevRotationPitch >= 180F; prevRotationPitch += 360F)
+            {
+            }
+            for (; rotationYaw - prevRotationYaw < -180F; prevRotationYaw -= 360F)
+            {
+            }
+            for (; rotationYaw - prevRotationYaw >= 180F; prevRotationYaw += 360F)
+            {
+            }
+            rotationPitch = prevRotationPitch + (rotationPitch - prevRotationPitch) * 0.2F;
+            rotationYaw = prevRotationYaw + (rotationYaw - prevRotationYaw) * 0.2F;
+        }
+        
+        /*
+        // fricktion and gravity
         float f1 = 0.99F;
         if(isInWater())
         {
@@ -209,6 +238,7 @@ public class ThxEntityRocket  extends ThxEntity
         motionY -= gravity;
         
         setPosition(posX, posY, posZ);
+        */
     }
 
     public void writeEntityToNBT(NBTTagCompound nbttagcompound)
@@ -241,5 +271,8 @@ public class ThxEntityRocket  extends ThxEntity
     private boolean inGround;
     public Entity owner;
     private int field_20050_h;
+    
+    boolean enteredWater;
+    boolean launched;
 }
 
