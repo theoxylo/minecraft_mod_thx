@@ -2,7 +2,7 @@ INTRODUCTION
 ------------
 If you just want to get the latest version of this prototype mod to try it out, you can download the zip file from GitHub:
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.7.3_v008-bin.zip 
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.7.3_v009-bin.zip 
 
 Just copy the zip file to your '.minecraft\mods' directory and start Minecraft normally (full Minecraft and ModLoader required).
 
@@ -12,7 +12,7 @@ Please keep in mind that this is an early build prototype of a mod under constru
 
 Please visit the forum thread to discuss, report issues, leave feedback, etc:
 
-    http://www.minecraftforum.net/topic/246531-reqidea-helicopter-mod-gracefully-take-to-the-skies
+    http://www.minecraftforum.net/topic/246531-173-beta-prototype-helicopter-mod-gracefully-take-to-the-skies
 
 
 
@@ -43,6 +43,11 @@ And of course, thanks to Notch and the Mojang team for the pure goodness that is
 
 CHANGELOG
 ---------
+v009: added enemy AI (attack empty helicopter to engage)
+v009: added smoke to missile flight
+v009: adjusted attack and health values
+v009: adjusted collision and damage threshold
+
 v008: built for Minecraft and ModLoader beta 1.7.3
 v008: updated README.txt :)
 

@@ -109,6 +109,8 @@ public class ThxEntityHelicopter extends ThxEntity
     
     // enemy AI helicopter or friend?
     public ThxEntityHelicopter targetHelicopter;
+    public boolean isTargetHelicopterFriendly;
+    Vector3f deltaPosToTarget = new Vector3f();
 
     public ThxEntityHelicopter(World world)
     {
@@ -252,10 +254,14 @@ public class ThxEntityHelicopter extends ThxEntity
             float thd = 0f; // thd is targetHelicopter distance
             if (targetHelicopter != null)
             {
-                Vector3f deltaPos = Vector3f.add(targetHelicopter.pos, pos.negate(null), null);
-                thd = deltaPos.length();
+	            deltaPosToTarget.set((float)(targetHelicopter.posX - posX), 0f, (float)(targetHelicopter.posZ - posZ));
+	            thd = deltaPosToTarget.length();
+                //Vector3f deltaPos = Vector3f.add(targetHelicopter.pos, pos.negate(null), null);
+                //thd = deltaPos.length();
             }
-            if (((targetHelicopter != null && thd < 20f && thd > 5f && Math.abs(targetHelicopter.posY - posY) < 2f) 
+            
+            // FIRE ROCKET
+            if (((targetHelicopter != null && !isTargetHelicopterFriendly && thd < 20f && thd > 5f && Math.abs(targetHelicopter.posY - posY) < 2f) 
                 || Keyboard.isKeyDown(KEY_FIRE_ROCKET)) 
                     && rocketDelay < 0f && rocketReload < 0f)
             {
@@ -277,6 +283,12 @@ public class ThxEntityHelicopter extends ThxEntity
                     yaw = pilot.rotationYaw;
                     pitch = pilot.rotationPitch;
                 }
+                if (targetHelicopter != null && isTargetHelicopterFriendly && targetHelicopter.riddenByEntity != null)
+                {
+	                yaw = targetHelicopter.riddenByEntity.rotationYaw;
+	                pitch = targetHelicopter.riddenByEntity.rotationPitch;
+                }
+                
                 ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
                 if (ENABLE_HEAVY_WEAPONS) newRocket.enableHeavyWeapons = true;
                 newRocket.owner = this;
@@ -290,9 +302,9 @@ public class ThxEntityHelicopter extends ThxEntity
                 }
             }
 
-            if (targetHelicopter != null && missileDelay < 0f && _damage > MAX_HEALTH / 2f) // ai fire missle when low health
+            // FIRE MISSILE
+            if (missileDelay < 0f && targetHelicopter != null && !isTargetHelicopterFriendly && Math.abs(targetHelicopter.posY - posY) < 2f) // && _damage > MAX_HEALTH / 2f) // ai fire missle when low health
             {
-                // ai will fire missiles once it is damaged
                 missileDelay = MISSILE_DELAY * 2; // nerf fire rate
                 
                 float offX = fwd.x * 2f;
@@ -301,7 +313,9 @@ public class ThxEntityHelicopter extends ThxEntity
 
                 float yaw = rotationYaw;
                 float pitch = rotationPitch;
-                ThxEntityAgent newMissile = new ThxEntityAgent(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
+                
+                ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
+                newMissile.targetHelicopter = targetHelicopter;
                 worldObj.entityJoinedWorld(newMissile);
 
             }
@@ -320,16 +334,38 @@ public class ThxEntityHelicopter extends ThxEntity
                     yaw = pilot.rotationYaw;
                     pitch = pilot.rotationPitch;
                 }
+                if (targetHelicopter != null && isTargetHelicopterFriendly && targetHelicopter.riddenByEntity != null)
+                {
+                    yaw = targetHelicopter.riddenByEntity.rotationYaw;
+                    pitch = targetHelicopter.riddenByEntity.rotationPitch;
+                }
+
                 ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
                 //ThxEntityAgent newMissile = new ThxEntityAgent(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
                 if (ENABLE_HEAVY_WEAPONS) newMissile.enableHeavyWeapons = true;
                 worldObj.entityJoinedWorld(newMissile);
             }
 
-            if (targetHelicopter != null)
+            // START YAW
+            if (targetHelicopter != null && isTargetHelicopterFriendly && thd < 10f)
             {
+	                // mimic friendly target yaw rotation when close by
+	                float deltaYawDeg = targetHelicopter.rotationYaw - rotationYaw;
+	
+	                while (deltaYawDeg > 180f) deltaYawDeg -= 360f;
+	                while (deltaYawDeg < -180f) deltaYawDeg += 360f;
+	
+	                rotationYawSpeed = deltaYawDeg * 3f; // saving this for render use
+	                if (rotationYawSpeed > 90) rotationYawSpeed = 90;
+	                if (rotationYawSpeed < -90) rotationYawSpeed = -90;
+	                rotationYaw += rotationYawSpeed * deltaTime;
+            }
+            else if (targetHelicopter != null) // && !isTargetHelicopterFriendly)
+            {
+                // turn toward target helicopter
+                
                 Vector3f deltaPos = Vector3f.add(targetHelicopter.pos, pos.negate(null), null);
-                deltaPos.add(vel, deltaPos, deltaPos);
+                //deltaPos.add(vel, deltaPos, deltaPos);
                 
                 if (Vector3f.dot(side, deltaPos) > 0)
                 {
@@ -339,11 +375,11 @@ public class ThxEntityHelicopter extends ThxEntity
                 {
                     rotationYaw -= 60f * deltaTime;
                 }
+                
             }
-            else if (ENABLE_LOOK_YAW && !ENABLE_DRONE_MODE)
+            else if (ENABLE_LOOK_YAW && !ENABLE_DRONE_MODE && pilot != null)
             {
                 // input from look control (mouse or analog stick)
-                //float deltaYawDeg = rotationYaw - pilot.rotationYaw;
                 float deltaYawDeg = pilot.rotationYaw - rotationYaw;
                 if (lookBack) deltaYawDeg += 180f;
 
@@ -382,19 +418,23 @@ public class ThxEntityHelicopter extends ThxEntity
             
             rotationYaw %= 360f;
 
+            // PITCH CONTROL
+            //
             // the cyclic (tilt control)
             // only affects pitch and roll, acceleration done later
             // zero pitch is level, positive pitch is leaning forward
+            
             if (targetHelicopter != null)
             {
-                //Vector3f deltaPos = new Vector3f.add(targetHelicopter.pos, pos.negate(null), null);
-                Vector3f deltaPos = new Vector3f((float)(targetHelicopter.posX - posX), 0f, (float)(targetHelicopter.posZ - posZ));
-                
-                float distance = deltaPos.length();
-                if (distance > 30f) rotationPitch = 45f; // at max distance, go full speed
-                else if (distance > 10f) rotationPitch = 45f * (distance - 10) / 20f;
-                //else rotationPitch = -45f * (1f - (distance / 10f));
-                //else rotationPitch = -20f;
+                if (thd > 10f)
+                {
+                    rotationPitch = 45f * (thd - 10f) / 20f;
+                }
+				else 
+			    {
+				   if (!isTargetHelicopterFriendly) rotationPitch =  (1 - (thd / 10f)) * -20f;// -20f;
+			    }
+                rotationPitchSpeed = 0f;
             }
             else if (ENABLE_LOOK_PITCH && !ENABLE_DRONE_MODE)
             {
@@ -529,24 +569,36 @@ public class ThxEntityHelicopter extends ThxEntity
                 rotationRollSpeed = -rotationRoll * .6f;
                 rotationRoll += rotationRollSpeed * deltaTime;
             }
+            
+            
+            // allow direct control of nearby ai friendly helicopters
+            if (targetHelicopter != null && isTargetHelicopterFriendly && thd < 10f)
+            {
+                rotationPitch = targetHelicopter.rotationPitch;
+                rotationPitchSpeed = targetHelicopter.rotationPitchSpeed;
+                
+                rotationRoll = targetHelicopter.rotationRoll;
+                rotationRollSpeed = targetHelicopter.rotationRollSpeed;
+            }
+
 
             // collective (throttle) control
             // default space, increase throttle
             if (targetHelicopter != null)
             {
-                if (posY + 1 < targetHelicopter.posY)
+                if (posY + 1f < targetHelicopter.posY)
                 {
 	                if (throttle < THROTTLE_MAX * .6f) throttle += THROTTLE_INC * .4f;
 	                if (throttle > THROTTLE_MAX * .6f) throttle = THROTTLE_MAX * .6f;
                 }
-                else if (posY - 1 > targetHelicopter.posY)
+                else if (posY - 2f > targetHelicopter.posY)
                 {
 	                if (throttle > THROTTLE_MIN * .6f) throttle -= THROTTLE_INC * .4f;
 	                if (throttle < THROTTLE_MIN * .6f) throttle = THROTTLE_MIN * .6f;
                 }
                 else
                 {
-                    throttle *= .4; // auto zero throttle   
+                    throttle *= .6; // auto zero throttle   
                 }
             }
             else if (Keyboard.isKeyDown(KEY_ASCEND) 
@@ -705,7 +757,8 @@ public class ThxEntityHelicopter extends ThxEntity
         riddenByEntity = null;
         
         setEntityDead();
-        dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0);
+        
+        //dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0);
 
         spawnParticles:
         {
@@ -744,26 +797,34 @@ public class ThxEntityHelicopter extends ThxEntity
         if (timeSinceHit > 0 || isDead || riddenByEntity == entity) return false;
         
         //if (riddenByEntity == null && targetHelicopter == null && entity instanceof ThxEntityHelicopter)
-        if (riddenByEntity == null && entity instanceof ThxEntityHelicopter)
+        if (riddenByEntity == null && entity != this && entity instanceof ThxEntityHelicopter)
         {
-            if (targetHelicopter == null && entity != this) // crashing takes damage from self
+            // crashing takes damage from self, so have to check if this
+            
+            if (targetHelicopter == null)
             {
-	            // wake up ai if empty helicopter is attacked!
+	            // wake up ai if empty helicopter is attacked, friendly at first
+                isTargetHelicopterFriendly = true;
 	            targetHelicopter = (ThxEntityHelicopter) entity;
 	            worldObj.playSoundAtEntity(entity, "random.fuse", 1.0f, 1.0f);
-	            return true;
             }
+            else if (entity == targetHelicopter && isTargetHelicopterFriendly)
+            {
+                isTargetHelicopterFriendly = false;
+                System.out.println("enemy helo");
+            }
+            //return true;
         }
                
         _damage += (float)i * 4f;
         log ("current damage percent: " + (100f * _damage / MAX_HEALTH));
         
         Minecraft minecraft = ModLoader.getMinecraftInstance();
-        if (riddenByEntity != null)
+        if (riddenByEntity != null) // this is the player's helicopter, so show damage
         {
             minecraft.ingameGUI.addChatMessage("Damage: " + (int) (_damage * 100 / MAX_HEALTH) + "%");
         }
-        timeSinceHit = .2f; // sec delay before this entity can be hit again
+        timeSinceHit = .5f; // sec delay before this entity can be hit again
         
         setBeenAttacked();
 
@@ -772,7 +833,7 @@ public class ThxEntityHelicopter extends ThxEntity
             die();
             if (riddenByEntity == null) minecraft.ingameGUI.addChatMessage("Killed " + this);
             
-            worldObj.newExplosion(this, posX, posY, posZ, 3f, true);
+            worldObj.newExplosion(this, posX, posY, posZ, 1f, true);
         }
         return true; // the hit landed
     }

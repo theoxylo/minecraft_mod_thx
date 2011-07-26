@@ -6,7 +6,7 @@ public class ThxEntityMissile extends ThxEntity
 {
     static int instanceCount = 0;
 
-    final float MISSILE_ACCEL = .14f;
+    final float MISSILE_ACCEL = .6f;
     final float MAX_VELOCITY  = .90f;
     final float GRAVITY       = .002f;
     
@@ -17,6 +17,8 @@ public class ThxEntityMissile extends ThxEntity
     Vector3f thrust;
     
     boolean enableHeavyWeapons = false;
+    
+    public ThxEntityHelicopter targetHelicopter;
 
     public ThxEntityMissile(World world)
     {
@@ -50,9 +52,13 @@ public class ThxEntityMissile extends ThxEntity
         log("fwd: " + fwd + ", side: " + side + ", up: " + up);
                 
         // initial thrust + owner "momentum"
-        thrust.x = (float) (fwd.x * MISSILE_ACCEL * 2f + dx);
-        thrust.y = (float) (fwd.y * MISSILE_ACCEL * 2f + dy);
-        thrust.z = (float) (fwd.z * MISSILE_ACCEL * 2f + dz);
+        thrust.x = (float)(fwd.x * MISSILE_ACCEL + dx);
+        thrust.y = (float)(fwd.y * MISSILE_ACCEL + dy);
+        thrust.z = (float)(fwd.z * MISSILE_ACCEL + dz);
+        
+        motionX = thrust.x;
+        motionY = thrust.y;
+        motionZ = thrust.z;
 
         worldObj.playSoundAtEntity(this, "mob.ghast.fireball", 1f, 1f);
     }
@@ -74,9 +80,14 @@ public class ThxEntityMissile extends ThxEntity
             exhaustTime = 0f;
             worldObj.spawnParticle("smoke", posX, posY, posZ, 0.0, 0.0, 0.0);
         }
-        // short circuit for testing model
-        //if (true) return;
         
+        // guide missile to target helicopter
+        Vector3f toTarget = new Vector3f();
+        if (targetHelicopter != null) toTarget.set((float)(targetHelicopter.posX - posX), (float)(targetHelicopter.posY - posY), (float)(targetHelicopter.posZ - posZ));
+        toTarget = (Vector3f)toTarget.scale(1f);
+        toTarget = (Vector3f)toTarget.scale(.05f);
+        
+
         prevPosX = posX;
         prevPosY = posY;
         prevPosZ = posZ;
@@ -89,9 +100,9 @@ public class ThxEntityMissile extends ThxEntity
         // allow for any way to slow or change course once max'ed
         if (vel.lengthSquared() < MAX_VELOCITY * MAX_VELOCITY)
         {
-	        motionX += thrust.x;
-	        motionY += thrust.y;
-	        motionZ += thrust.z;
+            motionX += thrust.x * deltaTime + toTarget.x;
+            motionY += thrust.y * deltaTime + toTarget.y;
+            motionZ += thrust.z * deltaTime + toTarget.z;
         }
         Vector3f motion = new Vector3f((float)motionX, (float)motionY, (float)motionZ);
         
@@ -102,6 +113,8 @@ public class ThxEntityMissile extends ThxEntity
         float dz = (float)(posZ - prevPosZ);
         Vector3f dPos = new Vector3f(dx, dy, dz);
         
+        // if movement was blocked by hitting something,
+        // then dPos will be less than motion
         Vector3f courseChange = Vector3f.sub(dPos, motion, null);
         if (courseChange.lengthSquared() > .001 || ticksExisted > maxAge)
         {
@@ -109,6 +122,9 @@ public class ThxEntityMissile extends ThxEntity
             if (enableHeavyWeapons) power = 20f;
             worldObj.newExplosion(this, posX, posY, posZ, power, true);
             setEntityDead();
+            
+            // light torch?
+            //Item.itemsList[50].onItemUse(new ItemStack(), this, posX, posY, posZ
         }
 
         // gradual constant pitch down until 20 deg

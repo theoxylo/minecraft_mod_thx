@@ -4,7 +4,6 @@ public class mod_Thx extends BaseMod
 {
 	static Class classHelicopter = net.minecraft.src.ThxEntityHelicopter.class;
 	static Class classMissile = net.minecraft.src.ThxEntityMissile.class;
-	static Class classAgent = net.minecraft.src.ThxEntityAgent.class;
     
     public mod_Thx()
     {
@@ -24,12 +23,6 @@ public class mod_Thx extends BaseMod
 	        int entityId = ModLoader.getUniqueEntityId();
 	        log("Registering entity class for Helicopter with entity id " + entityId);
 	        ModLoader.RegisterEntityID(classHelicopter, "thxHelicopter", entityId);
-        }
-        agent:
-        {
-	        int entityId = ModLoader.getUniqueEntityId();
-	        log("Registering entity class for Agent with entity id " + entityId);
-	        ModLoader.RegisterEntityID(classAgent, "thxAgent", entityId);
         }
         
         helicopterItem:
@@ -63,13 +56,14 @@ public class mod_Thx extends BaseMod
     {
         map.put(classHelicopter, new ThxRender());
         map.put(classMissile, new ThxRender());
-        map.put(classAgent, new ThxRenderAgent());
+        // custom rendering model:
+        //map.put(classMissile, new ThxRenderAgent());
     }
 
     @Override
     public String Version()
     {
-        return "mod_thx-beta_1.7.3_v008";
+        return "mod_thx-beta_1.7.3_v009";
     }
     
     int getNextItemId()
