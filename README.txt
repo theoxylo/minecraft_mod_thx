@@ -192,3 +192,30 @@ disable_helicopter_item_image=true
 
 # toggle rear view
 key_look_back=U
+
+
+GIT CHEATSHEET
+--------------
+To create a new branch:
+git checkout -b vXXX_candidate
+git push origin vXXX_candidate
+
+To make changes:
+cd minecraft/.eclipse/workspace_git_mod_thx/
+vi README.txt
+vi ./project/src-thx/net/minecraft/src/mod_Thx.java
+git commit -a -m "my changes"
+git push origin
+
+To merge a branch:
+git checkout master
+git merge vXXX_candidate
+git push origin
+
+To create a tag:
+git tag mod_Thx-beta_1.7.3_vXXX
+git push origin --tags
+
+To delete a branch, local and remote:
+git branch -d vXXX_candidate
+git push origin :vXXX_candidate
