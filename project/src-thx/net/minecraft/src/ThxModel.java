@@ -8,6 +8,8 @@ public abstract class ThxModel //extends ModelBase
 
     boolean visible = true;
     
+    boolean paused;
+    
     float deltaTime;
     long prevTime;
     long entityPrevTime;
@@ -30,7 +32,7 @@ public abstract class ThxModel //extends ModelBase
     
 
     /**
-     *  deltaTime is used to render model movement more smoothly
+     *  deltaTime is used to render model rotation more smoothly
      */
     public void update()
     {
@@ -39,6 +41,8 @@ public abstract class ThxModel //extends ModelBase
 	    long time = System.nanoTime();
         
 	    deltaTime = ((float)(time - prevTime)) / 1000000000f; // divide by a billion to convert to sec
+	    
+	    if (paused) deltaTime = 0f;
 	    
         //log.append(toString() + ":\ttime " + time);
 	    //log.append("\trotationYaw before " + rotationYaw);
@@ -63,8 +67,6 @@ public abstract class ThxModel //extends ModelBase
             rotationYaw += rotationYawSpeed * adjustedDeltaTime;
             rotationPitch += rotationPitchSpeed * adjustedDeltaTime;
             rotationRoll += rotationRollSpeed * adjustedDeltaTime;
-            
-            //entityPrevTime = 0L; // reset until updated from entity again
         }
         else 
         {

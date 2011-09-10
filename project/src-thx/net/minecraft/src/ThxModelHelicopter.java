@@ -136,7 +136,8 @@ public class ThxModelHelicopter extends ThxModel
     {
         update();
         
-        float f5 = 0.0625f;
+        //float f5 = 0.0625f;
+        float f5 = 0.07f;
         
         //System.out.println("Model delta time sec: " + deltaTime);
         

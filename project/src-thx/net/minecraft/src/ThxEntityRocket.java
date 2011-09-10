@@ -167,7 +167,7 @@ public class ThxEntityRocket  extends ThxEntity
             //worldObj.spawnParticle("flame", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
             //worldObj.playSoundAtEntity(this, "random.explode", .3f, 1f);
 
-	        float power = .5f;
+	        float power = .4f;
 	        if (enableHeavyWeapons) power = 2f;
 	        
 	        worldObj.newExplosion(owner, posX, posY, posZ, power, true);

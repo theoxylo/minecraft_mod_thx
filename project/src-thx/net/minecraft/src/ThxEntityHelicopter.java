@@ -147,7 +147,9 @@ public class ThxEntityHelicopter extends ThxEntity
     public void onUpdate()
     {
         super.onUpdate();
-
+        
+		//if (!ModLoader.isGUIOpen(null)) System.out.println("gui is open");
+	        
         // for auto-heal: 
         if (_damage > 0f) _damage -= deltaTime; // heal rate: 1 pt / sec
         
@@ -810,8 +812,8 @@ public class ThxEntityHelicopter extends ThxEntity
             }
             else if (entity == targetHelicopter && isTargetHelicopterFriendly)
             {
+                //System.out.println("enemy helo");
                 isTargetHelicopterFriendly = false;
-                System.out.println("enemy helo");
             }
             //return true;
         }
@@ -831,9 +833,10 @@ public class ThxEntityHelicopter extends ThxEntity
         if (_damage > MAX_HEALTH)
         {
             die();
+            // show message if not player helicopter
             if (riddenByEntity == null) minecraft.ingameGUI.addChatMessage("Killed " + this);
             
-            worldObj.newExplosion(this, posX, posY, posZ, 1f, true);
+            worldObj.newExplosion(this, posX, posY, posZ, 2f, true);
         }
         return true; // the hit landed
     }

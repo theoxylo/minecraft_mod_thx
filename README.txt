@@ -43,10 +43,11 @@ And of course, thanks to Notch and the Mojang team for the pure goodness that is
 
 CHANGELOG
 ---------
-v009: added enemy AI (attack empty helicopter to engage)
-v009: added smoke to missile flight
+v009: for use with Minecraft and ModLoader beta 1.7.3
 v009: adjusted attack and health values
 v009: adjusted collision and damage threshold
+v009: added follow/attack AI (attack empty helicopter to engage)
+v009: added smoke to missile flight
 
 v008: built for Minecraft and ModLoader beta 1.7.3
 v008: updated README.txt :)

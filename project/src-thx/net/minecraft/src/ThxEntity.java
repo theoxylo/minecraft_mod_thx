@@ -1,5 +1,7 @@
 package net.minecraft.src;
 
+import net.minecraft.client.Minecraft;
+
 import org.lwjgl.util.vector.Vector3f;
 
 public class ThxEntity extends Entity
@@ -44,6 +46,10 @@ public class ThxEntity extends Entity
     
     boolean inWater;
     
+    Minecraft minecraft;
+    GuiScreen guiScreen;
+    public boolean paused;
+    
     public ThxEntity(World world)
     {
         super(world);
@@ -68,20 +74,41 @@ public class ThxEntity extends Entity
         //rollRad  = prevRotationRoll  = rotationRoll  = 0f;
         
         // vectors relative to entity orientation
-	    fwd  = new Vector3f(0f, 0f, 0f);
-	    side = new Vector3f(0f, 0f, 0f);
-	    up   = new Vector3f(0f, 0f, 0f);
-	    
-	    pos = new Vector3f(0f, 0f, 0f);
-	    vel = new Vector3f(0f, 0f, 0f);
-	    //ypr = new Vector3f(0f, 0f, 0f);
-	    
-	    prevTime = System.nanoTime();
+        fwd = new Vector3f(0f, 0f, 0f);
+        side = new Vector3f(0f, 0f, 0f);
+        up = new Vector3f(0f, 0f, 0f);
+
+        pos = new Vector3f(0f, 0f, 0f);
+        vel = new Vector3f(0f, 0f, 0f);
+        // ypr = new Vector3f(0f, 0f, 0f);
+
+        prevTime = System.nanoTime();
+
+        minecraft = ModLoader.getMinecraftInstance();
     }
     
     @Override
     public void onUpdate()
     {
+        if (guiScreen != minecraft.currentScreen)
+        {
+            // guiScreen has changed
+            guiScreen = minecraft.currentScreen;
+            
+	        if (guiScreen != null && guiScreen.doesGuiPauseGame())
+	        {
+	            //log("game paused " + this);
+	            paused = true;
+	        }
+	        else if (paused) // cancel paused
+            {
+	            //log("game UN-paused " + this);
+                paused = false;
+                prevTime = System.nanoTime();
+            }
+        }
+
+
         long time = System.nanoTime();
         deltaTime = ((float)(time - prevTime)) / 1000000000f; // convert to sec
         dT = deltaTime / .05f; // relative to 20 fps
@@ -101,7 +128,7 @@ public class ThxEntity extends Entity
         rotationYaw   %= 360f;
         if (rotationYaw > 180f) rotationYaw -= 360f;
         else if (rotationYaw < -180f) rotationYaw += 360f;
-        yawRad = rotationYaw   * RAD_PER_DEG;
+        yawRad = rotationYaw * RAD_PER_DEG;
         
         rotationPitch %= 360f;
         if (rotationPitch > 180f) rotationPitch -= 360f;
@@ -111,7 +138,7 @@ public class ThxEntity extends Entity
         rotationRoll  %= 360f;
         if (rotationRoll > 180f) rotationRoll -= 360f;
         else if (rotationRoll < -180f) rotationRoll += 360f;
-        rollRad = rotationRoll  * RAD_PER_DEG;
+        rollRad = rotationRoll * RAD_PER_DEG;
     }
     
     public void updateVectors()

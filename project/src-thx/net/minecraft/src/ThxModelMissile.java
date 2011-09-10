@@ -25,6 +25,9 @@ public class ThxModelMissile extends ThxModel
         missile.rotateAngleX += deltaTime * 5f; // radians per sec
         if (missile.rotateAngleX > 2*PI) missile.rotateAngleX -= 2*PI;
         
-        missile.render(0.0625f);
+        //float scale = .0625f; // original size
+        //float scale = .04f;
+        //missile.render(scale);
+        missile.render(.04f);
     }
 }

@@ -28,6 +28,7 @@ public class ThxRender extends Render
         GL11.glTranslatef((float)x, (float)y, (float)z);
         
         
+        entity.model.paused = entity.paused;
         
         if (entity.prevTime > entity.model.entityPrevTime)
         {
@@ -43,7 +44,7 @@ public class ThxRender extends Render
 	        entity.model.rotationRoll  = entity.rotationRoll;
 	        entity.model.rotationRollSpeed  = entity.rotationRollSpeed;
         }
-        else if (entity.model.prevTime - entity.prevTime > 100000000)
+        else if (entity.model.prevTime - entity.prevTime > 100000000) // .1 sec
         {
             // entity is not updating, game may be paused
 	        entity.model.rotationYawSpeed = 0f;
