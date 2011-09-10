@@ -2,7 +2,7 @@ INTRODUCTION
 ------------
 If you just want to get the latest version of this prototype mod to try it out, you can download the zip file from GitHub:
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.7.3_v009-bin.zip 
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.7.3_v010-bin.zip 
 
 Just copy the zip file to your '.minecraft\mods' directory and start Minecraft normally (full Minecraft and ModLoader required).
 
@@ -43,6 +43,8 @@ And of course, thanks to Notch and the Mojang team for the pure goodness that is
 
 CHANGELOG
 ---------
+v010: for use with Minecraft and ModLoader beta 1.7.3
+
 v009: for use with Minecraft and ModLoader beta 1.7.3
 v009: adjusted attack and health values
 v009: adjusted collision and damage threshold
