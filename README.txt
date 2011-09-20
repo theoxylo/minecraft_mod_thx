@@ -2,17 +2,17 @@ INTRODUCTION
 ------------
 If you just want to get the latest version of this prototype mod to try it out, you can download the zip file from GitHub:
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.7.3_v010-bin.zip 
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.8.1_v010-bin.zip 
 
-Just copy the zip file to your '.minecraft\mods' directory and start Minecraft normally (full Minecraft and ModLoader required).
+Just copy the zip file to your '.minecraft/mods' directory and start Minecraft normally (full Minecraft and ModLoader required).
 
-After running at least once, check out the options in file '.minecraft\mods\mod_thx.options' for controls and other settings (see end of this file for annotated listing).
+After running at least once, check out the options in file '.minecraft/mods/mod_thx.options' for controls and other settings (see end of this file for annotated listing).
 
 Please keep in mind that this is an early build prototype of a mod under construction. Even though no corruption issues have been reported, please back-up your worlds before using (always a good idea). SMP multi-player is not supported and has not been tested in any way. Please make sure that Minecraft and ModLoader are working properly before installing this mod. 
 
 Please visit the forum thread to discuss, report issues, leave feedback, etc:
 
-    http://www.minecraftforum.net/topic/246531-173-beta-prototype-helicopter-mod-gracefully-take-to-the-skies
+    http://www.minecraftforum.net/index.php?showtopic=246531
 
 
 
@@ -43,7 +43,8 @@ And of course, thanks to Notch and the Mojang team for the pure goodness that is
 
 CHANGELOG
 ---------
-v010: for use with Minecraft and ModLoader beta 1.7.3
+v010: for use with Minecraft and ModLoader beta 1.8.1
+v010: now using DamageSource for rocket attack
 
 v009: for use with Minecraft and ModLoader beta 1.7.3
 v009: adjusted attack and health values
@@ -104,11 +105,6 @@ v003: changed to pilot aim default
 v003: fixed 'wrong location' startup error
 v003: added flag for auto-level
 v003: added rotor speed property
-
-
-ISSUES
-------
-Issue 1: helicopter sinks in water and can even fly under water -- it should float instead
 
 
 OPTIONS AND SETTINGS
@@ -213,7 +209,7 @@ git merge vXXX_candidate
 git push origin
 
 To create a tag:
-git tag mod_Thx-beta_1.7.3_vXXX
+git tag mod_Thx-beta_YYY_vXXX
 git push origin --tags
 
 To delete a branch, local and remote:

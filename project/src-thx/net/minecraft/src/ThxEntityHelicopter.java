@@ -743,7 +743,7 @@ public class ThxEntityHelicopter extends ThxEntity
 	        if (velSq > .06)
 	        {
 	            log("crash velSq: " + velSq);
-	            attackEntityFrom(this, 4);
+	            this.attackEntityFrom(null, 4);
 	            
 	            motionX *= .7;
 	            motionY *= .7;
@@ -787,35 +787,39 @@ public class ThxEntityHelicopter extends ThxEntity
     }
     
     @Override
-    public boolean attackEntityFrom(Entity entity, int i)
+    public boolean attackEntityFrom(DamageSource ds, int i)
     {
         log("attackEntityFrom called");
-        
-        log("attacked by entity: " + entity);
         
         // take damage sound
         worldObj.playSoundAtEntity(this, "random.drr", 1.0f, 1.0f);
 
-        if (timeSinceHit > 0 || isDead || riddenByEntity == entity) return false;
+        if (timeSinceHit > 0 || isDead) return false;
         
-        //if (riddenByEntity == null && targetHelicopter == null && entity instanceof ThxEntityHelicopter)
-        if (riddenByEntity == null && entity != this && entity instanceof ThxEntityHelicopter)
+        // check for damage from pilot
+        //if (entity != null && riddenByEntity == entity) return false;
+        
+        if (riddenByEntity == null && ds != null)
         {
-            // crashing takes damage from self, so have to check if this
-            
-            if (targetHelicopter == null)
+	        // new in 1.8: DamageSource wraps Entity
+	        Entity entity = ds.func_35532_a();
+	        log("attacked by entity: " + entity);
+            if (entity != null && entity != this && entity instanceof ThxEntityHelicopter)
             {
-	            // wake up ai if empty helicopter is attacked, friendly at first
-                isTargetHelicopterFriendly = true;
-	            targetHelicopter = (ThxEntityHelicopter) entity;
-	            worldObj.playSoundAtEntity(entity, "random.fuse", 1.0f, 1.0f);
+	            // crashing takes damage from self, so have to check if this
+	            if (targetHelicopter == null)
+	            {
+		            // wake up ai if empty helicopter is attacked, friendly at first
+	                isTargetHelicopterFriendly = true;
+		            targetHelicopter = (ThxEntityHelicopter) entity;
+		            worldObj.playSoundAtEntity(entity, "random.fuse", 1.0f, 1.0f);
+	            }
+	            else if (entity == targetHelicopter && isTargetHelicopterFriendly)
+	            {
+	                //System.out.println("enemy helo");
+	                isTargetHelicopterFriendly = false;
+	            }
             }
-            else if (entity == targetHelicopter && isTargetHelicopterFriendly)
-            {
-                //System.out.println("enemy helo");
-                isTargetHelicopterFriendly = false;
-            }
-            //return true;
         }
                
         _damage += (float)i * 4f;

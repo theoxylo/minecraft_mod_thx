@@ -1,7 +1,7 @@
 package net.minecraft.src;
 import org.lwjgl.opengl.GL11;
 
-public abstract class ThxModel //extends ModelBase
+public abstract class ThxModel extends ModelBase
 {
     final float RAD_PER_DEG = 00.01745329f;
     final float PI          = 03.14159265f;

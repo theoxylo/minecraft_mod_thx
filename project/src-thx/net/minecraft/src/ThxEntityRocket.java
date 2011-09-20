@@ -159,8 +159,7 @@ public class ThxEntityRocket  extends ThxEntity
             // we hit an entity!
             if(movingobjectposition.entityHit != null)
             {
-                //if(!movingobjectposition.entityHit.attackEntityFrom(owner, 0));
-                movingobjectposition.entityHit.attackEntityFrom(owner, 5);
+                movingobjectposition.entityHit.attackEntityFrom(new EntityDamageSource("player", owner), 5);
             }
             
             // for hit markers

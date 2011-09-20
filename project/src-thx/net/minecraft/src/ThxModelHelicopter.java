@@ -22,11 +22,11 @@ public class ThxModelHelicopter extends ThxModel
         float height = 0f;
         
         boxes = new ModelRenderer[5];
-        boxes[0] = new ModelRenderer(0, 16);
-        boxes[1] = new ModelRenderer(0, 0);
-        boxes[2] = new ModelRenderer(0, 0);
-        boxes[3] = new ModelRenderer(0, 0);
-        boxes[4] = new ModelRenderer(0, 0);
+        boxes[0] = new ModelRenderer(this, 0, 16);
+        boxes[1] = new ModelRenderer(this, 0, 0);
+        boxes[2] = new ModelRenderer(this, 0, 0);
+        boxes[3] = new ModelRenderer(this, 0, 0);
+        boxes[4] = new ModelRenderer(this, 0, 0);
         
         byte byte0 = 24;
         byte byte1 = 6;
@@ -68,7 +68,7 @@ public class ThxModelHelicopter extends ThxModel
         length = 2f;
         width = 64f;
         height = 1f;
-        rotor1 = new ModelRenderer(0, 0);
+        rotor1 = new ModelRenderer(this, 0, 0);
         rotor1.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
         rotor1.setRotationPoint(6f, -24f, 0f);
         rotor1.rotateAngleY = 1.75f; // start off axis for realism
@@ -77,7 +77,7 @@ public class ThxModelHelicopter extends ThxModel
         length = 16f;
         width  = 1f;
         height = 2f;
-        tailRotor = new ModelRenderer(0, 0);
+        tailRotor = new ModelRenderer(this, 0, 0);
         tailRotor.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
         //tailRotor.setRotationPoint(28f, -22f, 3f);
         // good: tailRotor.setRotationPoint(34, -14f, 3f);
@@ -87,7 +87,7 @@ public class ThxModelHelicopter extends ThxModel
         length = 22f;
         width = 4f;
         height = 4f;
-        tail = new ModelRenderer(0, 0);
+        tail = new ModelRenderer(this, 0, 0);
         tail.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
         tail.setRotationPoint(27, -14, 0f);
 
@@ -95,7 +95,7 @@ public class ThxModelHelicopter extends ThxModel
         length = 4f;
         width = 4f;
         height = 24f;
-        rotor2 = new ModelRenderer(0, 0);
+        rotor2 = new ModelRenderer(this, 0, 0);
         rotor2.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
         rotor2.setRotationPoint(14f, -9f, 0f);
 
@@ -103,7 +103,7 @@ public class ThxModelHelicopter extends ThxModel
         length = 12;
         width = 4f;
         height = 2f;
-        rotor3 = new ModelRenderer(0, 0);
+        rotor3 = new ModelRenderer(this, 0, 0);
         rotor3.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
         rotor3.setRotationPoint(10, -22, 0f);
 
@@ -111,7 +111,7 @@ public class ThxModelHelicopter extends ThxModel
         length = 1f;
         width = 1f;
         height = 13f;
-        cockpit1 = new ModelRenderer(0, 0);
+        cockpit1 = new ModelRenderer(this, 0, 0);
         cockpit1.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
         cockpit1.setRotationPoint(-10f, -9f, 9f);
         
@@ -119,7 +119,7 @@ public class ThxModelHelicopter extends ThxModel
         length = 1f;
         width = 1f;
         height = 13f;
-        cockpit2 = new ModelRenderer(0, 0);
+        cockpit2 = new ModelRenderer(this, 0, 0);
         cockpit2.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
         cockpit2.setRotationPoint(-10f, -9f, -9f);
         
@@ -127,7 +127,7 @@ public class ThxModelHelicopter extends ThxModel
         length = 1f;
         width = 19f;
         height = 1f;
-        cockpit3 = new ModelRenderer(0, 0);
+        cockpit3 = new ModelRenderer(this, 0, 0);
         cockpit3.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
         cockpit3.setRotationPoint(-10f, -16f, 0f);
     }
