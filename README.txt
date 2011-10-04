@@ -2,7 +2,7 @@ INTRODUCTION
 ------------
 If you just want to get the latest version of this prototype mod to try it out, you can download the zip file from GitHub:
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.8.1_v010-bin.zip 
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.8.1_v011-bin.zip 
 
 Just copy the zip file to your '.minecraft/mods' directory and start Minecraft normally (full Minecraft and ModLoader required).
 
@@ -43,6 +43,8 @@ And of course, thanks to Notch and the Mojang team for the pure goodness that is
 
 CHANGELOG
 ---------
+v011: for use with Minecraft and ModLoader beta 1.8.1
+
 v010: for use with Minecraft and ModLoader beta 1.8.1
 v010: now using DamageSource for rocket attack owner check
 v010: removed explosion from rocket strike, added flame marker
@@ -193,15 +195,19 @@ disable_helicopter_item_image=true
 # toggle rear view
 key_look_back=U
 
+# creat map of current region
+key_create_map=O
+
+
 
 GIT CHEATSHEET
 --------------
 To create a new branch:
+cd workspace_git_mod_thx
 git checkout -b vXXX_candidate
 git push origin vXXX_candidate
 
 To make changes:
-cd minecraft/.eclipse/workspace_git_mod_thx/
 vi README.txt
 vi ./project/src-thx/net/minecraft/src/mod_Thx.java
 git commit -a -m "my changes"
