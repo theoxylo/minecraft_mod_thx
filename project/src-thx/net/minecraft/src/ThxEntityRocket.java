@@ -159,17 +159,17 @@ public class ThxEntityRocket  extends ThxEntity
             // we hit an entity!
             if(movingobjectposition.entityHit != null)
             {
-                movingobjectposition.entityHit.attackEntityFrom(new EntityDamageSource("player", owner), 5);
+                movingobjectposition.entityHit.attackEntityFrom(new EntityDamageSource("player", owner), 9);
             }
             
             // for hit markers
-            //worldObj.spawnParticle("flame", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
-            //worldObj.playSoundAtEntity(this, "random.explode", .3f, 1f);
+            worldObj.spawnParticle("flame", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
+            worldObj.playSoundAtEntity(this, "random.explode", .3f, 1f);
 
-	        float power = .4f;
-	        if (enableHeavyWeapons) power = 2f;
-	        
-	        worldObj.newExplosion(owner, posX, posY, posZ, power, true);
+	        // no more rocket splash explosion as of mc 181
+	        //float power = .4f;
+	        //if (enableHeavyWeapons) power = 2f;
+	        //worldObj.newExplosion(owner, posX, posY, posZ, power, true);
 	        
             setEntityDead();
             

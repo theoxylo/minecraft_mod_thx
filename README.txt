@@ -44,7 +44,11 @@ And of course, thanks to Notch and the Mojang team for the pure goodness that is
 CHANGELOG
 ---------
 v010: for use with Minecraft and ModLoader beta 1.8.1
-v010: now using DamageSource for rocket attack
+v010: now using DamageSource for rocket attack owner check
+v010: removed explosion from rocket strike, added flame marker
+v010: increased rocket entity damage, crash damage, max health
+v010: removed helicopter death particle spawn and increased explosion
+v010: added map creation function, key 'o' by default
 
 v009: for use with Minecraft and ModLoader beta 1.7.3
 v009: adjusted attack and health values

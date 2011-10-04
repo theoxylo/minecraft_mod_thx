@@ -27,6 +27,7 @@ public class ThxEntityHelicopter extends ThxEntity
     static int KEY_AUTO_LEVEL = Keyboard.getKeyIndex(ThxConfig.getProperty("key_auto_level"));
     static int KEY_EXIT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_exit"));
     static int KEY_LOOK_BACK = Keyboard.getKeyIndex(ThxConfig.getProperty("key_look_back"));
+    static int KEY_CREATE_MAP = Keyboard.getKeyIndex(ThxConfig.getProperty("key_create_map"));
         
     static boolean ENABLE_LOOK_YAW = ThxConfig.getBoolProperty("enable_look_yaw");
     static boolean ENABLE_LOOK_PITCH = ThxConfig.getBoolProperty("enable_look_pitch");
@@ -37,7 +38,7 @@ public class ThxEntityHelicopter extends ThxEntity
     static boolean ENABLE_AUTO_THROTTLE_ZERO = ThxConfig.getBoolProperty("enable_auto_throttle_zero");
     static boolean ENABLE_HEAVY_WEAPONS = ThxConfig.getBoolProperty("enable_heavy_weapons");
         
-    final float MAX_HEALTH = 80f;
+    final float MAX_HEALTH = 100;
 
     // handling properties
     final float MAX_ACCEL    = 0.30f; // very slowly sink when neutral throttle
@@ -83,6 +84,8 @@ public class ThxEntityHelicopter extends ThxEntity
     boolean lookBack;
     boolean toggleLookBack;
     float toggleLookBackDelay;
+    
+    float createMapDelay;
     
     float missileDelay;
     final float MISSILE_DELAY = 3f;
@@ -208,6 +211,56 @@ public class ThxEntityHelicopter extends ThxEntity
                 }
             }
 
+            createMapDelay -= deltaTime;
+            if (Keyboard.isKeyDown(KEY_CREATE_MAP) && createMapDelay < 0f && pilot != null)
+            {
+                createMapDelay = 10f; // the delay in seconds
+                
+                int mapSize = 960; // full size region is 1024, but we want a little bit of overlap
+                
+                int mapIdxX = (int)posX / mapSize;
+                if (posX < 0d) mapIdxX -= 1;
+                else mapIdxX += 1;
+                
+                int mapIdxZ = (int)posZ / mapSize;
+                if (posZ < 0d) mapIdxZ -= 1;
+                else mapIdxZ += 1;
+                
+                // create 4 digit number with first 2 digits indicating
+                // x and last 2 z in region units
+                // (only works within 49 * mapSize of origin)
+                int mapIdx = ((mapIdxX + 50) * 100) + mapIdxZ + 50;
+                //System.out.println("Map idx: " + mapIdx);
+                
+                ItemStack mapStack = new ItemStack(Item.map.shiftedIndex, 1, mapIdx);
+                
+                String mapIdxString = "map_" + mapIdx;
+                
+                // this code was adapted from MapItem.onCreate to initialize the map location
+                MapData mapdata = (MapData)worldObj.loadItemData(MapData.class, mapIdxString);
+                if(mapdata == null)
+                {
+	                mapdata = new MapData(mapIdxString);
+	                worldObj.setItemData(mapIdxString, mapdata);
+
+	                int mapX = mapIdxX * mapSize;
+	                if (mapX < 0) mapX += mapSize / 2;
+	                else mapX -= mapSize / 2;
+	                mapdata.field_28180_b = mapX;
+	                
+	                int mapZ = mapIdxZ * mapSize;
+	                if (mapZ < 0) mapZ += mapSize / 2;
+	                else mapZ -= mapSize / 2;
+	                mapdata.field_28179_c = mapZ;	                
+	                
+	                mapdata.field_28177_e = 3;
+	                mapdata.field_28178_d = (byte)worldObj.worldProvider.worldType;
+	                mapdata.markDirty();
+                }
+
+                entityDropItem(mapStack, .5f);
+            }
+                
             toggleLookBackDelay -= deltaTime;
             if (Keyboard.isKeyDown(KEY_LOOK_BACK) && toggleLookBackDelay < 0f && !ENABLE_DRONE_MODE && !ENABLE_LOOK_PITCH && pilot != null)
             {
@@ -249,7 +302,7 @@ public class ThxEntityHelicopter extends ThxEntity
             exitDelay -= deltaTime;
             if (Keyboard.isKeyDown(KEY_EXIT) && exitDelay < 0f && pilot != null)
             {
-                exitDelay = 1f; // seconds, not update cycles
+                exitDelay = 1f; // seconds before player can exit
                 pilotExit();
             }
 
@@ -743,7 +796,7 @@ public class ThxEntityHelicopter extends ThxEntity
 	        if (velSq > .06)
 	        {
 	            log("crash velSq: " + velSq);
-	            this.attackEntityFrom(null, 4);
+	            this.attackEntityFrom(null, 8);
 	            
 	            motionX *= .7;
 	            motionY *= .7;
@@ -754,6 +807,7 @@ public class ThxEntityHelicopter extends ThxEntity
         }
     }
 
+    /*
     public void die()
     {
         riddenByEntity = null;
@@ -785,6 +839,7 @@ public class ThxEntityHelicopter extends ThxEntity
             }
         }
     }
+    */
     
     @Override
     public boolean attackEntityFrom(DamageSource ds, int i)
@@ -792,7 +847,7 @@ public class ThxEntityHelicopter extends ThxEntity
         log("attackEntityFrom called");
         
         // take damage sound
-        worldObj.playSoundAtEntity(this, "random.drr", 1.0f, 1.0f);
+        worldObj.playSoundAtEntity(this, "random.drr", 1f, 1f);
 
         if (timeSinceHit > 0 || isDead) return false;
         
@@ -802,7 +857,7 @@ public class ThxEntityHelicopter extends ThxEntity
         if (riddenByEntity == null && ds != null)
         {
 	        // new in 1.8: DamageSource wraps Entity
-	        Entity entity = ds.func_35532_a();
+	        Entity entity = ds.getEntity();
 	        log("attacked by entity: " + entity);
             if (entity != null && entity != this && entity instanceof ThxEntityHelicopter)
             {
@@ -812,7 +867,7 @@ public class ThxEntityHelicopter extends ThxEntity
 		            // wake up ai if empty helicopter is attacked, friendly at first
 	                isTargetHelicopterFriendly = true;
 		            targetHelicopter = (ThxEntityHelicopter) entity;
-		            worldObj.playSoundAtEntity(entity, "random.fuse", 1.0f, 1.0f);
+		            worldObj.playSoundAtEntity(entity, "random.fuse", 1f, 1f);
 	            }
 	            else if (entity == targetHelicopter && isTargetHelicopterFriendly)
 	            {
@@ -836,11 +891,16 @@ public class ThxEntityHelicopter extends ThxEntity
 
         if (_damage > MAX_HEALTH)
         {
-            die();
+            //die();
+
             // show message if not player helicopter
             if (riddenByEntity == null) minecraft.ingameGUI.addChatMessage("Killed " + this);
             
-            worldObj.newExplosion(this, posX, posY, posZ, 2f, true);
+            riddenByEntity = null;
+            
+            worldObj.newExplosion(this, posX, posY, posZ, 2.3f, false);
+            
+            setEntityDead();
         }
         return true; // the hit landed
     }
@@ -918,7 +978,7 @@ public class ThxEntityHelicopter extends ThxEntity
 		        player.rotationYaw = rotationYaw;
 	        }
         }
-        else pilotExit();
+        //else pilotExit();
         
         return false;
     }
