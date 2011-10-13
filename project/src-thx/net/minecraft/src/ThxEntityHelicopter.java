@@ -479,7 +479,7 @@ public class ThxEntityHelicopter extends ThxEntity
             // only affects pitch and roll, acceleration done later
             // zero pitch is level, positive pitch is leaning forward
             
-            if (targetHelicopter != null)
+            if (targetHelicopter != null) // we are AI
             {
                 if (thd > 10f)
                 {
@@ -491,7 +491,7 @@ public class ThxEntityHelicopter extends ThxEntity
 			    }
                 rotationPitchSpeed = 0f;
             }
-            else if (ENABLE_LOOK_PITCH && !ENABLE_DRONE_MODE)
+            else if (ENABLE_LOOK_PITCH && !ENABLE_DRONE_MODE) // helicopter follows player look -- hard!
             {
                 if (rotationPitch > MAX_PITCH)
                 {
@@ -520,22 +520,15 @@ public class ThxEntityHelicopter extends ThxEntity
                     rotationPitchSpeed = 0f;
                 }
             }
-            else // if (pilot != null)// button pitch and roll
+            else // normal button pitch and roll by player
             {
-                if (autoLevelDelay > 0)
-                {
-                    // TODO: need to use delta time to adjust for framerate
-                    autoLevelDelay -= deltaTime;
-                    if (Math.abs(rotationPitch) > 1f) rotationPitch *= .8f;
-                    else rotationPitch = 0f;
-                    if (Math.abs(rotationRoll) > 1f) rotationRoll *= .8f;
-                    else rotationRoll = 0f;
-                }
-                else if (Keyboard.isKeyDown(KEY_AUTO_LEVEL))
+	            // check for auto-level command, will be applied later if no other pitch key pressed
+                if (Keyboard.isKeyDown(KEY_AUTO_LEVEL))
 	            {
-	                autoLevelDelay = 1f; // seconds, not update cycles
+	                autoLevelDelay = 1.5f; // effect lasts a short time after key is released, but overriden by key presses
 	            }
-	            else if (Keyboard.isKeyDown(KEY_FORWARD))
+                
+	            if (Keyboard.isKeyDown(KEY_FORWARD))
                 {
                     if (rotationPitch > MAX_PITCH)
                     {
@@ -572,17 +565,39 @@ public class ThxEntityHelicopter extends ThxEntity
 	                    rotationPitchSpeed = 0f;
                     }
                 }
+                else if (autoLevelDelay > 0) // this is fast, on-demand auto-level
+                {
+                    autoLevelDelay -= deltaTime;
+                    
+                    rotationPitchSpeed = -rotationPitch * 1.6f; // a bit faster than the normal auto-level
+                    rotationPitch += rotationPitchSpeed * deltaTime;
+                }
                 else
                 {
-                    if (ENABLE_AUTO_LEVEL)
+                    if (ENABLE_AUTO_LEVEL) // this is always-on auto-level, if enabled
                     {
 		                rotationPitchSpeed = -rotationPitch * .5f;
 		                rotationPitch += rotationPitchSpeed * deltaTime;
                     }
+                    else
+                    {
+                        rotationPitchSpeed = 0f;
+                    }
                 }
             }
 
-            if (Keyboard.isKeyDown(KEY_LEFT) && pilot != null)
+            if (targetHelicopter != null) // we are AI
+            {
+                if (!isTargetHelicopterFriendly)
+                {
+                    // roll toward or away?
+                }
+                if (thd > 10f)
+                {
+                    // seek target
+                }
+            }
+            else if (Keyboard.isKeyDown(KEY_LEFT) && pilot != null)
             {
                 if (rotationRoll > MAX_ROLL)
                 {
@@ -617,6 +632,11 @@ public class ThxEntityHelicopter extends ThxEntity
                     rotationRoll = -MAX_ROLL;
                     rotationRollSpeed = 0f;
                 }
+            }
+            else if (autoLevelDelay > 0) // this is fast, on-demand auto-level
+            {
+                rotationRollSpeed = -rotationRoll * 1.6f;
+                rotationRoll += rotationRollSpeed * deltaTime;
             }
             else
             {
@@ -978,7 +998,7 @@ public class ThxEntityHelicopter extends ThxEntity
 		        player.rotationYaw = rotationYaw;
 	        }
         }
-        //else pilotExit();
+        else pilotExit();
         
         return false;
     }

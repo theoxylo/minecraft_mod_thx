@@ -26,11 +26,12 @@ Welcome to the Minecraft mod_thx Helicopter project! If you are still reading th
 
 3. MCP: http://mcp.ocean-labs.de/index.php/Main_Page
 
-4. Mod_thx source code and project files: git://github.com/theoxylo/minecraft_mod_thx.git
+4. Mod_thx source code and project files: https://github.com/theoxylo/minecraft_mod_thx
 
 5. Java 6 SDK: http://www.oracle.com/technetwork/java/javase/downloads/jdk-6u25-download-346242.html
 
 6. An IDE or good text editor. Eclipse is recommended: http://www.eclipse.org/downloads
+
 
 
 ACKNOWLEDGEMENTS
@@ -41,16 +42,21 @@ Special thanks to the ModLoader and MCP projects, without which this project wou
 And of course, thanks to Notch and the Mojang team for the pure goodness that is Minecraft.
 
 
+
 CHANGELOG
 ---------
 v011: for use with Minecraft and ModLoader beta 1.8.1
+v011: added back right-click exit function
+v011: fixed judder when auto-level turned off
+v011: adjusted on-demand auto-level (K key by default)
 
 v010: for use with Minecraft and ModLoader beta 1.8.1
 v010: now using DamageSource for rocket attack owner check
 v010: removed explosion from rocket strike, added flame marker
 v010: increased rocket entity damage, crash damage, max health
 v010: removed helicopter death particle spawn and increased explosion
-v010: added map creation function, key 'o' by default
+v010: removed right-click exit, use 'Y' key by default
+v010: added map creation function, key 'O' by default
 
 v009: for use with Minecraft and ModLoader beta 1.7.3
 v009: adjusted attack and health values
@@ -111,6 +117,7 @@ v003: changed to pilot aim default
 v003: fixed 'wrong location' startup error
 v003: added flag for auto-level
 v003: added rotor speed property
+
 
 
 OPTIONS AND SETTINGS
