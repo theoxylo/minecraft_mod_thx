@@ -3,6 +3,7 @@ package net.minecraft.src;
 public class ThxModelHelicopter extends ThxModel
 {
     boolean bottomVisible = true;
+    float scale = 0.0625f;
     
     float rotorSpeed = 0f;
     float lastRotorRad = 0f;
@@ -11,124 +12,161 @@ public class ThxModelHelicopter extends ThxModel
     
     float SPIN_UP_TIME = 10f;
     float timeSpun = 0f;
+
+    boolean ENABLE_ROTOR;
+    public ModelRenderer rotor1;
+    public ModelRenderer rotor2;
+    public ModelRenderer rotor3;
+    
+    public ModelRenderer cockpit1;
+    public ModelRenderer cockpit2;
+    public ModelRenderer cockpit3;
+
+    public ModelRenderer bottom;
+    public ModelRenderer frontWall;
+    public ModelRenderer backWall;
+    public ModelRenderer leftWall;
+    public ModelRenderer rightWall;
+    
+    public ModelRenderer tail;
+    public ModelRenderer tailRotor;
+    
+    //public ModelRenderer body;
     
     public ThxModelHelicopter()
     {
+        renderTexture = "/thx/helicopter.png";
+
         ENABLE_ROTOR = ThxConfig.getBoolProperty("enable_rotor");
         
         // dimensions -- adjusted and reused when adding each model box
         float length = 0f;
-        float width  = 0f;
         float height = 0f;
-        
-        boxes = new ModelRenderer[5];
-        boxes[0] = new ModelRenderer(this, 0, 16);
-        boxes[1] = new ModelRenderer(this, 0, 0);
-        boxes[2] = new ModelRenderer(this, 0, 0);
-        boxes[3] = new ModelRenderer(this, 0, 0);
-        boxes[4] = new ModelRenderer(this, 0, 0);
-        
-        byte byte0 = 24;
-        byte byte1 = 6;
-        byte byte2 = 20;
-        byte byte3 = 4;
-        
-        // body, based on original mc boat
-        
-        // bottom, make invisible for looking down
-        boxes[0].addBox(/*-byte0 / 2*/ -10, -byte2 / 2 + 2, -3F, /*byte0*/ 20, byte2 - 4, 4);
-        boxes[0].setRotationPoint(0.0F, 0 + byte3, 0.0F);
-        boxes[0].rotateAngleX = 1.570796F;
-        
-        boxes[1].addBox(-byte0 / 2 + 2, -byte1 - 1, -1F, byte0 - 4, byte1, 2);
-        boxes[1].setRotationPoint(-byte0 / 2 + 1, 0 + byte3, 0.0F);
-        boxes[1].rotateAngleY = 4.712389F;
-        
-        boxes[2].addBox(-byte0 / 2 + 2, -byte1 - 1, -1F, byte0 - 4, byte1, 2);
-        boxes[2].setRotationPoint(byte0 / 2 - 1, 0 + byte3, 0.0F);
-        boxes[2].rotateAngleY = 1.570796F;
-        
-        boxes[3].addBox(-byte0 / 2 + 2, -byte1 - 1, -1F, byte0 - 4, byte1, 2);
-        boxes[3].setRotationPoint(0.0F, 0 + byte3, -byte2 / 2 + 1);
-        boxes[3].rotateAngleY = 3.141593F;
-        
-        boxes[4].addBox(-byte0 / 2 + 2, -byte1 - 1, -1F, byte0 - 4, byte1, 2);
-        boxes[4].setRotationPoint(0.0F, 0 + byte3, byte2 / 2 - 1);
+        float width  = 0f;
 
-        // new body, large enough to hide player model in 3rd person view.
-        // in 1st person view, it is invisible
-        //length = 28f;
-        //width  = 20f;
-        //height = 24f;
-        //body = new ModelRenderer(0, 0);
-        //body.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
-        //body.setRotationPoint(0f, -9f, 0f);
+        bottom:
+        {
+	        // 1. to save texture space, we minimize width (Z value) by rotating. so 20x4x16 -> 20x16x4
+	        // 2. then we have to rotate piece back into place. rotate about x axis (roll) to swap y and z
+	        // 3. make half size and then scale later to save texture area (but half rez too) -> 10x8x2  
+	        // 4. also have to adjust ("reduce") position (rotationPt) since it moves when we scale
+	        // 5. but at least rotationPt is not affected by rotation (by definition), so no adjustment for that
+	        length = 10f;
+	        height = 8f;
+	        width = 2f;
+	        bottom = new ModelRenderer(this, 40, 22); // texture offset: 
+	        bottom.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
+	        bottom.rotationPointY = 2f; // halfed to adjust for scale 	        bottom.rotateAngleX = PI / 2f; // 90 deg roll left to lay flat
+        }
+        
+        frontWall:
+        {
+            // rotate about Y, so 2x6x20 -> 20x6x2
+	        length = 20f;
+	        height = 6f;
+	        width = 2f;
+	        frontWall = new ModelRenderer(this, 20, 14);
+	        frontWall.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
+	        frontWall.setRotationPoint(-11f, 0f, 0f); // placed 11 unit in front
+	        frontWall.rotateAngleY = PI * 1.5f; // 270 deg yaw
+        }
+        
+        backWall:
+        {
+	        length = 20f;
+	        height = 6f;
+	        width = 2f;
+	        backWall = new ModelRenderer(this, 20, 14);
+	        backWall.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
+	        backWall.setRotationPoint(11, 0f, 0f);
+	        backWall.rotateAngleY = PI / 2f; // 90 deg yaw
+        }
+        
+        leftWall:
+        {
+	        length = 20f;
+	        height = 6f;
+	        width = 2f;
+	        leftWall = new ModelRenderer(this, 20, 6);
+	        leftWall.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
+	        leftWall.setRotationPoint(0f, 0f, -9f);
+        }
+        
+        rightWall:
+        {
+	        length = 20f;
+	        height = 6f;
+	        width = 2f;
+	        rightWall = new ModelRenderer(this, 20, 6);
+	        rightWall.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
+	        rightWall.setRotationPoint(0f, 0f, 9f);
+	        rightWall.rotateAngleY = PI; // flip 180 deg so decal is on outside
+        }
         
         // rotor
-        length = 2f;
-        width = 64f;
+        length = 64f;
         height = 1f;
+        width = 2f;
         rotor1 = new ModelRenderer(this, 0, 0);
-        rotor1.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
+        rotor1.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
         rotor1.setRotationPoint(6f, -24f, 0f);
         rotor1.rotateAngleY = 1.75f; // start off axis for realism
         
         // tail rotor
         length = 16f;
-        width  = 1f;
-        height = 2f;
+        height = 1f;
+        width  = 2f;
         tailRotor = new ModelRenderer(this, 0, 0);
-        tailRotor.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
-        //tailRotor.setRotationPoint(28f, -22f, 3f);
-        // good: tailRotor.setRotationPoint(34, -14f, 3f);
+        tailRotor.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
         tailRotor.setRotationPoint(36f, -14f, 3f);
+        tailRotor.rotateAngleX = PI / 2f;
 
         // tail
         length = 22f;
-        width = 4f;
         height = 4f;
-        tail = new ModelRenderer(this, 0, 0);
-        tail.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
+        width = 4f;
+        tail = new ModelRenderer(this, 0, 4);
+        tail.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
         tail.setRotationPoint(27, -14, 0f);
 
         // rotor vertical support
         length = 4f;
-        width = 4f;
         height = 24f;
-        rotor2 = new ModelRenderer(this, 0, 0);
-        rotor2.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
+        width = 4f;
+        rotor2 = new ModelRenderer(this, 0, 4);
+        rotor2.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
         rotor2.setRotationPoint(14f, -9f, 0f);
 
         // rotor horizontal support
         length = 12;
-        width = 4f;
         height = 2f;
-        rotor3 = new ModelRenderer(this, 0, 0);
-        rotor3.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
+        width = 4f;
+        rotor3 = new ModelRenderer(this, 0, 4);
+        rotor3.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
         rotor3.setRotationPoint(10, -22, 0f);
 
         // cockpit1 vertical support
         length = 1f;
-        width = 1f;
         height = 13f;
-        cockpit1 = new ModelRenderer(this, 0, 0);
-        cockpit1.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
+        width = 1f;
+        cockpit1 = new ModelRenderer(this, 0, 4);
+        cockpit1.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
         cockpit1.setRotationPoint(-10f, -9f, 9f);
         
         // cockpit2 vertical support
         length = 1f;
-        width = 1f;
         height = 13f;
-        cockpit2 = new ModelRenderer(this, 0, 0);
-        cockpit2.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
+        width = 1f;
+        cockpit2 = new ModelRenderer(this, 0, 4);
+        cockpit2.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
         cockpit2.setRotationPoint(-10f, -9f, -9f);
         
         // cockpit3 horizontal support
         length = 1f;
-        width = 19f;
         height = 1f;
-        cockpit3 = new ModelRenderer(this, 0, 0);
-        cockpit3.addBox(-length / 2f, -height / 2f, -width / 2f, (int) length, (int) height, (int) width);
+        width = 19f;
+        cockpit3 = new ModelRenderer(this, 0, 4);
+        cockpit3.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
         cockpit3.setRotationPoint(-10f, -16f, 0f);
     }
 
@@ -136,21 +174,27 @@ public class ThxModelHelicopter extends ThxModel
     {
         update();
         
-        //float f5 = 0.0625f;
-        float f5 = 0.07f;
-        
         //System.out.println("Model delta time sec: " + deltaTime);
         
         if (!visible) return;
         
-        for(int i = 0; i < 5; i++)
-        {
-            if (i == 0 && !bottomVisible)
-            {
-                continue; // skip bottom for looking down
-            }
-            boxes[i].render(f5);
-        }
+        if (bottomVisible) bottom.render(scale * 2f);
+        
+        frontWall.render(scale);
+        backWall.render(scale);
+        leftWall.render(scale);
+        rightWall.render(scale);
+        
+        // windshield
+        cockpit1.render(scale);
+        cockpit2.render(scale);
+        cockpit3.render(scale);
+        
+        // rotor supports
+        rotor2.render(scale);
+        rotor3.render(scale);
+        
+        tail.render(scale);
         
         if (ENABLE_ROTOR)
         {
@@ -170,14 +214,14 @@ public class ThxModelHelicopter extends ThxModel
                 }
                 
 		        if (rotor1.rotateAngleY > 2*PI) rotor1.rotateAngleY -= 2*PI;
-                rotor1.render(f5);
+                rotor1.render(scale);
                 rotor1.rotateAngleY += 1.5707f; // add second blade perp
-                rotor1.render(f5);
+                rotor1.render(scale);
 
 		        if (tailRotor.rotateAngleZ < 2*PI) tailRotor.rotateAngleZ += 2*PI;
-		        tailRotor.render(f5);
+		        tailRotor.render(scale);
                 tailRotor.rotateAngleZ -= 1.5707f; // add second blade perp
-                tailRotor.render(f5);
+                tailRotor.render(scale);
             }
             else
             {
@@ -200,53 +244,27 @@ public class ThxModelHelicopter extends ThxModel
                     tailRotor.rotateAngleZ = lastTailRotorRad;
                 }
                 
-                rotor1.render(f5);
+                rotor1.render(scale);
                 rotor1.rotateAngleY += 1.5707f; // add second blade perp
-                rotor1.render(f5);
+                rotor1.render(scale);
                 
-		        tailRotor.render(f5);
+		        tailRotor.render(scale);
                 tailRotor.rotateAngleZ -= 1.5707f; // add second blade perp
-                tailRotor.render(f5);
+                tailRotor.render(scale);
             }
         }
         else
         {
             // show fixed rotor by rendering twice
             rotor1.rotateAngleY = 0.7854f;
-            rotor1.render(f5);
+            rotor1.render(scale);
             rotor1.rotateAngleY += 1.5707f;
-            rotor1.render(f5);
+            rotor1.render(scale);
             
             tailRotor.rotateAngleZ = 0.7854f;
-            tailRotor.render(f5);
+            tailRotor.render(scale);
             tailRotor.rotateAngleZ += 1.5707f;
-            tailRotor.render(f5);
+            tailRotor.render(scale);
         }
-        
-        tail.render(f5);
-        rotor2.render(f5);
-        rotor3.render(f5);
-        
-        cockpit1.render(f5);
-        cockpit2.render(f5);
-        cockpit3.render(f5);
-        
-        //body.render(f5);
     }
-
-    boolean ENABLE_ROTOR;
-    public ModelRenderer rotor1;
-    public ModelRenderer rotor2;
-    public ModelRenderer rotor3;
-    
-    public ModelRenderer cockpit1;
-    public ModelRenderer cockpit2;
-    public ModelRenderer cockpit3;
-
-    public ModelRenderer boxes[];
-    
-    public ModelRenderer tail;
-    public ModelRenderer tailRotor;
-    
-    //public ModelRenderer body;
 }

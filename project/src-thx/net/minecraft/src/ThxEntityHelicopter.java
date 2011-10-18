@@ -122,7 +122,7 @@ public class ThxEntityHelicopter extends ThxEntity
         // new Exception("EntityThxHelicopter call stack:").printStackTrace();
 
         model = new ThxModelHelicopter();
-        model.renderTexture = "/thx/helicopter.png";
+        //model = new ThxModelHelicopterAlt();
 
         setSize(1.8f, 2f);
 

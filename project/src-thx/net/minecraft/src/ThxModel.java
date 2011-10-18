@@ -26,7 +26,7 @@ public abstract class ThxModel extends ModelBase
     String renderTexture;
     RenderManager renderManager;
     
-    StringBuilder log = new StringBuilder();
+    //StringBuilder log = new StringBuilder();
     
     int updateCount;
     

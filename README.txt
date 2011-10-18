@@ -48,7 +48,7 @@ CHANGELOG
 v011: for use with Minecraft and ModLoader beta 1.8.1
 v011: added back right-click exit function
 v011: fixed judder when auto-level turned off
-v011: adjusted on-demand auto-level (K key by default)
+v011: adjusted on-demand auto-level, applies to roll also (K key by default)
 
 v010: for use with Minecraft and ModLoader beta 1.8.1
 v010: now using DamageSource for rocket attack owner check

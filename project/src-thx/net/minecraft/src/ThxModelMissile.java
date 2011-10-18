@@ -6,6 +6,8 @@ public class ThxModelMissile extends ThxModel
     
     public ThxModelMissile()
     {       
+        renderTexture = "/thx/missile.png";
+
         float x_length = 16f;
         float z_width  = 4f;
         float y_height = 4f;
