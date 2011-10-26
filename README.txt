@@ -15,6 +15,10 @@ Please visit the forum thread to discuss, report issues, leave feedback, etc:
     http://www.minecraftforum.net/index.php?showtopic=246531
 
 
+SKINS
+-----
+If you would like to change the appearance of the helicopter, you can modify or replace the file 'helicopter.png'. Please post your designs and image files on the forum topic!
+
 
 DEVELOPMENT
 -----------
@@ -36,7 +40,7 @@ Welcome to the Minecraft mod_thx Helicopter project! If you are still reading th
 
 ACKNOWLEDGEMENTS
 ----------------
-Thanks to DannyBoy007 for managing the forum topic and recruiting.
+Thanks to dannyoboy007 for managing the forum topic and recruiting.
 Thanks to all forum participants.
 Special thanks to the ModLoader and MCP projects, without which this project would not be possible! 
 And of course, thanks to Notch and the Mojang team for the pure goodness that is Minecraft.
@@ -46,7 +50,8 @@ And of course, thanks to Notch and the Mojang team for the pure goodness that is
 CHANGELOG
 ---------
 v011: for use with Minecraft and ModLoader beta 1.8.1
-v011: added back right-click exit function
+v011: enhanced model with "hi-rez" texture panel support
+v011: restored right-click exit function
 v011: fixed judder when auto-level turned off
 v011: adjusted on-demand auto-level, applies to roll also (K key by default)
 

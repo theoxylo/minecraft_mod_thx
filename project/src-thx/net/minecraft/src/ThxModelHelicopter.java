@@ -156,7 +156,7 @@ public class ThxModelHelicopter extends ThxModel
 	        rotor3.setRotationPoint(10, -22, 0f);
         }
 
-        // cockpit1 vertical support
+        // cockpit1 right vertical support
         cockpit1:
         {
 	        length = 1f;
@@ -165,9 +165,10 @@ public class ThxModelHelicopter extends ThxModel
 	        cockpit1 = new ModelRenderer(this, 46, 1);
 	        cockpit1.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
 	        cockpit1.setRotationPoint(-10f, -9f, 9f);
+	        cockpit1.rotateAngleY = PI / 2f;
         }
         
-        // cockpit2 vertical support
+        // cockpit2 left vertical support
         cockpit2:
         {
 	        length = 1f;
@@ -188,6 +189,7 @@ public class ThxModelHelicopter extends ThxModel
 	        cockpit3.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
 	        cockpit3.setRotationPoint(-10f, -16f, 0f);
 	        cockpit3.rotateAngleX = PI / 2f;
+	        cockpit3.rotateAngleZ = PI / 2f;
         }
     }
 
