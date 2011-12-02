@@ -2,7 +2,7 @@ INTRODUCTION
 ------------
 If you just want to get the latest version of this prototype mod to try it out, you can download the zip file from GitHub:
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.8.1_v011-bin.zip 
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.8.1_v012-bin.zip 
 
 Just copy the zip file to your '.minecraft/mods' directory and start Minecraft normally (full Minecraft and ModLoader required).
 
@@ -49,6 +49,9 @@ And of course, thanks to Notch and the Mojang team for the pure goodness that is
 
 CHANGELOG
 ---------
+v012: for use with Minecraft and ModLoader 1.0.0
+v012: enabled separate textures for all model faces
+
 v011: for use with Minecraft and ModLoader beta 1.8.1
 v011: enhanced model with "hi-rez" texture panel support
 v011: restored right-click exit function

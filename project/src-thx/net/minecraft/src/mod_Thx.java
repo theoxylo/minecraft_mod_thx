@@ -5,7 +5,9 @@ public class mod_Thx extends BaseMod
 	static Class classHelicopter = net.minecraft.src.ThxEntityHelicopter.class;
 	static Class classMissile = net.minecraft.src.ThxEntityMissile.class;
     
-    public mod_Thx()
+	@Override
+    //public mod_Thx()
+	public void load()
     {
         ThxConfig.loadProperties();
         
@@ -48,9 +50,9 @@ public class mod_Thx extends BaseMod
 	        ModLoader.AddRecipe(itemStack, recipe);
         }
         
-        log("Done loading " + Version());
+        log("Done loading " + getVersion());
     }
-
+    
     @Override
     public void AddRenderer(java.util.Map map)
     {
@@ -61,9 +63,9 @@ public class mod_Thx extends BaseMod
     }
 
     @Override
-    public String Version()
+    public String getVersion()
     {
-        return "Minecraft Helicopter Mod - mod_thx-beta_181_v011";
+        return "Minecraft Helicopter Mod - mod_thx-mc100_v012";
     }
     
     int getNextItemId()

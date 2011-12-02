@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src-thx"/>
-	<classpathentry kind="src" path="src-minecraft-ml_beta-181"/>
+	<classpathentry kind="src" path="src-minecraft-ml_100"/>
 	<classpathentry kind="lib" path="lib/jinput.jar"/>
 	<classpathentry kind="lib" path="lib/lwjgl_util.jar" sourcepath="lib/lwjgl-source-2.7.1.zip"/>
 	<classpathentry kind="lib" path="lib/lwjgl.jar" sourcepath="lib/lwjgl-source-2.7.1.zip"/>
