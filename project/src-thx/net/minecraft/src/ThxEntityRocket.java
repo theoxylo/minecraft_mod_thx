@@ -11,8 +11,6 @@ import java.util.Random;
 
 public class ThxEntityRocket  extends ThxEntity
 {
-    boolean enableHeavyWeapons = false;
-
     public ThxEntityRocket(World world)
     {
         super(world);
@@ -166,11 +164,6 @@ public class ThxEntityRocket  extends ThxEntity
             worldObj.spawnParticle("flame", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
             worldObj.playSoundAtEntity(this, "random.explode", .3f, 1f);
 
-	        // no more rocket splash explosion as of mc 181
-	        //float power = .4f;
-	        //if (enableHeavyWeapons) power = 2f;
-	        //worldObj.newExplosion(owner, posX, posY, posZ, power, true);
-	        
             setEntityDead();
             
             return;

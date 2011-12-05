@@ -1,18 +1,20 @@
+Minecraft Helicopter Mod, v012, 20111204
+
 INTRODUCTION
 ------------
-If you just want to get the latest version of this prototype mod to try it out, you can download the zip file from GitHub:
+If you just want to get the latest version of this mod to try it out, you can download the zip file from GitHub:
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_beta_1.8.1_v012-bin.zip 
+https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_1.0.0_v012-bin.zip
 
 Just copy the zip file to your '.minecraft/mods' directory and start Minecraft normally (full Minecraft and ModLoader required).
 
 After running at least once, check out the options in file '.minecraft/mods/mod_thx.options' for controls and other settings (see end of this file for annotated listing).
 
-Please keep in mind that this is an early build prototype of a mod under construction. Even though no corruption issues have been reported, please back-up your worlds before using (always a good idea). SMP multi-player is not supported and has not been tested in any way. Please make sure that Minecraft and ModLoader are working properly before installing this mod. 
+Please keep in mind that this is an early release of a mod still under construction. Even though no corruption issues have been reported, please back-up your worlds before using (always a good idea). SMP multi-player is not supported and has not been tested in any way. Please make sure that Minecraft and ModLoader are working properly before installing this mod -- see log ouput in .minecraft/ModLoader.txt
 
 Please visit the forum thread to discuss, report issues, leave feedback, etc:
 
-    http://www.minecraftforum.net/index.php?showtopic=246531
+    http://www.minecraftforum.net/index.php?showtopic=763209
 
 
 SKINS
@@ -26,13 +28,13 @@ Welcome to the Minecraft mod_thx Helicopter project! If you are still reading th
 
 1. Minecraft (full version): http://www.minecraft.net
 
-2. ModLoader: http://www.minecraftforum.net/viewtopic.php?f=25&t=80246#p1223009
+2. ModLoader: http://www.minecraftforum.net/index.php?showtopic=75440
 
 3. MCP: http://mcp.ocean-labs.de/index.php/Main_Page
 
 4. Mod_thx source code and project files: https://github.com/theoxylo/minecraft_mod_thx
 
-5. Java 6 SDK: http://www.oracle.com/technetwork/java/javase/downloads/jdk-6u25-download-346242.html
+5. Java 6 SDK: http://www.oracle.com/technetwork/java/javasebusiness/downloads/java-archive-downloads-javase6-419409.html
 
 6. An IDE or good text editor. Eclipse is recommended: http://www.eclipse.org/downloads
 
@@ -51,6 +53,13 @@ CHANGELOG
 ---------
 v012: for use with Minecraft and ModLoader 1.0.0
 v012: enabled separate textures for all model faces
+v012: replaced hud mode with in-game look-pitch control (key L)
+v012: changed 3rd-person weapon aim to vehicle based
+v012: added logic to separate rear-view control (hold Y key)
+v012: now preserving view mode when entering/exiting
+v012: extended auto-level function to look-pitch mode (key K)
+v012: removed disappearing floor logic
+v012: removed heavy weapons option
 
 v011: for use with Minecraft and ModLoader beta 1.8.1
 v011: enhanced model with "hi-rez" texture panel support
@@ -151,9 +160,9 @@ key_descend=LSHIFT
 key_rotate_right=H
 key_rotate_left=G
 
-# toggles Heads Up Display (or camera) mode and briefly displays
+# toggles "cockpit mode" and briefly displays
 # world corrdinates and altitude (measured in blocks)
-key_hud_mode=L
+key_look_pitch=L
 
 # exits the helicopter 1.9 blocks to the left - use with caution while flying!
 # also used to cut power when in drone (RC) mode
@@ -181,20 +190,11 @@ enable_auto_throttle_zero=true
 # rudder/rotate controls since pilot look will not control pitch or yaw
 enable_drone_mode=false
 
-# makes the missile and rockets very powerful for mining - use with caution!
-enable_heavy_weapons=false
-
 # hides the bottom panel of our beloved helicopter model to allow looking down
 enable_look_down_trans=true
 
-# use pilot look to set helicopter pitch - not fully tested, please report
-enable_look_pitch=false
-
 # use pilot look to set helicopter yaw/rotation/rudder/steering
 enable_look_yaw=true
-
-# use pilot look to aim missiles and rockets
-enable_pilot_aim=true
 
 # include a moving rotor with the model 
 # rotor speed varies with throttle - the visual effect is highly

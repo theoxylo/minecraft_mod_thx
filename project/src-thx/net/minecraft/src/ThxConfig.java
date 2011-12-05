@@ -81,21 +81,18 @@ public class ThxConfig
         writeFile = ensureDefault(props, "key_rotate_right", Keyboard.getKeyName(Keyboard.KEY_H)) || writeFile;
         writeFile = ensureDefault(props, "key_fire_missile", Keyboard.getKeyName(Keyboard.KEY_M)) || writeFile;
         writeFile = ensureDefault(props, "key_fire_rocket", Keyboard.getKeyName(Keyboard.KEY_R)) || writeFile;
-        writeFile = ensureDefault(props, "key_hud_mode", Keyboard.getKeyName(Keyboard.KEY_L)) || writeFile;
+        writeFile = ensureDefault(props, "key_look_pitch", Keyboard.getKeyName(Keyboard.KEY_L)) || writeFile;
         writeFile = ensureDefault(props, "key_auto_level", Keyboard.getKeyName(Keyboard.KEY_K)) || writeFile;
         writeFile = ensureDefault(props, "key_exit", Keyboard.getKeyName(Keyboard.KEY_Y)) || writeFile;
         writeFile = ensureDefault(props, "key_look_back", Keyboard.getKeyName(Keyboard.KEY_U)) || writeFile;
         writeFile = ensureDefault(props, "key_create_map", Keyboard.getKeyName(Keyboard.KEY_O)) || writeFile;
         writeFile = ensureDefault(props, "rotor_speed_percent", "70") || writeFile;
         writeFile = ensureDefault(props, "enable_look_yaw", "true") || writeFile;
-        writeFile = ensureDefault(props, "enable_look_pitch", "false") || writeFile;
         writeFile = ensureDefault(props, "enable_drone_mode", "false") || writeFile;
-        writeFile = ensureDefault(props, "enable_pilot_aim", "true") || writeFile;
         writeFile = ensureDefault(props, "enable_rotor", "true") || writeFile;
         writeFile = ensureDefault(props, "enable_auto_level", "true") || writeFile;
-        writeFile = ensureDefault(props, "enable_look_down_trans", "true") || writeFile;
+        //writeFile = ensureDefault(props, "enable_look_down_trans", "true") || writeFile;
         writeFile = ensureDefault(props, "enable_auto_throttle_zero", "true") || writeFile;
-        writeFile = ensureDefault(props, "enable_heavy_weapons", "false") || writeFile;
         
         System.out.println("mod_thx: Loaded properties: " + props);
         

@@ -23,20 +23,17 @@ public class ThxEntityHelicopter extends ThxEntity
     static int KEY_ROTATE_RIGHT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_rotate_right"));
     static int KEY_FIRE_MISSILE = Keyboard.getKeyIndex(ThxConfig.getProperty("key_fire_missile"));
     static int KEY_FIRE_ROCKET = Keyboard.getKeyIndex(ThxConfig.getProperty("key_fire_rocket"));
-    static int KEY_HUD_MODE = Keyboard.getKeyIndex(ThxConfig.getProperty("key_hud_mode"));
+    static int KEY_LOOK_PITCH = Keyboard.getKeyIndex(ThxConfig.getProperty("key_look_pitch"));
     static int KEY_AUTO_LEVEL = Keyboard.getKeyIndex(ThxConfig.getProperty("key_auto_level"));
     static int KEY_EXIT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_exit"));
     static int KEY_LOOK_BACK = Keyboard.getKeyIndex(ThxConfig.getProperty("key_look_back"));
     static int KEY_CREATE_MAP = Keyboard.getKeyIndex(ThxConfig.getProperty("key_create_map"));
         
-    static boolean ENABLE_LOOK_YAW = ThxConfig.getBoolProperty("enable_look_yaw");
-    static boolean ENABLE_LOOK_PITCH = ThxConfig.getBoolProperty("enable_look_pitch");
-    static boolean ENABLE_DRONE_MODE = ThxConfig.getBoolProperty("enable_drone_mode");
-    static boolean ENABLE_PILOT_AIM = ThxConfig.getBoolProperty("enable_pilot_aim");
     static boolean ENABLE_AUTO_LEVEL = ThxConfig.getBoolProperty("enable_auto_level");
-    static boolean ENABLE_LOOK_DOWN_TRANS = ThxConfig.getBoolProperty("enable_look_down_trans");
     static boolean ENABLE_AUTO_THROTTLE_ZERO = ThxConfig.getBoolProperty("enable_auto_throttle_zero");
-    static boolean ENABLE_HEAVY_WEAPONS = ThxConfig.getBoolProperty("enable_heavy_weapons");
+    static boolean ENABLE_DRONE_MODE = ThxConfig.getBoolProperty("enable_drone_mode");
+    static boolean ENABLE_LOOK_YAW = ThxConfig.getBoolProperty("enable_look_yaw") && !ENABLE_DRONE_MODE;
+    //static boolean ENABLE_LOOK_DOWN_TRANS = ThxConfig.getBoolProperty("enable_look_down_trans") && !ENABLE_DRONE_MODE;
         
     final float MAX_HEALTH = 100;
 
@@ -74,14 +71,13 @@ public class ThxEntityHelicopter extends ThxEntity
     float _damage;
     float timeSinceHit;
     
-    float hudDelay;
-    boolean hudModeActive;
-    
-    boolean lookBack;
-    boolean toggleLookBack;
-    float toggleLookBackDelay;
+    float lookPitchToggleDelay;
+    boolean lookPitch = false;
+    float lookPitchZeroLevel = 0f;
     
     float createMapDelay;
+    
+    int prevViewMode = 2;
     
     float missileDelay;
     final float MISSILE_DELAY = 3f;
@@ -101,10 +97,6 @@ public class ThxEntityHelicopter extends ThxEntity
     double dronePilotPosX;
     double dronePilotPosY;
     double dronePilotPosZ;
-    
-    //int prevThirdPersonView;
-    
-    final float TURN_SPEED_DEG = -2.00f;
     
     // enemy AI helicopter or friend?
     public ThxEntityHelicopter targetHelicopter;
@@ -146,23 +138,19 @@ public class ThxEntityHelicopter extends ThxEntity
     public void onUpdate()
     {
         super.onUpdate();
-        
-		//if (!ModLoader.isGUIOpen(null)) System.out.println("gui is open");
 	        
         // for auto-heal: 
         if (_damage > 0f) _damage -= deltaTime; // heal rate: 1 pt / sec
         
+        // decrement cooldown timers
         timeSinceHit -= deltaTime;
         missileDelay -= deltaTime;
         rocketDelay -= deltaTime;
         rocketReload -= deltaTime;
         
+        
         Minecraft minecraft = ModLoader.getMinecraftInstance();
         
-        // cancel ai if target helicopter is empty
-        //if (targetHelicopter != null && targetHelicopter.riddenByEntity == null) targetHelicopter = null;
-        
-        // if (ModLoader.isGUIOpen(null) && minecraft.thePlayer.ridingEntity == this)
         EntityPlayer pilot = getPilot();
         if (pilot != null || targetHelicopter != null) //minecraft.thePlayer.ridingEntity == this)
         {
@@ -190,13 +178,14 @@ public class ThxEntityHelicopter extends ThxEntity
 	            // float up
 	            motionY += 0.02;
 	        }
+            /*
             else
             {
                 if (ENABLE_LOOK_DOWN_TRANS && pilot != null)
                 {
 	                // hide bottom panel for looking down when in air
 	                //if (pilot.rotationPitch - rotationPitch > 60f)
-	                if (pilot.rotationPitch > 60f)
+	                if (pilot.rotationPitch > 70f)
 	                {
 	                    ((ThxModelHelicopter) model).bottomVisible = false;
 	                }
@@ -206,6 +195,7 @@ public class ThxEntityHelicopter extends ThxEntity
 	                }
                 }
             }
+            */
 
             createMapDelay -= deltaTime;
             if (Keyboard.isKeyDown(KEY_CREATE_MAP) && createMapDelay < 0f && pilot != null)
@@ -256,50 +246,51 @@ public class ThxEntityHelicopter extends ThxEntity
 
                 entityDropItem(mapStack, .5f);
             }
-                
-            toggleLookBackDelay -= deltaTime;
-            if (Keyboard.isKeyDown(KEY_LOOK_BACK) && toggleLookBackDelay < 0f && !ENABLE_DRONE_MODE /*&& !ENABLE_LOOK_PITCH*/ && pilot != null)
-            {
-                lookBack = !lookBack;
-                toggleLookBack = true;
-                toggleLookBackDelay = .5f;
-            }
-          
-            // to lock down modes, so 1st-p can only user look pitch, and 3rd-p cannot:
-            // enable/disable hud mode if view has been changed by player (F5 key)
-            //if (!hudModeActive && minecraft.gameSettings.thirdPersonView == 0 && !ENABLE_DRONE_MODE && pilot != null) hudModeActive = true;
-            //else hudModeActive = false;
             
-            hudDelay -= deltaTime;
-            if (Keyboard.isKeyDown(KEY_HUD_MODE) && hudDelay < 0f && !ENABLE_DRONE_MODE && pilot != null)
+            lookPitchToggleDelay -= deltaTime;
+            
+            if (ENABLE_DRONE_MODE || pilot == null)
             {
-                hudDelay = .5f;
-                
-                // toggle hud
-                //if (model.visible)
-                if (!hudModeActive)
+                // no view changes for drone or AI
+            }
+            else if (Keyboard.isKeyDown(KEY_LOOK_BACK)) // look back while key is held
+            {
+                // remember current view mode and switch to reverse (only if not already)
+                if (minecraft.gameSettings.thirdPersonView != 2)
                 {
-                    // engage hud
-                    hudModeActive = true;
-                    
-                    //model.visible = false;
-                    
-                    minecraft.ingameGUI.addChatMessage("PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(_damage * 100 / MAX_HEALTH) + "%");
-                    
-                    // remember current view setting for later
-                    //prevThirdPersonView = minecraft.gameSettings.thirdPersonView;
-                    
-                    minecraft.gameSettings.thirdPersonView = 0; // switch to 1st-person view
+                    prevViewMode = minecraft.gameSettings.thirdPersonView; 
+	                minecraft.gameSettings.thirdPersonView = 2; // switch to 3rd-person REVERSE view
+                }
+            }
+            else if (prevViewMode != 2 && minecraft.gameSettings.thirdPersonView == 2) // return to original view after look back key released
+            {
+                minecraft.gameSettings.thirdPersonView = prevViewMode;
+                prevViewMode = 2;
+            }
+            else if (Keyboard.isKeyDown(KEY_LOOK_PITCH) && lookPitchToggleDelay < 0f)
+            {
+                lookPitchToggleDelay = .5f;
+                
+                if (!lookPitch)
+                {
+                    lookPitch = true;
+
+                    // reset level offset
+                    lookPitchZeroLevel = 0f;
+
+                    // show status message
+                    minecraft.ingameGUI.addChatMessage("Look-Pitch:  ON, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(_damage * 100 / MAX_HEALTH) + "%");
                 }
                 else
                 {
-                    // turn off hud
-                    hudModeActive = false;
-                    minecraft.gameSettings.thirdPersonView = 1; // switch to 3rd-person view
-
-                    //model.visible = true;
-                    //minecraft.gameSettings.thirdPersonView = prevThirdPersonView;
+                    // turn off cockpit
+                    lookPitch = false;
+                    minecraft.ingameGUI.addChatMessage("Look-Pitch: OFF, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(_damage * 100 / MAX_HEALTH) + "%");
                 }
+            }
+            else if (minecraft.gameSettings.thirdPersonView == 2) // don't allow constant look back
+            {
+                minecraft.gameSettings.thirdPersonView = 0;
             }
             
             // view could be switched by player
@@ -338,8 +329,10 @@ public class ThxEntityHelicopter extends ThxEntity
                 float offsetZ = side.z * leftRight + fwd.z * 2f;
                     
                 float yaw = rotationYaw;
-                float pitch = rotationPitch;
-                if (ENABLE_PILOT_AIM && !ENABLE_DRONE_MODE && pilot != null)
+                float pitch = rotationPitch + 5f; // slight downward from helicopter pitch
+                
+                //if (lookPitch)
+                if (minecraft.gameSettings.thirdPersonView == 0) // use pilot aim when in 1st-person
                 {
                     yaw = pilot.rotationYaw;
                     pitch = pilot.rotationPitch;
@@ -351,7 +344,6 @@ public class ThxEntityHelicopter extends ThxEntity
                 }
                 
                 ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
-                if (ENABLE_HEAVY_WEAPONS) newRocket.enableHeavyWeapons = true;
                 newRocket.owner = this;
                 worldObj.entityJoinedWorld(newRocket);
                 
@@ -366,7 +358,7 @@ public class ThxEntityHelicopter extends ThxEntity
             // FIRE MISSILE
             if (missileDelay < 0f && targetHelicopter != null && !isTargetHelicopterFriendly && Math.abs(targetHelicopter.posY - posY) < 2f) // && _damage > MAX_HEALTH / 2f) // ai fire missle when low health
             {
-                missileDelay = MISSILE_DELAY * 2; // nerf fire rate
+                missileDelay = MISSILE_DELAY * 2f; // nerf fire rate
                 
                 float offX = fwd.x * 2f;
                 float offY = fwd.y * 2f;
@@ -389,8 +381,10 @@ public class ThxEntityHelicopter extends ThxEntity
                 float offZ = fwd.z * 2f;
 
                 float yaw = rotationYaw;
-                float pitch = rotationPitch;
-                if (ENABLE_PILOT_AIM && !ENABLE_DRONE_MODE && pilot != null)
+                float pitch = rotationPitch + 5f; // slight downward from helicopter pitch
+                
+                //if (lookPitch)
+                if (minecraft.gameSettings.thirdPersonView == 0) // use pilot aim when in 1st-person
                 {
                     yaw = pilot.rotationYaw;
                     pitch = pilot.rotationPitch;
@@ -403,7 +397,6 @@ public class ThxEntityHelicopter extends ThxEntity
 
                 ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
                 //ThxEntityAgent newMissile = new ThxEntityAgent(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
-                if (ENABLE_HEAVY_WEAPONS) newMissile.enableHeavyWeapons = true;
                 worldObj.entityJoinedWorld(newMissile);
             }
 
@@ -417,8 +410,8 @@ public class ThxEntityHelicopter extends ThxEntity
 	                while (deltaYawDeg < -180f) deltaYawDeg += 360f;
 	
 	                rotationYawSpeed = deltaYawDeg * 3f; // saving this for render use
-	                if (rotationYawSpeed > 90) rotationYawSpeed = 90;
-	                if (rotationYawSpeed < -90) rotationYawSpeed = -90;
+	                if (rotationYawSpeed > 90f) rotationYawSpeed = 90f;
+	                if (rotationYawSpeed < -90f) rotationYawSpeed = -90f;
 	                rotationYaw += rotationYawSpeed * deltaTime;
             }
             else if (targetHelicopter != null) // && !isTargetHelicopterFriendly)
@@ -428,7 +421,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 Vector3f deltaPos = Vector3f.add(targetHelicopter.pos, pos.negate(null), null);
                 //deltaPos.add(vel, deltaPos, deltaPos);
                 
-                if (Vector3f.dot(side, deltaPos) > 0)
+                if (Vector3f.dot(side, deltaPos) > 0f)
                 {
                     rotationYaw += 60f * deltaTime;
                 }
@@ -438,20 +431,17 @@ public class ThxEntityHelicopter extends ThxEntity
                 }
                 
             }
-            else if (ENABLE_LOOK_YAW && !ENABLE_DRONE_MODE && pilot != null)
+            else if (ENABLE_LOOK_YAW && pilot != null)
             {
                 // input from look control (mouse or analog stick)
                 float deltaYawDeg = pilot.rotationYaw - rotationYaw;
-                if (lookBack) deltaYawDeg += 180f;
 
                 while (deltaYawDeg > 180f) deltaYawDeg -= 360f;
                 while (deltaYawDeg < -180f) deltaYawDeg += 360f;
 
-                //rotationYaw += deltaYawDeg * TURN_SPEED_DEG * .04f;
-                //rotationYawSpeed = deltaYawDeg * TURN_SPEED_DEG; // saving this for render use
                 rotationYawSpeed = deltaYawDeg * 3f; // saving this for render use
-                if (rotationYawSpeed > 90) rotationYawSpeed = 90;
-                if (rotationYawSpeed < -90) rotationYawSpeed = -90;
+                if (rotationYawSpeed > 90f) rotationYawSpeed = 90f;
+                if (rotationYawSpeed < -90f) rotationYawSpeed = -90f;
                 rotationYaw += rotationYawSpeed * deltaTime;
             }
             else
@@ -460,20 +450,18 @@ public class ThxEntityHelicopter extends ThxEntity
                 // button yaw
                 if (Keyboard.isKeyDown(KEY_ROTATE_LEFT)) // g, rotate left
                 {
-                    //rotationYaw -= TURN_SPEED_DEG * deltaTime;
                     rotationYawSpeed -= 8f;
                 }
                 else if (Keyboard.isKeyDown(KEY_ROTATE_RIGHT)) // h, rotate right
                 {
-                    //rotationYaw += TURN_SPEED_DEG * deltaTime;
                     rotationYawSpeed += 8f;
                 }
                 else
                 {
                     rotationYawSpeed *= .9f;
                 }
-                if (rotationYawSpeed > 80) rotationYawSpeed = 80;
-                if (rotationYawSpeed < -80) rotationYawSpeed = -80;
+                if (rotationYawSpeed > 80f) rotationYawSpeed = 80f;
+                if (rotationYawSpeed < -80f) rotationYawSpeed = -80f;
                 rotationYaw += rotationYawSpeed * deltaTime;
             }
             
@@ -497,38 +485,43 @@ public class ThxEntityHelicopter extends ThxEntity
 			    }
                 rotationPitchSpeed = 0f;
             }
-            else if (hudModeActive) // || (ENABLE_LOOK_PITCH && !ENABLE_DRONE_MODE)) // helicopter follows player look -- hard!
+            else if (lookPitch) // helicopter follows player look pitch
             {
-                if (rotationPitch > MAX_PITCH / 1.5f)
+                if (Keyboard.isKeyDown(KEY_AUTO_LEVEL))
                 {
-                    rotationPitch = MAX_PITCH / 1.5f;
+                    lookPitchZeroLevel = pilot.rotationPitch;
+                }
+                
+                if (rotationPitch > MAX_PITCH)
+                {
+                    rotationPitch = MAX_PITCH;
                     rotationPitchSpeed = 0f;
                 }
-                else if (rotationPitch < -MAX_PITCH / 2f)
+                else if (rotationPitch < -MAX_PITCH / 1.5f)
                 {
-                    rotationPitch = -MAX_PITCH / 2f;
+                    rotationPitch = -MAX_PITCH / 1.5f;
                     rotationPitchSpeed = 0f;
                 }
                 else
                 {
-                    //rotationPitchSpeed = 4f * (pilot.rotationPitch - rotationPitch -20f); // look down slightly on level helicopter in 3rd person view
+                    float targetPitch = (pilot.rotationPitch / 80f) * MAX_PITCH - lookPitchZeroLevel;
                     
-                    float targetPitch = (pilot.rotationPitch / 80f) * MAX_PITCH;
-                    if (targetPitch < 0f) targetPitch *= .2f;
+                    // leaning backward, so further limit
+                    if (targetPitch < 0f) targetPitch *= .3f;
                     
-                    rotationPitchSpeed = 3f * (targetPitch - rotationPitch -10f); // look down slightly
+                    rotationPitchSpeed = 3f * (targetPitch - rotationPitch); // look down slightly
 
                     rotationPitch += rotationPitchSpeed * deltaTime;
                 }
                 
-                if (rotationPitch > MAX_PITCH / 1.5f) // check again to prevent judder
+                if (rotationPitch > MAX_PITCH) // check again to prevent judder
                 {
-                    rotationPitch = MAX_PITCH / 1.5f;
+                    rotationPitch = MAX_PITCH;
                     rotationPitchSpeed = 0f;
                 }
-                else if (rotationPitch < -MAX_PITCH / 2f)
+                else if (rotationPitch < -MAX_PITCH / 1.5f)
                 {
-                    rotationPitch = -MAX_PITCH / 2f;
+                    rotationPitch = -MAX_PITCH / 1.5f;
                     rotationPitchSpeed = 0f;
                 }
             }
@@ -561,9 +554,9 @@ public class ThxEntityHelicopter extends ThxEntity
                 }
                 else if (Keyboard.isKeyDown(KEY_BACK))
                 {
-                    if (rotationPitch < -MAX_PITCH)
+                    if (rotationPitch < -MAX_PITCH / 1.5f)
                     {
-                        rotationPitch = -MAX_PITCH;
+                        rotationPitch = -MAX_PITCH / 1.5f;
 	                    rotationPitchSpeed = 0f;
                     }
                     else
@@ -571,9 +564,9 @@ public class ThxEntityHelicopter extends ThxEntity
 	                    rotationPitchSpeed = -PITCH_SPEED_DEG;
                         rotationPitch += rotationPitchSpeed * deltaTime;
                     }
-                    if (rotationPitch < -MAX_PITCH) // check again to prevent judder
+                    if (rotationPitch < -MAX_PITCH / 1.5f) // check again to prevent judder
                     {
-                        rotationPitch = -MAX_PITCH;
+                        rotationPitch = -MAX_PITCH / 1.5f;
 	                    rotationPitchSpeed = 0f;
                     }
                 }
@@ -689,14 +682,14 @@ public class ThxEntityHelicopter extends ThxEntity
                 }
             }
             else if (Keyboard.isKeyDown(KEY_ASCEND) 
-                    || (Keyboard.isKeyDown(KEY_FORWARD) && hudModeActive)) // ENABLE_LOOK_PITCH && !ENABLE_DRONE_MODE)) 
+                 || (Keyboard.isKeyDown(KEY_FORWARD) && lookPitch)) 
             {
                 if (throttle < THROTTLE_MAX) throttle += THROTTLE_INC;
                 if (throttle > THROTTLE_MAX) throttle = THROTTLE_MAX;
                 // throttle = THROTTLE_MAX;
             }
             else if (Keyboard.isKeyDown(KEY_DESCEND)
-                    || (Keyboard.isKeyDown(KEY_BACK) && hudModeActive)) // ENABLE_LOOK_PITCH && !ENABLE_DRONE_MODE)) 
+                 || (Keyboard.isKeyDown(KEY_BACK) && lookPitch)) 
             {
                 if (throttle > THROTTLE_MIN) throttle -= THROTTLE_INC;
                 if (throttle < THROTTLE_MIN) throttle = THROTTLE_MIN;
@@ -930,7 +923,8 @@ public class ThxEntityHelicopter extends ThxEntity
             
             riddenByEntity = null;
             
-            worldObj.newExplosion(this, posX, posY, posZ, 2.3f, false);
+            boolean flaming = true;
+            worldObj.newExplosion(this, posX, posY, posZ, 2.3f, flaming);
             
             setEntityDead();
         }
@@ -993,7 +987,11 @@ public class ThxEntityHelicopter extends ThxEntity
         {
             // new pilot boarding
 	        player.mountEntity(this);
-            //prevThirdPersonView = ModLoader.getMinecraftInstance().gameSettings.thirdPersonView;
+	        
+            //lookPitch = false;
+
+	        // reset level to current look pitch
+            lookPitchZeroLevel = player.rotationPitch;
 	        
             // inactivate ai
             targetHelicopter = null;
@@ -1009,10 +1007,8 @@ public class ThxEntityHelicopter extends ThxEntity
 	        {
 		        player.rotationYaw = rotationYaw;
 		        
-                // turn off hud
-                hudModeActive = false;
-                minecraft.gameSettings.thirdPersonView = 1; // switch to 3rd-person view
-
+                // always start in 3rd-person view
+                //minecraft.gameSettings.thirdPersonView = 1; 
 	        }
         }
         else pilotExit();
@@ -1041,15 +1037,12 @@ public class ThxEntityHelicopter extends ThxEntity
         }
         
         // use fwd XZ components to adjust front/back position of pilot based on helicopter pitch
+        // when in 1st-person mode to improve view
         double posAdjust = -.1 + .015f * rotationPitch;
+
+        if (ModLoader.getMinecraftInstance().gameSettings.thirdPersonView != 0) posAdjust = 0.0;
+
         pilot.setPosition(posX + fwd.x * posAdjust, posY + pilot.getYOffset() + getMountedYOffset(), posZ + fwd.z * posAdjust);
-            
-        if (toggleLookBack)
-        {
-            toggleLookBack = false;
-	        pilot.prevRotationYaw = pilot.rotationYaw = pilot.rotationYaw -180f;
-	        //if (ENABLE_LOOK_PITCH) pilot.prevRotationPitch = pilot.rotationPitch = -pilot.rotationPitch;
-        }
     }
 
     private void pilotExit()
@@ -1068,20 +1061,9 @@ public class ThxEntityHelicopter extends ThxEntity
 	        
 	        return;
         }
-
-        // cancel look back for next entry
-        toggleLookBack = false;
-        if (lookBack)
-        {
-	        lookBack = false;
-	        pilot.prevRotationYaw = pilot.rotationYaw = pilot.rotationYaw -180f;
-        }
         
         // clear look-pitch to prevent judder
         rotationPitchSpeed = 0f;
-        
-        // restore former view setting
-        //ModLoader.getMinecraftInstance().gameSettings.thirdPersonView = prevThirdPersonView;
         
         pilot.mountEntity(this); // riddenByEntity is now null
         

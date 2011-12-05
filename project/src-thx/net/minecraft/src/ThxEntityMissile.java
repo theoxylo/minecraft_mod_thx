@@ -16,8 +16,6 @@ public class ThxEntityMissile extends ThxEntity
     
     Vector3f thrust;
     
-    boolean enableHeavyWeapons = false;
-    
     public ThxEntityHelicopter targetHelicopter;
 
     public ThxEntityMissile(World world)
@@ -118,8 +116,8 @@ public class ThxEntityMissile extends ThxEntity
         if (courseChange.lengthSquared() > .001 || ticksExisted > maxAge)
         {
             float power = 2f;
-            if (enableHeavyWeapons) power = 20f;
-            worldObj.newExplosion(this, posX, posY, posZ, power, true);
+            boolean flaming = false;
+            worldObj.newExplosion(this, posX, posY, posZ, power, flaming);
             setEntityDead();
             
             // light torch?
