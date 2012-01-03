@@ -1,10 +1,10 @@
-Minecraft Helicopter Mod, v012, 20111204
+Minecraft Helicopter Mod, v013, 20120103
 
 INTRODUCTION
 ------------
 If you just want to get the latest version of this mod to try it out, you can download the zip file from GitHub:
 
-https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_1.0.0_v012-bin.zip
+https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_1.0.0_v013-bin.zip
 
 Just copy the zip file to your '.minecraft/mods' directory and start Minecraft normally (full Minecraft and ModLoader required).
 
@@ -51,6 +51,9 @@ And of course, thanks to Notch and the Mojang team for the pure goodness that is
 
 CHANGELOG
 ---------
+v013: for use with Minecraft and ModLoader 1.0.0
+v013: fixed NPE crash on AI fire weapon
+
 v012: for use with Minecraft and ModLoader 1.0.0
 v012: enabled separate textures for all model faces
 v012: replaced hud mode with in-game look-pitch control (key L)

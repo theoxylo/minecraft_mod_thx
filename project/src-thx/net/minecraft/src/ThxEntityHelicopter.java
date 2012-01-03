@@ -332,7 +332,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 float pitch = rotationPitch + 5f; // slight downward from helicopter pitch
                 
                 //if (lookPitch)
-                if (minecraft.gameSettings.thirdPersonView == 0) // use pilot aim when in 1st-person
+                if (pilot != null && minecraft.gameSettings.thirdPersonView == 0) // use pilot aim when in 1st-person
                 {
                     yaw = pilot.rotationYaw;
                     pitch = pilot.rotationPitch;
@@ -384,7 +384,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 float pitch = rotationPitch + 5f; // slight downward from helicopter pitch
                 
                 //if (lookPitch)
-                if (minecraft.gameSettings.thirdPersonView == 0) // use pilot aim when in 1st-person
+                if (pilot != null && minecraft.gameSettings.thirdPersonView == 0) // use pilot aim when in 1st-person
                 {
                     yaw = pilot.rotationYaw;
                     pitch = pilot.rotationPitch;
@@ -1048,6 +1048,8 @@ public class ThxEntityHelicopter extends ThxEntity
     private void pilotExit()
     {
         Entity pilot = getPilot();
+
+        if (pilot == null) return;
         
         model.visible = true; // hard to find otherwise!
         
