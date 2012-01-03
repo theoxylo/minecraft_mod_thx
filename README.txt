@@ -1,10 +1,10 @@
-Minecraft Helicopter Mod, v012, 20111204
+Minecraft Helicopter Mod, v013, 20111205
 
 INTRODUCTION
 ------------
 If you just want to get the latest version of this mod to try it out, you can download the zip file from GitHub:
 
-https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_1.0.0_v012-bin.zip
+https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_1.0.0_v013-bin.zip
 
 Just copy the zip file to your '.minecraft/mods' directory and start Minecraft normally (full Minecraft and ModLoader required).
 
@@ -51,6 +51,12 @@ And of course, thanks to Notch and the Mojang team for the pure goodness that is
 
 CHANGELOG
 ---------
+v013: fixed crash on ai shoot
+v013: added item spawn (key I) for egg
+v013: added altitude lock (key P)
+v013: added camera mode (key C)
+v013: helicopter.png - added transparent texture cockpit window
+
 v012: for use with Minecraft and ModLoader 1.0.0
 v012: enabled separate textures for all model faces
 v012: replaced hud mode with in-game look-pitch control (key L)
@@ -146,6 +152,8 @@ OPTIONS AND SETTINGS
 # please customize to your liking
 
 # helicopter cyclic (basic WASD move controls)
+# these move the helicopter by tilting it, except when look-pitch
+# is active in which case W/S control the throttle
 key_forward=W
 key_left=A
 key_back=S
@@ -160,7 +168,7 @@ key_descend=LSHIFT
 key_rotate_right=H
 key_rotate_left=G
 
-# toggles "cockpit mode" and briefly displays
+# toggles look-pitch on/off and briefly displays damage level,
 # world corrdinates and altitude (measured in blocks)
 key_look_pitch=L
 
@@ -190,9 +198,6 @@ enable_auto_throttle_zero=true
 # rudder/rotate controls since pilot look will not control pitch or yaw
 enable_drone_mode=false
 
-# hides the bottom panel of our beloved helicopter model to allow looking down
-enable_look_down_trans=true
-
 # use pilot look to set helicopter yaw/rotation/rudder/steering
 enable_look_yaw=true
 
@@ -207,7 +212,7 @@ rotor_speed_percent=70
 # work-around for Mo'Creatures ModLoader gui.png override bug
 disable_helicopter_item_image=true
 
-# toggle rear view
+# hold for rear view
 key_look_back=U
 
 # creat map of current region

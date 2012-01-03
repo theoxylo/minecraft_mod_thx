@@ -86,6 +86,9 @@ public class ThxConfig
         writeFile = ensureDefault(props, "key_exit", Keyboard.getKeyName(Keyboard.KEY_Y)) || writeFile;
         writeFile = ensureDefault(props, "key_look_back", Keyboard.getKeyName(Keyboard.KEY_U)) || writeFile;
         writeFile = ensureDefault(props, "key_create_map", Keyboard.getKeyName(Keyboard.KEY_O)) || writeFile;
+        writeFile = ensureDefault(props, "key_create_item", Keyboard.getKeyName(Keyboard.KEY_I)) || writeFile;
+        writeFile = ensureDefault(props, "key_hud_mode", Keyboard.getKeyName(Keyboard.KEY_C)) || writeFile;
+        writeFile = ensureDefault(props, "key_lock_alt", Keyboard.getKeyName(Keyboard.KEY_P)) || writeFile;
         writeFile = ensureDefault(props, "rotor_speed_percent", "70") || writeFile;
         writeFile = ensureDefault(props, "enable_look_yaw", "true") || writeFile;
         writeFile = ensureDefault(props, "enable_drone_mode", "false") || writeFile;
