@@ -207,6 +207,7 @@ public class ThxEntityHelicopter extends ThxEntity
             }
             */
             
+            /* disable create item for now, too OP
             createItemDelay -= deltaTime;
             if (Keyboard.isKeyDown(KEY_CREATE_ITEM) && createItemDelay < 0f && pilot != null)
             {
@@ -214,6 +215,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 
                 dropItem(Item.egg.shiftedIndex, 1);
             }
+            */
                         
             createMapDelay -= deltaTime;
             if (Keyboard.isKeyDown(KEY_CREATE_MAP) && createMapDelay < 0f && pilot != null)

@@ -1,10 +1,10 @@
-Minecraft Helicopter Mod, v013, 20111205
+Minecraft Helicopter Mod, v014, 20120104
 
 INTRODUCTION
 ------------
 If you just want to get the latest version of this mod to try it out, you can download the zip file from GitHub:
 
-https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_1.0.0_v013-bin.zip
+https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_1.0.0_v014-bin.zip
 
 Just copy the zip file to your '.minecraft/mods' directory and start Minecraft normally (full Minecraft and ModLoader required).
 
@@ -51,11 +51,14 @@ And of course, thanks to Notch and the Mojang team for the pure goodness that is
 
 CHANGELOG
 ---------
-v013: fixed crash on ai shoot
-v013: added item spawn (key I) for egg
-v013: added altitude lock (key P)
-v013: added camera mode (key C)
-v013: helicopter.png - added transparent texture cockpit window
+v014: still for use with Minecraft and ModLoader 1.0.0
+v014: added altitude lock (default key P)
+v014: added back hud/camera mode (default key C)
+v014: added windshield to model
+v014: helicopter.png skin - added controls and and windshield
+
+v013: still for use with Minecraft and ModLoader 1.0.0
+v013: fixed NPE crash on AI fire weapon
 
 v012: for use with Minecraft and ModLoader 1.0.0
 v012: enabled separate textures for all model faces
@@ -217,6 +220,13 @@ key_look_back=U
 
 # creat map of current region
 key_create_map=O
+
+# keep helicopter at current altitude, press again to unlock
+key_lock_alt=P
+
+# switch to hud/camera mode where model is hidden
+key_hud_mode=C
+
 
 
 
