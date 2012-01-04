@@ -57,7 +57,8 @@ public class ThxModelHelicopter extends ThxModel
             float width  = 2f;
             bottom = new ModelRenderer(this, 0, 22); // texture offset: 
             bottom.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            bottom.setRotationPoint(0f * centerScale, 2f * centerScale, 0f * centerScale); // halved to adjust for scale            bottom.rotateAngleX = PI / 2f; // 90 deg roll left to lay flat
+            bottom.setRotationPoint(0f * centerScale, 2f * centerScale, 0f * centerScale); // halved to adjust for scale
+            bottom.rotateAngleX = PI / 2f; // 90 deg roll left to lay flat
         }
         frontWall:
         {
