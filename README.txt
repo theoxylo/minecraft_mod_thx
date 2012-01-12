@@ -1,10 +1,16 @@
-Minecraft Helicopter Mod, v013, 20120103
+Minecraft Helicopter Mod, v014, 20120104
+
+
 
 INTRODUCTION
 ------------
-If you just want to get the latest version of this mod to try it out, you can download the zip file from GitHub:
+This version is v014, for use with Minecraft and ModLoader 1.0.0, single-player only.
 
-https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_1.0.0_v013-bin.zip
+You can download the compiled binary zip file from GitHub:
+
+
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_1.0.0_v014-bin.zip
+
 
 Just copy the zip file to your '.minecraft/mods' directory and start Minecraft normally (full Minecraft and ModLoader required).
 
@@ -15,6 +21,19 @@ Please keep in mind that this is an early release of a mod still under construct
 Please visit the forum thread to discuss, report issues, leave feedback, etc:
 
     http://www.minecraftforum.net/index.php?showtopic=763209
+
+
+
+CRAFTING
+---------
+The current crafting recipe is very cheap and simple -- build a boat and add a roof (rotor assembly)!
+
+XPX
+PxP
+PPP
+
+Where X is nothing and P is wooden planks.
+
 
 
 SKINS
@@ -42,16 +61,33 @@ Welcome to the Minecraft mod_thx Helicopter project! If you are still reading th
 
 ACKNOWLEDGEMENTS
 ----------------
+Thanks to vip3r for the helicopter skin.
 Thanks to dannyoboy007 for managing the forum topic and recruiting.
 Thanks to all forum participants.
+
 Special thanks to the ModLoader and MCP projects, without which this project would not be possible! 
+
 And of course, thanks to Notch and the Mojang team for the pure goodness that is Minecraft.
+
+
+
+VIDEOS
+------
+Official YouTube playlist:
+
+    http://www.youtube.com/playlist?list=PLC95BDA16181F6120
 
 
 
 CHANGELOG
 ---------
-v013: for use with Minecraft and ModLoader 1.0.0
+v014: still for use with Minecraft and ModLoader 1.0.0
+v014: added altitude lock as suggested by Gabbiman (default key P)
+v014: added HUD/camera mode where model is hidden (default key C)
+v014: added windshield to model with transparancy effects
+v014: added helicopter skin improved by vip3r
+
+v013: still for use with Minecraft and ModLoader 1.0.0
 v013: fixed NPE crash on AI fire weapon
 
 v012: for use with Minecraft and ModLoader 1.0.0
@@ -149,6 +185,8 @@ OPTIONS AND SETTINGS
 # please customize to your liking
 
 # helicopter cyclic (basic WASD move controls)
+# these move the helicopter by tilting it, except when look-pitch
+# is active in which case W/S control the throttle
 key_forward=W
 key_left=A
 key_back=S
@@ -163,7 +201,7 @@ key_descend=LSHIFT
 key_rotate_right=H
 key_rotate_left=G
 
-# toggles "cockpit mode" and briefly displays
+# toggles look-pitch on/off and briefly displays damage level,
 # world corrdinates and altitude (measured in blocks)
 key_look_pitch=L
 
@@ -193,9 +231,6 @@ enable_auto_throttle_zero=true
 # rudder/rotate controls since pilot look will not control pitch or yaw
 enable_drone_mode=false
 
-# hides the bottom panel of our beloved helicopter model to allow looking down
-enable_look_down_trans=true
-
 # use pilot look to set helicopter yaw/rotation/rudder/steering
 enable_look_yaw=true
 
@@ -210,11 +245,17 @@ rotor_speed_percent=70
 # work-around for Mo'Creatures ModLoader gui.png override bug
 disable_helicopter_item_image=true
 
-# toggle rear view
+# hold for rear view
 key_look_back=U
 
-# creat map of current region
+# creat map for current location, will show previous data if available
 key_create_map=O
+
+# keep helicopter at current altitude, press again to unlock
+key_lock_alt=P
+
+# switch to hud/camera mode where model is hidden
+key_hud_mode=C
 
 
 
@@ -243,3 +284,17 @@ git push origin --tags
 To delete a branch, local and remote:
 git branch -d vXXX_candidate
 git push origin :vXXX_candidate
+
+
+
+License
+-------
+(The MIT License)
+
+Copyright (c) 2011-2012 Theoxylo <theoxylo@yahoo.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

@@ -28,6 +28,10 @@ public class ThxEntityHelicopter extends ThxEntity
     static int KEY_EXIT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_exit"));
     static int KEY_LOOK_BACK = Keyboard.getKeyIndex(ThxConfig.getProperty("key_look_back"));
     static int KEY_CREATE_MAP = Keyboard.getKeyIndex(ThxConfig.getProperty("key_create_map"));
+    static int KEY_CREATE_ITEM = Keyboard.getKeyIndex(ThxConfig.getProperty("key_create_item"));
+    static int KEY_HUD_MODE = Keyboard.getKeyIndex(ThxConfig.getProperty("key_hud_mode"));
+    static int KEY_LOCK_ALT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_lock_alt"));
+    
         
     static boolean ENABLE_AUTO_LEVEL = ThxConfig.getBoolProperty("enable_auto_level");
     static boolean ENABLE_AUTO_THROTTLE_ZERO = ThxConfig.getBoolProperty("enable_auto_throttle_zero");
@@ -71,11 +75,17 @@ public class ThxEntityHelicopter extends ThxEntity
     float _damage;
     float timeSinceHit;
     
+    boolean altitudeLock;
+    float altitudeLockToggleDelay;
+    
+    float hudModeToggleDelay;
+    
     float lookPitchToggleDelay;
     boolean lookPitch = false;
-    float lookPitchZeroLevel = 0f;
+    float lookPitchZeroLevel;
     
     float createMapDelay;
+    float createItemDelay;
     
     int prevViewMode = 2;
     
@@ -196,7 +206,17 @@ public class ThxEntityHelicopter extends ThxEntity
                 }
             }
             */
-
+            
+            /* disable create item for now, too OP
+            createItemDelay -= deltaTime;
+            if (Keyboard.isKeyDown(KEY_CREATE_ITEM) && createItemDelay < 0f && pilot != null)
+            {
+                createItemDelay = 1f; // the delay in seconds
+                
+                dropItem(Item.egg.shiftedIndex, 1);
+            }
+            */
+                        
             createMapDelay -= deltaTime;
             if (Keyboard.isKeyDown(KEY_CREATE_MAP) && createMapDelay < 0f && pilot != null)
             {
@@ -247,6 +267,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 entityDropItem(mapStack, .5f);
             }
             
+            hudModeToggleDelay -= deltaTime;
             lookPitchToggleDelay -= deltaTime;
             
             if (ENABLE_DRONE_MODE || pilot == null)
@@ -288,12 +309,27 @@ public class ThxEntityHelicopter extends ThxEntity
                     minecraft.ingameGUI.addChatMessage("Look-Pitch: OFF, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(_damage * 100 / MAX_HEALTH) + "%");
                 }
             }
+            else if (Keyboard.isKeyDown(KEY_HUD_MODE) && hudModeToggleDelay < 0f && pilot != null)
+            {
+                hudModeToggleDelay = .5f;
+                
+                if (model.visible)
+                {
+                    // change to 1st-person and hide model
+                    if (minecraft.gameSettings.thirdPersonView != 0) minecraft.gameSettings.thirdPersonView = 0;
+                    model.visible = false;
+                }
+                else
+                {
+                    model.visible = true;
+                }
+            }
             else if (minecraft.gameSettings.thirdPersonView == 2) // don't allow constant look back
             {
                 minecraft.gameSettings.thirdPersonView = 0;
             }
             
-            // view could be switched by player
+            // view could be switched by player using F5
             if (minecraft.gameSettings.thirdPersonView != 0) model.visible = true;
 
             exitDelay -= deltaTime;
@@ -301,6 +337,13 @@ public class ThxEntityHelicopter extends ThxEntity
             {
                 exitDelay = 1f; // seconds before player can exit
                 pilotExit();
+            }
+
+            altitudeLockToggleDelay -= deltaTime;
+            if (Keyboard.isKeyDown(KEY_LOCK_ALT) && altitudeLockToggleDelay < 0f && pilot != null)
+            {
+                altitudeLockToggleDelay = .5f;
+                altitudeLock = !altitudeLock;
             }
 
             float thd = 0f; // thd is targetHelicopter distance
@@ -331,12 +374,14 @@ public class ThxEntityHelicopter extends ThxEntity
                 float yaw = rotationYaw;
                 float pitch = rotationPitch + 5f; // slight downward from helicopter pitch
                 
-                //if (lookPitch)
-                if (pilot != null && minecraft.gameSettings.thirdPersonView == 0) // use pilot aim when in 1st-person
+                // use pilot aim when in 1st-person
+                if (pilot != null && minecraft.gameSettings.thirdPersonView == 0) 
                 {
                     yaw = pilot.rotationYaw;
                     pitch = pilot.rotationPitch;
                 }
+                
+                // ai helicopter will use owner pilot aim
                 if (targetHelicopter != null && isTargetHelicopterFriendly && targetHelicopter.riddenByEntity != null)
                 {
 	                yaw = targetHelicopter.riddenByEntity.rotationYaw;
@@ -370,7 +415,6 @@ public class ThxEntityHelicopter extends ThxEntity
                 ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
                 newMissile.targetHelicopter = targetHelicopter;
                 worldObj.entityJoinedWorld(newMissile);
-
             }
             else if (Keyboard.isKeyDown(KEY_FIRE_MISSILE) && missileDelay < 0f)
             {
@@ -383,8 +427,8 @@ public class ThxEntityHelicopter extends ThxEntity
                 float yaw = rotationYaw;
                 float pitch = rotationPitch + 5f; // slight downward from helicopter pitch
                 
-                //if (lookPitch)
-                if (pilot != null && minecraft.gameSettings.thirdPersonView == 0) // use pilot aim when in 1st-person
+                // use pilot aim when in 1st-person
+                if (pilot != null && minecraft.gameSettings.thirdPersonView == 0)
                 {
                     yaw = pilot.rotationYaw;
                     pitch = pilot.rotationPitch;
@@ -429,7 +473,6 @@ public class ThxEntityHelicopter extends ThxEntity
                 {
                     rotationYaw -= 60f * deltaTime;
                 }
-                
             }
             else if (ENABLE_LOOK_YAW && pilot != null)
             {
@@ -760,6 +803,8 @@ public class ThxEntityHelicopter extends ThxEntity
             motionX = velocity.x;
             motionY = velocity.y;
             motionZ = velocity.z;
+            
+            if (altitudeLock) motionY = 0f;
         }
         else
         // no pilot -- slowly sink to the ground

@@ -6,6 +6,7 @@ public class ThxModelHelicopter extends ThxModel
 
     float scale = 0.0625f;
     float x2scale = 0.125f;
+    float centerScale = 1.0f;
     
     float rotorSpeed = 0f;
     float lastRotorRad = 0f;
@@ -20,10 +21,11 @@ public class ThxModelHelicopter extends ThxModel
     public ModelRenderer rotor2;
     public ModelRenderer rotor3;
     
-    public ModelRenderer cockpit1;
-    public ModelRenderer cockpit2;
-    public ModelRenderer cockpit3;
+    //public ModelRenderer cockpit1;
+    //public ModelRenderer cockpit2;
+    //public ModelRenderer cockpit3;
 
+    public ModelRenderer windshield;
     public ModelRenderer bottom;
     public ModelRenderer frontWall;
     public ModelRenderer backWall;
@@ -55,7 +57,8 @@ public class ThxModelHelicopter extends ThxModel
             float width  = 2f;
             bottom = new ModelRenderer(this, 0, 22); // texture offset: 
             bottom.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            bottom.setRotationPoint(0f, 2f, 0f); // halved to adjust for scale            bottom.rotateAngleX = PI / 2f; // 90 deg roll left to lay flat
+            bottom.setRotationPoint(0f * centerScale, 2f * centerScale, 0f * centerScale); // halved to adjust for scale
+            bottom.rotateAngleX = PI / 2f; // 90 deg roll left to lay flat
         }
         frontWall:
         {
@@ -66,7 +69,7 @@ public class ThxModelHelicopter extends ThxModel
             float width  =  1f;
             frontWall = new ModelRenderer(this, 0, 4);
             frontWall.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            frontWall.setRotationPoint(-5.5f, 0f, 0f); // placed 11 unit in front
+            frontWall.setRotationPoint(-5.5f * centerScale, 0f * centerScale, 0f * centerScale); // placed 11 unit in front
             frontWall.rotateAngleY = PI * 1.5f; // 270 deg yaw
         }
         backWall:
@@ -77,7 +80,7 @@ public class ThxModelHelicopter extends ThxModel
             float width  =  1f;
             backWall = new ModelRenderer(this, 0, 9);
             backWall.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            backWall.setRotationPoint(5.5f, 0f, 0f);
+            backWall.setRotationPoint(5.5f * centerScale, 0f * centerScale, 0f * centerScale);
             backWall.rotateAngleY = PI / 2f; // 90 deg yaw
         }
         leftWall:
@@ -88,7 +91,7 @@ public class ThxModelHelicopter extends ThxModel
             float width  =  1f;
             leftWall = new ModelRenderer(this, 25, 19);
             leftWall.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            leftWall.setRotationPoint(0f, 0f, -4.5f);
+            leftWall.setRotationPoint(0f * centerScale, 0f * centerScale, -4.5f * centerScale);
         }
         rightWall:
         {
@@ -98,7 +101,7 @@ public class ThxModelHelicopter extends ThxModel
             float width  =  1f;
             rightWall = new ModelRenderer(this, 25, 24);
             rightWall.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            rightWall.setRotationPoint(0f, 0f, 4.5f);
+            rightWall.setRotationPoint(0f * centerScale, 0f * centerScale, 4.5f * centerScale);
             rightWall.rotateAngleY = PI; // flip 180 deg so decal is on outside
         }
         mainRotor: 
@@ -109,8 +112,7 @@ public class ThxModelHelicopter extends ThxModel
             float width  =  1f;
             mainRotor = new ModelRenderer(this, 0, 0);
             mainRotor.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            //mainRotor.setRotationPoint(6f, -24f, 0f);
-            mainRotor.setRotationPoint(2f, -11.7f, 0f); // halved to adjust for scale, and a little subtracted 
+            mainRotor.setRotationPoint(2f * centerScale, -11.7f * centerScale, 0f * centerScale); // halved to adjust for scale, and a little subtracted 
         }
         tailRotor:
         {
@@ -120,7 +122,7 @@ public class ThxModelHelicopter extends ThxModel
             float width  = 0f;
             tailRotor = new ModelRenderer(this, 0, 2);
             tailRotor.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            tailRotor.setRotationPoint(16f, -7f, .7f);
+            tailRotor.setRotationPoint(16f * centerScale, -7f * centerScale, .7f * centerScale);
         }
         tail:
         {
@@ -130,7 +132,7 @@ public class ThxModelHelicopter extends ThxModel
             float width  =  1f;
             tail = new ModelRenderer(this, 42, 29);
             tail.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            tail.setRotationPoint(12, -7, 0f);
+            tail.setRotationPoint(12f * centerScale, -7f * centerScale, 0f * centerScale);
         }
         rotorVerticalSupport:
         {
@@ -140,7 +142,7 @@ public class ThxModelHelicopter extends ThxModel
             float width  =  2f;
             rotor2 = new ModelRenderer(this, 58, 11);
             rotor2.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            rotor2.setRotationPoint(6.5f, -5f, 0f);
+            rotor2.setRotationPoint(6.5f * centerScale, -5f * centerScale, 0f * centerScale);
         }
         rotorHorizontalSupport:
         {
@@ -150,8 +152,9 @@ public class ThxModelHelicopter extends ThxModel
             float width  =  2f;
             rotor3 = new ModelRenderer(this, 48, 25);
             rotor3.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            rotor3.setRotationPoint(4, -11, 0f);
+            rotor3.setRotationPoint(4f * centerScale, -11f * centerScale, 0f * centerScale);
         }
+        /*
         cockpit1:
         {
             // cockpit1 right vertical support
@@ -160,7 +163,7 @@ public class ThxModelHelicopter extends ThxModel
             float width  =  1f;
             cockpit1 = new ModelRenderer(this, 43, 4);
             cockpit1.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            cockpit1.setRotationPoint(-10f, -9f, 9f);
+            cockpit1.setRotationPoint(-11f * centerScale, -9f * centerScale, 9f * centerScale);
             cockpit1.rotateAngleY = PI / 2f;
         }
         cockpit2:
@@ -171,7 +174,7 @@ public class ThxModelHelicopter extends ThxModel
             float width  =  1f;
             cockpit2 = new ModelRenderer(this, 48, 4);
             cockpit2.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            cockpit2.setRotationPoint(-10f, -9f, -9f);
+            cockpit2.setRotationPoint(-11f * centerScale, -9f * centerScale, -9f * centerScale);
         }
         cockpit3:
         {
@@ -181,9 +184,20 @@ public class ThxModelHelicopter extends ThxModel
             float width  =  1f;
             cockpit3 = new ModelRenderer(this, 53, 4);
             cockpit3.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            cockpit3.setRotationPoint(-10f, -16f, 0f);
+            cockpit3.setRotationPoint(-11f * centerScale, -16f * centerScale, 0f * centerScale);
             cockpit3.rotateAngleX = PI / 2f;
             cockpit3.rotateAngleZ = PI / 2f;
+        }
+        */
+        windshield:
+        {
+            float length = 9f;
+            float height = 7f;
+            float width  = 0f;
+            windshield = new ModelRenderer(this, 22, 2);
+            windshield.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
+            windshield.setRotationPoint(-5.5f * centerScale, -4.5f * centerScale, 0f * centerScale);
+            windshield.rotateAngleY = PI * 1.5f; // 270 deg yaw
         }
     }
 
@@ -196,16 +210,17 @@ public class ThxModelHelicopter extends ThxModel
         if (!visible) return;
         
         if (bottomVisible) bottom.render(x2scale);
-        
+
         frontWall.render(x2scale);
         backWall.render(x2scale);
         leftWall.render(x2scale);
         rightWall.render(x2scale);
         
         // windshield
-        cockpit1.render(scale);
-        cockpit2.render(scale);
-        cockpit3.render(scale);
+        //cockpit1.render(scale);
+        //cockpit2.render(scale);
+        //cockpit3.render(scale);
+        windshield.render(x2scale);
         
         // rotor supports
         rotor2.render(x2scale);
