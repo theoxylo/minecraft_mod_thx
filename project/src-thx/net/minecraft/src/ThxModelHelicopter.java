@@ -21,9 +21,9 @@ public class ThxModelHelicopter extends ThxModel
     public ModelRenderer rotor2;
     public ModelRenderer rotor3;
     
-    public ModelRenderer cockpit1;
-    public ModelRenderer cockpit2;
-    public ModelRenderer cockpit3;
+    //public ModelRenderer cockpit1;
+    //public ModelRenderer cockpit2;
+    //public ModelRenderer cockpit3;
 
     public ModelRenderer windshield;
     public ModelRenderer bottom;
@@ -154,6 +154,7 @@ public class ThxModelHelicopter extends ThxModel
             rotor3.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
             rotor3.setRotationPoint(4f * centerScale, -11f * centerScale, 0f * centerScale);
         }
+        /*
         cockpit1:
         {
             // cockpit1 right vertical support
@@ -187,6 +188,7 @@ public class ThxModelHelicopter extends ThxModel
             cockpit3.rotateAngleX = PI / 2f;
             cockpit3.rotateAngleZ = PI / 2f;
         }
+        */
         windshield:
         {
             float length = 9f;
@@ -215,9 +217,9 @@ public class ThxModelHelicopter extends ThxModel
         rightWall.render(x2scale);
         
         // windshield
-        cockpit1.render(scale);
-        cockpit2.render(scale);
-        cockpit3.render(scale);
+        //cockpit1.render(scale);
+        //cockpit2.render(scale);
+        //cockpit3.render(scale);
         windshield.render(x2scale);
         
         // rotor supports
