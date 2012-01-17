@@ -9,7 +9,7 @@ This version is v015, for use with Minecraft and ModLoader 1.0.0, single-player 
 You can download the compiled binary zip file from GitHub:
 
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_1.0.0_v015-bin.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_m1.1_v015-bin.zip
 
 
 Just copy the zip file to your '.minecraft/mods' directory and start Minecraft normally (full Minecraft and ModLoader required).
