@@ -1,15 +1,15 @@
-Minecraft Helicopter Mod, v014, 20120104
+Minecraft Helicopter Mod, v015, 20120115
 
 
 
 INTRODUCTION
 ------------
-This version is v014, for use with Minecraft and ModLoader 1.0.0, single-player only.
+This version is v015, for use with Minecraft and ModLoader 1.0.0, single-player only.
 
 You can download the compiled binary zip file from GitHub:
 
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_1.0.0_v014-bin.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_1.0.0_v015-bin.zip
 
 
 Just copy the zip file to your '.minecraft/mods' directory and start Minecraft normally (full Minecraft and ModLoader required).
@@ -81,6 +81,8 @@ Official YouTube playlist:
 
 CHANGELOG
 ---------
+v015: now for use with Minecraft and ModLoader 1.1.0
+
 v014: still for use with Minecraft and ModLoader 1.0.0
 v014: added altitude lock as suggested by Gabbiman (default key P)
 v014: added HUD/camera mode where model is hidden (default key C)

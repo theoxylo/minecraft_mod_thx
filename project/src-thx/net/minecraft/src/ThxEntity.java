@@ -227,7 +227,7 @@ public class ThxEntity extends Entity
     {
         EntityChicken chicken = new EntityChicken(worldObj);
         chicken.setLocationAndAngles(posX, posY, posZ, rotationYaw, 0.0F);
-        worldObj.entityJoinedWorld(chicken);
+        worldObj.spawnEntityInWorld(chicken);
     }
     
     void plog(String s) // periodic log

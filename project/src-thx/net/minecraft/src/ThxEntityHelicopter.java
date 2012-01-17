@@ -390,7 +390,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 
                 ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
                 newRocket.owner = this;
-                worldObj.entityJoinedWorld(newRocket);
+                worldObj.spawnEntityInWorld(newRocket);
                 
                 if (rocketCount == FULL_ROCKET_COUNT)
                 {
@@ -414,7 +414,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 
                 ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
                 newMissile.targetHelicopter = targetHelicopter;
-                worldObj.entityJoinedWorld(newMissile);
+                worldObj.spawnEntityInWorld(newMissile);
             }
             else if (Keyboard.isKeyDown(KEY_FIRE_MISSILE) && missileDelay < 0f)
             {
@@ -441,7 +441,7 @@ public class ThxEntityHelicopter extends ThxEntity
 
                 ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
                 //ThxEntityAgent newMissile = new ThxEntityAgent(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
-                worldObj.entityJoinedWorld(newMissile);
+                worldObj.spawnEntityInWorld(newMissile);
             }
 
             // START YAW
