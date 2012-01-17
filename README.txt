@@ -1,15 +1,15 @@
-Minecraft Helicopter Mod, v015, 20120115
+Minecraft Helicopter Mod, v016, 20120115
 
 
 
 INTRODUCTION
 ------------
-This version is v015, for use with Minecraft and ModLoader 1.0.0, single-player only.
+This version is v016, for use with Minecraft and ModLoader 1.0.0, single-player only.
 
 You can download the compiled binary zip file from GitHub:
 
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_m1.1_v015-bin.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_m1.1_v016-bin.zip
 
 
 Just copy the zip file to your '.minecraft/mods' directory and start Minecraft normally (full Minecraft and ModLoader required).
@@ -81,6 +81,8 @@ Official YouTube playlist:
 
 CHANGELOG
 ---------
+v016: still for use with Minecraft and ModLoader 1.1.0
+
 v015: now for use with Minecraft and ModLoader 1.1.0
 
 v014: still for use with Minecraft and ModLoader 1.0.0
