@@ -46,7 +46,7 @@ public class mod_Thx extends BaseMod
 	        
 	        log("Adding recipe for helicopter");
 	        ItemStack itemStack = new ItemStack(item, 1, 1);
-	        Object[] recipe = new Object[] {" X ", "X X", "XXX", Character.valueOf('X'), Block.planks};
+	        Object[] recipe = new Object[] {" X ", "R X", "XXX", Character.valueOf('X'), Item.ingotIron, Character.valueOf('R'), Item.redstone};
 	        ModLoader.AddRecipe(itemStack, recipe);
         }
         
