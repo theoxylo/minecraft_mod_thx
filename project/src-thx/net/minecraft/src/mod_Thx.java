@@ -1,6 +1,6 @@
 package net.minecraft.src;
 
-public class mod_Thx extends BaseMod
+public class mod_Thx extends BaseModMp
 {
 	static Class classHelicopter = net.minecraft.src.ThxEntityHelicopter.class;
 	static Class classMissile = net.minecraft.src.ThxEntityMissile.class;
@@ -65,7 +65,7 @@ public class mod_Thx extends BaseMod
     @Override
     public String getVersion()
     {
-        return "Minecraft Helicopter Mod - mod_thx-mc100_v015";
+        return "Minecraft Helicopter Mod - mod_thx-mc110_v016";
     }
     
     int getNextItemId()

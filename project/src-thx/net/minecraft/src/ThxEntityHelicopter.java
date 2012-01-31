@@ -73,7 +73,9 @@ public class ThxEntityHelicopter extends ThxEntity
 
     // total update count
     float _damage;
-    float timeSinceHit;
+    float timeSinceAttacked;
+    float timeSinceCollided;
+    float smokeDelay;
     
     boolean altitudeLock;
     float altitudeLockToggleDelay;
@@ -151,11 +153,29 @@ public class ThxEntityHelicopter extends ThxEntity
 	        
         // for auto-heal: 
         if (_damage > 0f) _damage -= deltaTime; // heal rate: 1 pt / sec
+
+        // create smoke to indicate damage
+        if (smokeDelay < 0f)
+        {
+            smokeDelay = 1f - _damage / MAX_HEALTH;
+            if (smokeDelay > .4f) smokeDelay = .4f;
+
+            for (int i = (int) (10f * _damage / MAX_HEALTH); i > 0; i--)
+            {
+                if (i % 2 == 0) worldObj.spawnParticle("smoke", posX -.5f + Math.random(), posY -.5f + Math.random(), posZ -.5f + Math.random(), 0.0, 0.0, 0.0);
+                else worldObj.spawnParticle("largesmoke", posX -.5f + Math.random(), posY -.5f + Math.random(), posZ -.5f + Math.random(), 0.0, 0.0, 0.0);
+                
+                if (i > 6) break;
+            }
+            if (_damage / MAX_HEALTH > .75f) worldObj.spawnParticle("flame", posX -.5f + Math.random(), posY -.5f + Math.random(), posZ -.5f + Math.random(), 0.0, 0.0, 0.0);
+        }
         
         // decrement cooldown timers
-        timeSinceHit -= deltaTime;
+        smokeDelay   -= deltaTime;
+        timeSinceAttacked -= deltaTime;
+        timeSinceCollided -= deltaTime;
         missileDelay -= deltaTime;
-        rocketDelay -= deltaTime;
+        rocketDelay  -= deltaTime;
         rocketReload -= deltaTime;
         
         
@@ -863,17 +883,75 @@ public class ThxEntityHelicopter extends ThxEntity
         if (isCollidedHorizontally || isCollidedVertically)
         {
 	        double velSq = motionX * motionX + motionY * motionY + motionZ * motionZ;
-	        if (velSq > .06)
+            
+	        //if (velSq > .03 && timeSinceCollided  < 0f)
+	        if (velSq > .005 && timeSinceCollided  < 0f)
 	        {
 	            log("crash velSq: " + velSq);
-	            this.attackEntityFrom(null, 8);
+                
+                timeSinceCollided = 1f; // sec delay before another collision possible
 	            
+                // TODO: set volume according to velocity
+                //worldObj.playSoundAtEntity(this, "random.break", (float) velSq, 1f);
+                
+                float volume = (float) velSq * 10f;
+                if (volume > .9f) volume = .9f;
+                
+                float pitch = .8f + worldObj.rand.nextFloat() * .4f;
+                log("volume: " + volume + ", pitch: " + pitch);
+                
+                worldObj.playSoundAtEntity(this, "random.explode",  volume, pitch);
+                //worldObj.playSoundAtEntity(this, "mob.wolf.shake",  volume, pitch);
+                //worldObj.playSoundAtEntity(this, "random.break",  /*0.8F*/volume, 0.8F + worldObj.rand.nextFloat() * 0.4F);
+                
+                takeDamage((float) velSq * 100f);
+                
 	            motionX *= .7;
 	            motionY *= .7;
 	            motionZ *= .7;
+
+	            for (int i = 0; i < 5; i++)
+	            {
+	                worldObj.spawnParticle("explode", posX - 1f + Math.random() *2f, posY - 1f + Math.random() *2f, posZ - 1f + Math.random() *2f, 0.0, 0.0, 0.0);
+	            }
 	        }
-            isCollidedHorizontally = false;
-            isCollidedVertically = false;
+            //isCollidedHorizontally = false;
+            //isCollidedVertically = false;
+        }
+        
+        //mountEntity(pilot);
+    }
+    
+    private void takeDamage(float damage)
+    {
+        _damage += damage;
+                
+        if (riddenByEntity != null) // this is the player's helicopter, so show damage msg
+        {
+            Minecraft minecraft = ModLoader.getMinecraftInstance();
+            minecraft.ingameGUI.addChatMessage("Damage: " + (int) (_damage * 100 / MAX_HEALTH) + "%");
+        }
+        
+        if (_damage > MAX_HEALTH)
+        {
+            //die();
+
+            // show message if not player helicopter
+            if (riddenByEntity == null)
+            {
+                Minecraft minecraft = ModLoader.getMinecraftInstance();
+                minecraft.ingameGUI.addChatMessage("Killed " + this);
+            }
+            else
+            {
+                riddenByEntity.ridingEntity = null;
+                riddenByEntity = null;
+            }
+            
+            boolean flaming = true;
+            worldObj.newExplosion(this, posX, posY, posZ, 2.3f, flaming);
+            
+            setEntityDead();
         }
     }
 
@@ -912,67 +990,51 @@ public class ThxEntityHelicopter extends ThxEntity
     */
     
     @Override
-    public boolean attackEntityFrom(DamageSource ds, int i)
+    public boolean attackEntityFrom(DamageSource damageSource, int i)
     {
         log("attackEntityFrom called");
+
+        if (timeSinceAttacked > 0f || isDead) return false;
+        
+        if (damageSource == null) return false; // when is this the case?
+        
+        Entity attackingEntity = damageSource.getEntity();
+        if (attackingEntity == null) return false; // when is this the case?
+        if (attackingEntity.equals(this)) return false; // ignore damage from self
+        if (attackingEntity.equals(riddenByEntity)) return false; // ignore damage from pilot
+	        
+        log("attacked by entity: " + attackingEntity);
         
         // take damage sound
-        worldObj.playSoundAtEntity(this, "random.drr", 1f, 1f);
-
-        if (timeSinceHit > 0 || isDead) return false;
+        worldObj.playSoundAtEntity(this, "random.bowhit", 1f, 1f);
         
-        // check for damage from pilot
-        //if (entity != null && riddenByEntity == entity) return false;
-        
-        if (riddenByEntity == null && ds != null)
+        // activate AI for empty helicopter hit by another helicopter
+        if (riddenByEntity == null && attackingEntity instanceof ThxEntityHelicopter)
         {
-	        // new in 1.8: DamageSource wraps Entity
-	        Entity entity = ds.getEntity();
-	        log("attacked by entity: " + entity);
-            if (entity != null && entity != this && entity instanceof ThxEntityHelicopter)
+            if (targetHelicopter == null)
             {
-	            // crashing takes damage from self, so have to check if this
-	            if (targetHelicopter == null)
-	            {
-		            // wake up ai if empty helicopter is attacked, friendly at first
-	                isTargetHelicopterFriendly = true;
-		            targetHelicopter = (ThxEntityHelicopter) entity;
-		            worldObj.playSoundAtEntity(entity, "random.fuse", 1f, 1f);
-	            }
-	            else if (entity == targetHelicopter && isTargetHelicopterFriendly)
-	            {
-	                //System.out.println("enemy helo");
-	                isTargetHelicopterFriendly = false;
-	            }
+	            targetHelicopter = (ThxEntityHelicopter) attackingEntity;
+                    
+	            // friendly at first
+                isTargetHelicopterFriendly = true;
+                    
+	            worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f);
+            }
+            else if (attackingEntity == targetHelicopter && isTargetHelicopterFriendly)
+            {
+                isTargetHelicopterFriendly = false;
+                
+                missileDelay = 10f; // initial missile delay
+                rocketDelay  =  5f; // initial rocket delay
             }
         }
                
-        _damage += (float)i * 4f;
-        log ("current damage percent: " + (100f * _damage / MAX_HEALTH));
+        takeDamage((float) i * 3f);
         
-        Minecraft minecraft = ModLoader.getMinecraftInstance();
-        if (riddenByEntity != null) // this is the player's helicopter, so show damage
-        {
-            minecraft.ingameGUI.addChatMessage("Damage: " + (int) (_damage * 100 / MAX_HEALTH) + "%");
-        }
-        timeSinceHit = .5f; // sec delay before this entity can be hit again
+        timeSinceAttacked = .5f; // sec delay before this entity can be attacked again
         
         setBeenAttacked();
 
-        if (_damage > MAX_HEALTH)
-        {
-            //die();
-
-            // show message if not player helicopter
-            if (riddenByEntity == null) minecraft.ingameGUI.addChatMessage("Killed " + this);
-            
-            riddenByEntity = null;
-            
-            boolean flaming = true;
-            worldObj.newExplosion(this, posX, posY, posZ, 2.3f, flaming);
-            
-            setEntityDead();
-        }
         return true; // the hit landed
     }
 
@@ -1026,39 +1088,48 @@ public class ThxEntityHelicopter extends ThxEntity
     @Override
     public boolean interact(EntityPlayer player)
     {
-        //log("interact called");
-
-        if (riddenByEntity == null)
+        if (riddenByEntity == player)
         {
-            // new pilot boarding
-	        player.mountEntity(this);
-	        
-            //lookPitch = false;
-
-	        // reset level to current look pitch
-            lookPitchZeroLevel = player.rotationPitch;
-	        
-            // inactivate ai
-            targetHelicopter = null;
-            
-	        if (ENABLE_DRONE_MODE)
-	        {
-	            // store original position of pilot
-	            dronePilotPosX = player.posX;
-	            dronePilotPosY = player.posY;
-	            dronePilotPosZ = player.posZ;
-	        }
-	        else
-	        {
-		        player.rotationYaw = rotationYaw;
-		        
-                // always start in 3rd-person view
-                //minecraft.gameSettings.thirdPersonView = 1; 
-	        }
+            pilotExit();
+            return true;
         }
-        else pilotExit();
         
-        return false;
+        if (riddenByEntity != null)
+        {
+            // already ridden by some other entity
+            return false;
+        }
+        
+        // new pilot boarding
+        
+        if (player.ridingEntity != null) 
+        {
+            // already riding some entity, so clear it
+            player.ridingEntity.riddenByEntity = null;
+        }
+        player.ridingEntity = this;
+        riddenByEntity = player;
+        
+        // reset level to current look pitch
+        lookPitchZeroLevel = player.rotationPitch;
+        
+        // inactivate ai
+        targetHelicopter = null;
+            
+        if (ENABLE_DRONE_MODE)
+        {
+            // store original position of pilot
+            dronePilotPosX = player.posX;
+            dronePilotPosY = player.posY;
+            dronePilotPosZ = player.posZ;
+        }
+        else
+        {
+	        player.rotationYaw = rotationYaw;
+        }
+        
+        log("interact() added pilot: " + player);
+        return true;
     }
 
     @Override
@@ -1087,7 +1158,13 @@ public class ThxEntityHelicopter extends ThxEntity
 
         if (ModLoader.getMinecraftInstance().gameSettings.thirdPersonView != 0) posAdjust = 0.0;
 
+        // to force camera to follow helicopter exactly, but stutters:
+        //pilot.setPositionAndRotation(posX + fwd.x * posAdjust, posY + pilot.getYOffset() + getMountedYOffset(), posZ + fwd.z * posAdjust, rotationYaw, rotationPitch);
+        //pilot.setLocationAndAngles(posX + fwd.x * posAdjust, posY -.7f, posZ + fwd.z * posAdjust, rotationYaw, rotationPitch);
+        
         pilot.setPosition(posX + fwd.x * posAdjust, posY + pilot.getYOffset() + getMountedYOffset(), posZ + fwd.z * posAdjust);
+        
+
     }
 
     private void pilotExit()
@@ -1098,17 +1175,6 @@ public class ThxEntityHelicopter extends ThxEntity
         
         model.visible = true; // hard to find otherwise!
         
-        if (ENABLE_DRONE_MODE) // end drone mode
-        {
-	        pilot.mountEntity(this); // riddenByEntity is now null
-	        ((ThxModelHelicopter) model).rotorSpeed = 0; // turn off rotor, it will spin down slowly
-	        
-	        // place pilot at position where drone mode was engaged
-	        pilot.setPosition(dronePilotPosX, dronePilotPosY, dronePilotPosZ);
-	        
-	        return;
-        }
-        
         // clear look-pitch to prevent judder
         rotationPitchSpeed = 0f;
         
@@ -1116,9 +1182,13 @@ public class ThxEntityHelicopter extends ThxEntity
         
         ((ThxModelHelicopter) model).rotorSpeed = 0f; // turn off rotor, it will spin down slowly
         
-        // use fwd XZ perp to exit left: x = z; z = -x;
-        double exitDist = 1.9;
-        pilot.setPosition(posX + fwd.z * exitDist, posY + pilot.yOffset, posZ - fwd.x * exitDist);
+        if (!ENABLE_DRONE_MODE)
+        {
+            // place pilot to left of helicopter
+            // (use fwd XZ perp to exit left: x = z, z = -x)
+            double exitDist = 1.9;
+            pilot.setPosition(posX + fwd.z * exitDist, posY + pilot.yOffset, posZ - fwd.x * exitDist);
+        }
     }
 
  

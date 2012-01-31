@@ -111,6 +111,8 @@ public class ThxConfig
         }
         
         ENABLE_LOGGING = getBoolProperty("enable_logging");
+        
+        //logKeyMap();
     }
     
     static boolean ensureDefault(Properties props, String name, String defaultValue)
@@ -126,7 +128,7 @@ public class ThxConfig
     static void logKeyMap()
     {
         log("Key names:");
-        for (int i = 0; i < 200; i++)
+        for (int i = 0; i < 255; i++)
         {
             log("Key " + i + ": " + Keyboard.getKeyName(i));
         }
