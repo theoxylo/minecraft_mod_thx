@@ -33,7 +33,7 @@ public class ThxConfig
         }
         catch (Exception e)
         {
-            System.out.println("Error loading int property '" + name + "'");
+            log("Error loading int property '" + name + "'");
             return 0;
         }
     }
@@ -46,7 +46,7 @@ public class ThxConfig
         }
         catch (Exception e)
         {
-            System.out.println("Boolean property '" + name + "' not found");
+            log("Boolean property '" + name + "' not found");
             return false;
         }
     }
@@ -66,7 +66,7 @@ public class ThxConfig
         }
         catch (Exception e)
         {
-            System.out.println("mod_thx: Error loading properties: " + e);
+            log("Error loading properties: " + e);
         }
         
         // add any missing properties using default values
@@ -97,17 +97,17 @@ public class ThxConfig
         //writeFile = ensureDefault(props, "enable_look_down_trans", "true") || writeFile;
         writeFile = ensureDefault(props, "enable_auto_throttle_zero", "true") || writeFile;
         
-        System.out.println("mod_thx: Loaded properties: " + props);
+        log("Loaded properties: " + props);
         
         if (writeFile) // update file with defaults if any properties were missing
         {
 	        try
 	        {
 	            // create default properties file
-	            System.out.println("mod_thx: Creating/updating config file " + filename);
+	            log("Creating/updating config file " + filename);
 	            props.store(new FileOutputStream(filename), "Added default properties");
 	        }
-	        catch(IOException e) { System.out.println("mod_thx: Error writing default properties file: " + e); }
+	        catch(IOException e) { log("Error writing default properties file: " + e); }
         }
         
         ENABLE_LOGGING = getBoolProperty("enable_logging");
@@ -136,6 +136,6 @@ public class ThxConfig
     
     static void log(String s)
     {
-        if (ENABLE_LOGGING) System.out.println(new java.util.Date() + " [mod_thx]: " + s);
+        System.out.println("mod_thx_client_config: " + s);
     }
 }

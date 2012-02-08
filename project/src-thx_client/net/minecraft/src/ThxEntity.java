@@ -2,10 +2,10 @@ package net.minecraft.src;
 
 import net.minecraft.client.Minecraft;
 
-import org.lwjgl.util.vector.Vector3f;
-
-public class ThxEntity extends Entity
+public class ThxEntity extends Entity //implements ISpawnable
 {
+    public Entity owner;
+    
     final float RAD_PER_DEG = 00.01745329f;
     final float PI          = 03.14159265f;
 
@@ -15,7 +15,6 @@ public class ThxEntity extends Entity
     
     long prevTime;
     float deltaTime;
-    float dT;
     
     double prevMotionX;
     double prevMotionY;
@@ -36,13 +35,13 @@ public class ThxEntity extends Entity
     
     ThxModel model;
     
-    Vector3f pos;
-    Vector3f vel;
-    //Vector3f ypr;
+    Vector3 pos;
+    Vector3 vel;
+    //Vector3 ypr;
     
-    Vector3f fwd;
-    Vector3f side;
-    Vector3f up;
+    Vector3 fwd;
+    Vector3 side;
+    Vector3 up;
     
     boolean inWater;
     
@@ -54,33 +53,18 @@ public class ThxEntity extends Entity
     {
         super(world);
         
+        log(world.isRemote ? "Created new MP entity" : "Created new SP entity");
+        
         preventEntitySpawning = true;
 
-        // lastTickPosX = 0.0; // ???
-        // lastTickPosY = 0.0; // ???
-        // lastTickPosZ = 0.0; // ???
-        
-        //prevPosX = posX = 0.0;
-        //prevPosY = posY = 0.0;
-        //prevPosZ = posZ = 0.0;
-
-        //prevMotionX = motionX = 0.0;
-        //prevMotionY = motionY = 0.0;
-        //prevMotionZ = motionZ = 0.0;
-        
-        // new fields available for use by subclasses:
-        //yawRad   = prevRotationYaw   = rotationYaw   = 0f;
-        //pitchRad = prevRotationPitch = rotationPitch = 0f;
-        //rollRad  = prevRotationRoll  = rotationRoll  = 0f;
-        
         // vectors relative to entity orientation
-        fwd = new Vector3f(0f, 0f, 0f);
-        side = new Vector3f(0f, 0f, 0f);
-        up = new Vector3f(0f, 0f, 0f);
+        fwd = new Vector3();
+        side = new Vector3();
+        up = new Vector3();
 
-        pos = new Vector3f(0f, 0f, 0f);
-        vel = new Vector3f(0f, 0f, 0f);
-        // ypr = new Vector3f(0f, 0f, 0f);
+        pos = new Vector3();
+        vel = new Vector3();
+        // ypr = new Vector3();
 
         prevTime = System.nanoTime();
 
@@ -90,32 +74,33 @@ public class ThxEntity extends Entity
     @Override
     public void onUpdate()
     {
-        if (guiScreen != minecraft.currentScreen)
+        super.onUpdate();
+        
+        if (!worldObj.isRemote) // can only pause in single-player mode
         {
-            // guiScreen has changed
-            guiScreen = minecraft.currentScreen;
-            
-	        if (guiScreen != null && guiScreen.doesGuiPauseGame())
-	        {
-	            //log("game paused " + this);
-	            paused = true;
-	        }
-	        else if (paused) // cancel paused
+            if (guiScreen != minecraft.currentScreen)
             {
-	            //log("game UN-paused " + this);
-                paused = false;
-                prevTime = System.nanoTime();
+                // guiScreen has changed
+                guiScreen = minecraft.currentScreen;
+
+                if (guiScreen != null && guiScreen.doesGuiPauseGame())
+                {
+                    // log("game paused " + this);
+                    paused = true;
+                }
+                else if (paused) // cancel paused
+                {
+                    // log("game UN-paused " + this);
+                    paused = false;
+                    prevTime = System.nanoTime();
+                }
             }
         }
 
-
         long time = System.nanoTime();
         deltaTime = ((float)(time - prevTime)) / 1000000000f; // convert to sec
-        dT = deltaTime / .05f; // relative to 20 fps
         prevTime = time;
-        //System.out.println("dT: " + dT);
         
-        super.onUpdate();
         updateRotation();
         updateVectors();
         
@@ -123,6 +108,9 @@ public class ThxEntity extends Entity
         inWater = worldObj.isAABBInMaterial(boundingBox.expand(.0, -.4, .0), Material.water);
     }
  
+    /*
+     *  Normalize all rotations to -180 to +180 degrees (typically only yaw is affected)
+     */
     public void updateRotation()
     {
         rotationYaw   %= 360f;
@@ -139,6 +127,8 @@ public class ThxEntity extends Entity
         if (rotationRoll > 180f) rotationRoll -= 360f;
         else if (rotationRoll < -180f) rotationRoll += 360f;
         rollRad = rotationRoll * RAD_PER_DEG;
+        
+        //plog("rotationYaw: " + rotationYaw + ", rotationPitch: " + rotationPitch + ", rotationRoll: " + rotationRoll);
     }
     
     public void updateVectors()
@@ -154,7 +144,7 @@ public class ThxEntity extends Entity
         fwd.y = sinPitch;
         fwd.z = -cosYaw * cosPitch;
         
-        //System.out.println(this + ": forward delta: " + Vector3f.sub(fwd, getForward(), null));
+        //System.out.println(this + ": forward delta: " + Vector3.sub(fwd, getForward(), null));
         
         side.x = cosYaw * cosRoll;
         side.y = -sinRoll;
@@ -164,7 +154,7 @@ public class ThxEntity extends Entity
         //up.y = cosPitch * cosRoll;
         //up.z = -sinYaw * sinRoll - sinPitch * cosRoll * cosYaw;
             
-        Vector3f.cross(fwd, side, up);
+        Vector3.cross(fwd, side, up);
         
         // refresh 
         pos.x = (float) posX;
@@ -180,13 +170,13 @@ public class ThxEntity extends Entity
         //ypr.z = rotationRoll;
     }
     
-    public Vector3f getForward()
+    public Vector3 getForward()
     {
         float f3 = MathHelper.sin(-rotationYaw * 0.01745329F - 3.141593F);
         float f1 = MathHelper.cos(-rotationYaw * 0.01745329F - 3.141593F);
         float f5 = -MathHelper.cos(-rotationPitch * 0.01745329F);
         float f7 = MathHelper.sin(-rotationPitch * 0.01745329F);
-        return new Vector3f(f3 * f5, f7, f1 * f5);
+        return new Vector3(f3 * f5, f7, f1 * f5);
     }
     
     @Override
@@ -240,7 +230,7 @@ public class ThxEntity extends Entity
     
     void log(String s)
     {        
-        ThxConfig.log(toString() + ": " + s);
+        ThxConfig.log(this + ": " + s);
     }
     
     @Override
@@ -248,5 +238,64 @@ public class ThxEntity extends Entity
     {
         return this.getClass().getSimpleName() + " " + entityId;
     }
+    
+    //@Override
+    /*
+    public void spawn(Packet230ModLoader packet)
+    {
+        log("Received spawn packet");
+        
+        int entityIdOrig = entityId;
+        
+        entityId = packet.dataInt[0];
+        
+        //setPosition(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2]);
+        setPositionAndRotation(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2], packet.dataFloat[3], packet.dataFloat[4]);
 
+        serverPosX = (int)packet.dataFloat[0] * 32;
+        serverPosY = (int)packet.dataFloat[1] * 32;
+        serverPosZ = (int)packet.dataFloat[2] * 32;
+        rotationYaw = packet.dataFloat[3];
+        rotationPitch = packet.dataFloat[4];
+        rotationYaw = packet.dataFloat[5];
+        motionX = packet.dataFloat[6];
+        motionY = packet.dataFloat[7];
+        motionZ = packet.dataFloat[8];
+        
+        log("Updated pos, rot, mot, and id for entity with previous id " + entityIdOrig);
+        log("posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
+
+    }
+    */
+    
+    public void sendUpdatePacket(int type, String msg)
+    {
+        if (!worldObj.isRemote)
+        {
+            //log("packet not sent in SP mode");
+            return;
+        }
+        
+        Packet230ModLoader packet = new Packet230ModLoader();
+        packet.packetType = type;
+        
+        packet.dataString = new String[]{ msg };
+        
+        packet.dataInt = new int[1];
+        packet.dataInt[0] = entityId;
+        
+        packet.dataFloat = new float[9];
+        packet.dataFloat[0] = (float) posX;
+        packet.dataFloat[1] = (float) posY;
+        packet.dataFloat[2] = (float) posZ;
+        packet.dataFloat[3] = rotationYaw;
+        packet.dataFloat[4] = rotationPitch;
+        packet.dataFloat[5] = rotationYaw;
+        packet.dataFloat[6] = (float) motionX;
+        packet.dataFloat[7] = (float) motionY;
+        packet.dataFloat[8] = (float) motionZ;
+        
+        ModLoaderMp.SendPacket(mod_Thx.instance, packet);
+        log("Sent update packet: " + packet.modId + "." + packet.packetType + ", posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
+    }
 }

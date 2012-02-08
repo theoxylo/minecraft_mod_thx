@@ -12,11 +12,15 @@ public class ThxItemHelicopter extends Item
         super(i);
         maxStackSize = 16;
         shiftedId = shiftedIndex;
+        
+        mod_Thx.log("Created new helicopter item: " + this);
     }
 
     @Override
     public boolean onItemUse(ItemStack itemstack, EntityPlayer player, World world, int i, int j, int k, int l)
     {
+        mod_Thx.log("onItemUse - using helicopter item: " + this);
+        
         itemstack.stackSize--;
         
         world.playSoundAtEntity(player, "random.bow", 0.5F, 0.4F / (itemRand.nextFloat() * 0.4F + 0.8F));
@@ -33,8 +37,8 @@ public class ThxItemHelicopter extends Item
         double posZ = player.posZ + f1 * f5 * 3.0;
         float yaw = (player.rotationYaw -45) % 360f;
             
-        ThxEntityHelicopter te = new ThxEntityHelicopter(world, posX, posY, posZ, yaw);
-        world.spawnEntityInWorld(te);
+        mod_Thx.log("Spawning new helicopter from item");
+        world.spawnEntityInWorld(new ThxEntityHelicopter(world, posX, posY, posZ, yaw, player));;
         
         return false;
     }

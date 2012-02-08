@@ -120,37 +120,34 @@ public class ThxEntityRocket  extends ThxEntity
         {
             vec3d1 = Vec3D.createVector(movingobjectposition.hitVec.xCoord, movingobjectposition.hitVec.yCoord, movingobjectposition.hitVec.zCoord);
         }
-        if(!worldObj.multiplayerWorld)
+        Entity entity = null;
+        List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.addCoord(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
+        double d = 0.0;
+        for(int i1 = 0; i1 < list.size(); i1++)
         {
-            Entity entity = null;
-            List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.addCoord(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
-            double d = 0.0;
-            for(int i1 = 0; i1 < list.size(); i1++)
+            Entity entity1 = (Entity)list.get(i1);
+            if(!entity1.canBeCollidedWith() || entity1 == owner) // && field_20049_i < 50)
             {
-                Entity entity1 = (Entity)list.get(i1);
-                if(!entity1.canBeCollidedWith() || entity1 == owner) // && field_20049_i < 50)
-                {
-                    continue;
-                }
-                float f4 = 0.3F;
-                AxisAlignedBB axisalignedbb = entity1.boundingBox.expand(f4, f4, f4);
-                MovingObjectPosition movingobjectposition1 = axisalignedbb.calculateIntercept(vec3d, vec3d1);
-                if(movingobjectposition1 == null)
-                {
-                    continue;
-                }
-                double d1 = vec3d.distanceTo(movingobjectposition1.hitVec);
-                if(d1 < d || d == 0.0D)
-                {
-                    entity = entity1;
-                    d = d1;
-                }
+                continue;
             }
+            float f4 = 0.3F;
+            AxisAlignedBB axisalignedbb = entity1.boundingBox.expand(f4, f4, f4);
+            MovingObjectPosition movingobjectposition1 = axisalignedbb.calculateIntercept(vec3d, vec3d1);
+            if(movingobjectposition1 == null)
+            {
+                continue;
+            }
+            double d1 = vec3d.distanceTo(movingobjectposition1.hitVec);
+            if(d1 < d || d == 0.0D)
+            {
+                entity = entity1;
+                d = d1;
+            }
+        }
 
-            if(entity != null)
-            {
-                movingobjectposition = new MovingObjectPosition(entity);
-            }
+        if(entity != null)
+        {
+            movingobjectposition = new MovingObjectPosition(entity);
         }
         if(movingobjectposition != null)
         {

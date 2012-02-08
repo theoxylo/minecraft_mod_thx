@@ -91,7 +91,7 @@ public class ThxEntityMissile extends ThxEntity
         
         // gravity pull
         //if (motionY > -.09) motionY -= GRAVITY;
-        motionY -= GRAVITY * dT;
+        motionY -= GRAVITY * deltaTime / .05f;
 
         // following is a cheap check but note that it doesn't
         // allow for any way to slow or change course once max'ed
