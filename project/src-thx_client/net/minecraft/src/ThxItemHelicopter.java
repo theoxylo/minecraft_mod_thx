@@ -40,7 +40,7 @@ public class ThxItemHelicopter extends Item
         if (!world.isRemote)
         {
             mod_Thx.log("Spawning new helicopter from item");
-            world.spawnEntityInWorld(new ThxEntityHelicopter(world, posX, posY, posZ, yaw, player));;
+            world.spawnEntityInWorld(new ThxEntityHelicopter(world, posX, posY, posZ, yaw));;
         }
         
         return false;

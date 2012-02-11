@@ -1,10 +1,10 @@
-Minecraft Helicopter Mod, v016, 20120115
+Minecraft THX Helicopter Mod, v016, 20120208
 
 
 
 INTRODUCTION
 ------------
-This version is v016, for use with Minecraft and ModLoader 1.0.0, single-player only.
+This version is v016, for use with Minecraft and ModLoader 1.1, both single and multi-player
 
 You can download the compiled binary zip file from GitHub:
 
@@ -12,15 +12,34 @@ You can download the compiled binary zip file from GitHub:
     https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_m1.1_v016-bin.zip
 
 
-Just copy the zip file to your '.minecraft/mods' directory and start Minecraft normally (full Minecraft and ModLoader required).
+Keep in mind that this is an early release of a mod still under construction. Even though no corruption issues have been reported, please back-up your worlds before using (always a good idea). 
 
-After running at least once, check out the options in file '.minecraft/mods/mod_thx.options' for controls and other settings (see end of this file for annotated listing).
-
-Please keep in mind that this is an early release of a mod still under construction. Even though no corruption issues have been reported, please back-up your worlds before using (always a good idea). SMP multi-player is not supported and has not been tested in any way. Please make sure that Minecraft and ModLoader are working properly before installing this mod -- see log ouput in .minecraft/ModLoader.txt
+Make sure that Minecraft and ModLoader are working properly before installing this mod -- see log ouput in .minecraft/ModLoader.txt
 
 Please visit the forum thread to discuss, report issues, leave feedback, etc:
 
     http://www.minecraftforum.net/index.php?showtopic=763209
+
+
+
+SINGLE PLAYER INSTALLATION
+--------------------------
+
+If not done already, install ModLoader and test. This involves adding the ModLoader class files to your minecraft.jar file.
+
+Then copy the zip file downloaded above to your '.minecraft/mods' directory and start Minecraft normally.
+
+After running at least once, check out the options in file '.minecraft/mods/mod_thx.options' for controls and other settings (see end of this file for annotated listing).
+
+
+
+MULTIPLAYER CLIENT INSTALLATION
+-------------------------------
+
+
+
+MULTIPLAYER SERVER INSTALLATION
+-------------------------------
 
 
 

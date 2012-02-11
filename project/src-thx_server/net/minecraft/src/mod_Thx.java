@@ -24,8 +24,6 @@ public class mod_Thx extends BaseModMp
     public void load()
     {
         log("load() called");
-        
-        log("server.allowFlight: " + ModLoader.getMinecraftServerInstance().allowFlight);
 
         ThxConfig.loadProperties();
 
@@ -37,16 +35,16 @@ public class mod_Thx extends BaseModMp
          */
         helicopter:
         {
-        log("enabling flight on server");
-        ModLoader.getMinecraftServerInstance().allowFlight = true;
-
-        log("registering entity trackers and tracker entries");
-        int netId = 75;
-        ModLoaderMp.RegisterEntityTrackerEntry(ThxEntityHelicopter.class, netId);
-        
-        int distance = 30; //160;
-        int frequency = 20;
-        ModLoaderMp.RegisterEntityTracker(ThxEntityHelicopter.class, distance, frequency);
+            log("enabling flight on server");
+            ModLoader.getMinecraftServerInstance().allowFlight = true;
+            log("server.allowFlight: " + ModLoader.getMinecraftServerInstance().allowFlight);
+    
+            log("Registering net server entity spawn detail handlers");
+            ModLoaderMp.RegisterEntityTrackerEntry(ThxEntityHelicopter.class, ThxEntityHelicopter.netId);
+            
+            int distance = 30; //160; // spawn/despawn at this distance from entity
+            int frequency = 5; // constant updates //2; // 10 updates per second //20; // one update per second
+            ModLoaderMp.RegisterEntityTracker(ThxEntityHelicopter.class, distance, frequency);
 
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Helicopter with entity id " + entityId);
@@ -82,21 +80,19 @@ public class mod_Thx extends BaseModMp
     @Override
     public String getVersion()
     {
-        log("getVersion called");
+        //log("getVersion called");
         return "Minecraft THX Helicopter Mod - mod_thx-mc110_v016";
     }
 
     @Override
     public void HandlePacket(Packet230ModLoader packet, EntityPlayerMP player)
     {
-        log("Received packet type " + packet.packetType + " from player " + player);
+        //log("Received packet type " + packet.packetType + " from player " + player);
+        //log("player.ridingEntity: " + player.ridingEntity); // TODO: coming up null
         
-        log("player.ridingEntity: " + player.ridingEntity); // TODO: coming up null
-        
-        if (player.ridingEntity instanceof ThxEntityHelicopter)
+        if (packet.packetType == ThxEntityHelicopter.netId && player.ridingEntity instanceof ThxEntityHelicopter)
         {
-            log("Packet is for helicopter update");
-            
+            //log("Packet is for helicopter update");
             ((ThxEntity)player.ridingEntity).handleUpdatePacket(packet);
         }
     }

@@ -37,8 +37,11 @@ public class ThxItemHelicopter extends Item
         double posZ = player.posZ + f1 * f5 * 3.0;
         float yaw = (player.rotationYaw -45) % 360f;
             
-        mod_Thx.log("Spawning new helicopter from item");
-        world.spawnEntityInWorld(new ThxEntityHelicopter(world, posX, posY, posZ, yaw, player));;
+        if (!world.isRemote)
+        {
+            mod_Thx.log("Spawning new helicopter from item");
+            world.spawnEntityInWorld(new ThxEntityHelicopter(world, posX, posY, posZ, yaw));;
+        }
         
         return false;
     }

@@ -9,6 +9,8 @@ import org.lwjgl.input.Keyboard;
 
 public class ThxEntityHelicopter extends ThxEntity
 {
+    public static final int netId = 75;
+    
     static int instanceCount = 0;
 
     // controls and options
@@ -131,6 +133,7 @@ public class ThxEntityHelicopter extends ThxEntity
         setSize(1.8f, 2f);
 
         yOffset = .6f;
+        //yOffset = .0f;
 
         instanceCount++;
         log("C1 - ThxEntityHelicopter instance count: " + instanceCount);
@@ -144,10 +147,9 @@ public class ThxEntityHelicopter extends ThxEntity
         log("C2 - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
     }
 
-    public ThxEntityHelicopter(World world, double x, double y, double z, float yaw, Entity owner)
+    public ThxEntityHelicopter(World world, double x, double y, double z, float yaw)
     {
         this(world);
-        this.owner = owner;
         setLocationAndAngles(x, y, z, yaw, 0f);
         
         log("C3 - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ + ", yaw: " + yaw);
@@ -161,6 +163,7 @@ public class ThxEntityHelicopter extends ThxEntity
     @Override
     public void onUpdate()
     {
+        plog("onUpdate - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
         super.onUpdate();
 	        
         // for auto-heal: 
@@ -927,8 +930,10 @@ public class ThxEntityHelicopter extends ThxEntity
         updateDelay -= deltaTime;
         if (pilot != null && updateDelay < 0)
         {
+            //updateDelay = 5f; // 5 seconds
             updateDelay = 1f / UPDATE_RATE;
-            sendUpdatePacket(1, "hello from client");
+            
+            sendUpdatePacket(netId, "updatePacket from client helicopter entity " + entityId);
         }
     }
     
@@ -1092,25 +1097,28 @@ public class ThxEntityHelicopter extends ThxEntity
     @Override
     public double getMountedYOffset()
     {
-        return -.25;
+        return 0.0; //-.25;
     }
 
     @Override
     public boolean interact(EntityPlayer player)
     {
+        System.out.println("interact called with player: " + player);
+        
         if (riddenByEntity == player)
         {
             if (onGround || isCollidedVertically)
             {
                 log("Landed " + this);
-                
-                pilotExit();
             }
-            else log("Exited without landing, entering local drone mode");
+            else 
             {
-                enable_drone_mode = true; // fly helicopter remotely
-                player.ridingEntity = null; // allow normal character movement
+                log("Exited without landing, entering local drone mode");
+                
+                //enable_drone_mode = true; // fly helicopter remotely
+                //player.ridingEntity = null; // allow normal character movement
             }
+            pilotExit();
             return true;
         }
         
@@ -1120,15 +1128,18 @@ public class ThxEntityHelicopter extends ThxEntity
             return false;
         }
         
-        // new pilot boarding
-        
         if (player.ridingEntity != null) 
         {
-            // already riding some entity, so clear it
-            player.ridingEntity.riddenByEntity = null;
+            // already riding some other entity
+            return false;
         }
-        player.ridingEntity = this;
-        riddenByEntity = player;
+        
+        // new pilot boarding
+        if (!worldObj.isRemote)
+        {
+            log("interact() calling mountEntity on player " + player);
+            player.mountEntity(this);
+        }
         
         // reset level to current look pitch
         lookPitchZeroLevel = player.rotationPitch;
@@ -1146,7 +1157,7 @@ public class ThxEntityHelicopter extends ThxEntity
         else
         {
             enable_drone_mode = false;
-	        player.rotationYaw = rotationYaw;
+            player.rotationYaw = rotationYaw;
         }
         
         log("interact() added pilot: " + player);
@@ -1214,7 +1225,11 @@ public class ThxEntityHelicopter extends ThxEntity
         // clear pitch speed to prevent judder
         rotationPitchSpeed = 0f;
         
-        pilot.mountEntity(this); // riddenByEntity is now null
+        if (!worldObj.isRemote)
+        {
+            log("pilotExit() calling mountEntity on player " + pilot);
+            pilot.mountEntity(this); // riddenByEntity is now null
+        }
         
         ((ThxModelHelicopter) model).rotorSpeed = 0f; // turn off rotor, it will spin down slowly
         
@@ -1234,6 +1249,7 @@ public class ThxEntityHelicopter extends ThxEntity
     protected void writeEntityToNBT(NBTTagCompound nbttagcompound)
     {
         //log("writeEntityToNBT called");
+        log("writeEntityToNBT - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
     }
 
     @Override

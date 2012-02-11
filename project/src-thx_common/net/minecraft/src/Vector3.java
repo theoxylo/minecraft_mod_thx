@@ -2,7 +2,9 @@ package net.minecraft.src;
 
 public class Vector3
 {
-    public float x, y, z;
+    public float x;
+    public float y;
+    public float z;
     
     public Vector3()
     {
@@ -82,6 +84,11 @@ public class Vector3
         if (dest == null) dest = new Vector3();
         dest.set(left.x + right.x, left.y + right.y, left.z + right.z);
         return dest;
+    }
+    
+    public String toString()
+    {
+        return "[x " + x + ", y " + y + ", z " + z + "]";
     }
 
 }

@@ -4,8 +4,6 @@ import net.minecraft.client.Minecraft;
 
 public class ThxEntity extends Entity //implements ISpawnable
 {
-    public Entity owner;
-    
     final float RAD_PER_DEG = 00.01745329f;
     final float PI          = 03.14159265f;
 
@@ -268,16 +266,15 @@ public class ThxEntity extends Entity //implements ISpawnable
     }
     */
     
-    public void sendUpdatePacket(int type, String msg)
+    public void sendUpdatePacket(int entityNetId, String msg)
     {
-        if (!worldObj.isRemote)
-        {
-            //log("packet not sent in SP mode");
-            return;
-        }
+        if (!worldObj.isRemote) return;
+        if (!(riddenByEntity instanceof EntityClientPlayerMP)) return;
         
         Packet230ModLoader packet = new Packet230ModLoader();
-        packet.packetType = type;
+        
+        packet.modId = mod_Thx.instance.getId();
+        packet.packetType = entityNetId;
         
         packet.dataString = new String[]{ msg };
         
@@ -295,7 +292,10 @@ public class ThxEntity extends Entity //implements ISpawnable
         packet.dataFloat[7] = (float) motionY;
         packet.dataFloat[8] = (float) motionZ;
         
-        ModLoaderMp.SendPacket(mod_Thx.instance, packet);
+        ((EntityClientPlayerMP)riddenByEntity).sendQueue.addToSendQueue(packet);
+        
+        //((EntityClientPlayerMP)riddenByEntity).sendQueue.addToSendQueue(new Packet13PlayerLookMove(posX, boundingBox.minY, posY, posZ, rotationYaw, rotationPitch, onGround));
+        
         log("Sent update packet: " + packet.modId + "." + packet.packetType + ", posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
     }
 }

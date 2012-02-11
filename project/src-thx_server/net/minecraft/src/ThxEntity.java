@@ -3,8 +3,6 @@ package net.minecraft.src;
 
 public class ThxEntity extends Entity //implements ISpawnable
 {
-    public Entity owner;
-    
     final float RAD_PER_DEG = 00.01745329f;
     final float PI          = 03.14159265f;
 
@@ -42,10 +40,13 @@ public class ThxEntity extends Entity //implements ISpawnable
     
     boolean inWater;
     
+    float plogDelay;
    
     public ThxEntity(World world)
     {
         super(world);
+        
+        log(world.isRemote ? "Created new MP entity" : "Created new SP entity");
         
         preventEntitySpawning = true;
 
@@ -64,7 +65,12 @@ public class ThxEntity extends Entity //implements ISpawnable
     @Override
     public void onUpdate()
     {
-        super.onUpdate();
+        //log("--- TE onUpdate before super: posX: " + posX + ", posY: " + posY + ", posZ: " + posZ + ", last tick X: " + lastTickPosX + ", airborne: " + isAirBorne);
+        
+        //super.onUpdate();
+        
+        //log("+++ TE onUpdate after super: posX: " + posX + ", posY: " + posY + ", posZ: " + posZ + ", ticks: " + ticksExisted);
+        
         long time = System.nanoTime();
         deltaTime = ((float)(time - prevTime)) / 1000000000f; // convert to sec
         prevTime = time;
@@ -79,7 +85,7 @@ public class ThxEntity extends Entity //implements ISpawnable
     /*
      *  Normalize all rotations to -180 to +180 degrees (typically only yaw is affected)
      */
-    public void updateRotation()
+    private void updateRotation()
     {
         rotationYaw   %= 360f;
         if (rotationYaw > 180f) rotationYaw -= 360f;
@@ -99,7 +105,7 @@ public class ThxEntity extends Entity //implements ISpawnable
         //plog("rotationYaw: " + rotationYaw + ", rotationPitch: " + rotationPitch + ", rotationRoll: " + rotationRoll);
     }
     
-    public void updateVectors()
+    private void updateVectors()
     {
         float cosRoll  = (float) MathHelper.cos(-rollRad);
         float sinRoll  = (float) MathHelper.sin(-rollRad);
@@ -125,9 +131,11 @@ public class ThxEntity extends Entity //implements ISpawnable
         Vector3.cross(fwd, side, up);
         
         // refresh 
+        //log("--- pos vector3 before update: " + pos);
         pos.x = (float) posX;
         pos.y = (float) posY;
         pos.z = (float) posZ;
+        //log("+++ pos vector3 after update: " + pos);
         
         vel.x = (float) motionX;
         vel.y = (float) motionY;
@@ -157,7 +165,12 @@ public class ThxEntity extends Entity //implements ISpawnable
 
     void plog(String s) // periodic log
     {
-        if (plog && ticksExisted % 60 == 0)
+        plogDelay -= deltaTime;
+        if (plogDelay > 0f) return; 
+        
+        plogDelay = 1f;
+        
+        if (plog) // && ticksExisted % 60 == 0)
         {
             log(s);
         }
@@ -225,7 +238,7 @@ public class ThxEntity extends Entity //implements ISpawnable
     
     public void handleUpdatePacket(Packet230ModLoader packet)
     {
-        log("handleUpdatePacket: " + packet.modId + "." + packet.packetType);
+        //log("handleUpdatePacket: " + packet.modId + "." + packet.packetType);
         
         if (packet.dataInt == null || packet.dataInt.length == 0) 
         {
@@ -237,37 +250,66 @@ public class ThxEntity extends Entity //implements ISpawnable
             log("Ignoring update packet for entity " + packet.dataInt[0]);
             return;
         }
-        int entityIdOrig = entityId;
         
-        entityId = packet.dataInt[0];
+        /* try not setting position, only movement and rotation.
+         * position will be set by server packets
+        prevPosX = posX;
+        prevPosY = posY;
+        prevPosZ = posZ;
         
-        lastTickPosX = prevPosX = posX = packet.dataFloat[0];
-        lastTickPosY = prevPosY = posY = packet.dataFloat[1];
-        lastTickPosY = prevPosZ = posZ = packet.dataFloat[2];
+        lastTickPosX = posX = packet.dataFloat[0];
+        lastTickPosY = posY = packet.dataFloat[1];
+        lastTickPosY = posZ = packet.dataFloat[2];
         setPositionAndRotation(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2], packet.dataFloat[3], packet.dataFloat[4]);
+         */
         
+        
+        setPositionAndRotation(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2], packet.dataFloat[3], packet.dataFloat[4]);
         //setLocationAndAngles(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2], packet.dataFloat[3], packet.dataFloat[4]);
         //setPosition(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2]);
 
+        /*
+        prevRotationYaw = rotationYaw;
+        prevRotationPitch = rotationPitch;
+        prevRotationRoll = rotationRoll;
+        */
+        
         rotationYaw = packet.dataFloat[3];
         rotationPitch = packet.dataFloat[4];
-        rotationYaw = packet.dataFloat[5];
+        rotationRoll = packet.dataFloat[5];
         
+        /*
+        prevMotionX = motionX;
+        prevMotionY = motionY;
+        prevMotionZ = motionZ;
         motionX = packet.dataFloat[6];
         motionY = packet.dataFloat[7];
         motionZ = packet.dataFloat[8];
+        */
         
-        log("Updated pos, rot, mot, and id for entity with previous id " + entityIdOrig + ", posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
+        log("handleUpdatePacket - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
+
+        
+        //log("Updated rotation and motion for entity " + entityId + ", rotationYaw " + rotationYaw + ", motionX " + motionX);
+        //log("Updated entity " + entityId + ", posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
     }
     
-    public void sendPacket(EntityPlayerMP player, int type, String msg)
+    public void mountEntity(Entity entity)
     {
-        log("Sending packet type " + type);
+        super.mountEntity(entity);
+        log("mountEntity called with entity " + entity.entityId);
         
-        Packet230ModLoader packet = new Packet230ModLoader();
-        packet.modId = mod_Thx.instance.getId();
-        packet.packetType = type;
-        packet.dataString = new String[]{ msg };
-        ModLoaderMp.SendPacketTo(mod_Thx.instance, player, packet);
+        if (worldObj.isRemote)
+        {
+            log("mountEntity sending packets for entity " + entity.entityId);
+	        //playerNetServerHandler.sendPacket(new Packet39AttachEntity(this, ridingEntity));
+	        //playerNetServerHandler.teleportTo(posX, posY, posZ, rotationYaw, rotationPitch);
+        }
+    }
+    
+    public void updateRidden()
+    {
+        log("updateRidden() called");
+        super.updateRidden();
     }
 }

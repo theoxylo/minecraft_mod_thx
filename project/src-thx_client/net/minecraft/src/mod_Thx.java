@@ -4,8 +4,6 @@ public class mod_Thx extends BaseModMp
 {
     public static mod_Thx instance;
 
-    static Class classHelicopter = net.minecraft.src.ThxEntityHelicopter.class;
-
     /*
      * coming soon! static Class classMissile = net.minecraft.src.ThxEntityMissile.class; static Class classRocket = net.minecraft.src.ThxEntityRocket.class;
      */
@@ -36,12 +34,12 @@ public class mod_Thx extends BaseModMp
          */
         helicopter:
         {
-            log("Registering net client entity handlers");
-            ModLoaderMp.RegisterNetClientHandlerEntity(classHelicopter, 75);
+            log("Registering net client entity spawn detail handlers");
+            ModLoaderMp.RegisterNetClientHandlerEntity(ThxEntityHelicopter.class, ThxEntityHelicopter.netId);
             
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Helicopter with entity id " + entityId);
-            ModLoader.RegisterEntityID(classHelicopter, "thxHelicopter", entityId);
+            ModLoader.RegisterEntityID(ThxEntityHelicopter.class, "thxHelicopter", entityId);
         }
 
         helicopterItem:
@@ -73,7 +71,7 @@ public class mod_Thx extends BaseModMp
     @Override
     public void AddRenderer(java.util.Map map)
     {
-        map.put(classHelicopter, new ThxRender());
+        map.put(ThxEntityHelicopter.class, new ThxRender());
         // map.put(classMissile, new ThxRender());
     }
 
