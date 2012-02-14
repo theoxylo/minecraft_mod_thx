@@ -5,7 +5,7 @@ import java.util.List;
 
 public class ThxEntityHelicopter extends ThxEntity
 {
-    public static final int netId = 75;
+    public static int netId = 75;
     
     static int instanceCount = 0;
 
@@ -155,21 +155,10 @@ public class ThxEntityHelicopter extends ThxEntity
     @Override
     public void onUpdate()
     {
-        plog("onUpdate - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
-
-        //log("--- TEH onUpdate before super: posX: " + posX + ", posY: " + posY + ", posZ: " + posZ + ", ticks: " + ticksExisted);
-        
         super.onUpdate();
         
-        //log("+++ TEH onUpdate after super: posX: " + posX + ", posY: " + posY + ", posZ: " + posZ + ", ticks: " + ticksExisted);
+        plog("onUpdate " + ticksExisted + " - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
         
-        if (riddenByEntity != null)
-        {
-            posX = riddenByEntity.posX;
-            posY = riddenByEntity.posY - getMountedYOffset();
-            posZ = riddenByEntity.posZ;
-        }
-	        
         // for auto-heal: 
         if (_damage > 0f) _damage -= deltaTime; // heal rate: 1 pt / sec
 
@@ -200,7 +189,11 @@ public class ThxEntityHelicopter extends ThxEntity
         EntityPlayer pilot = getPilot();
         if (pilot != null || targetHelicopter != null)
         {
-            if (pilot != null && pilot.isDead) riddenByEntity = null;
+            if (pilot != null && pilot.isDead)
+            {
+                //riddenByEntity = null;
+                pilot.mountEntity(this);
+            }
             
             if (onGround) // very slow on ground
             {
@@ -865,6 +858,8 @@ public class ThxEntityHelicopter extends ThxEntity
             motionX = 0.0;
             motionY = 0.0;
             motionZ = 0.0;
+            
+            // TODO: re-apply latest update packet to position/rotation?
         }
         else
         // no pilot -- slowly sink to the ground
@@ -1120,7 +1115,7 @@ public class ThxEntityHelicopter extends ThxEntity
     @Override
     public double getMountedYOffset()
     {
-        return 0.0; //-.25;
+        return -.25;
     }
 
     @Override
@@ -1128,7 +1123,7 @@ public class ThxEntityHelicopter extends ThxEntity
     {
         System.out.println("interact called with player: " + player);
         
-        if (riddenByEntity == player)
+        if (player.equals(riddenByEntity))
         {
             if (onGround || isCollidedVertically)
             {
@@ -1153,7 +1148,7 @@ public class ThxEntityHelicopter extends ThxEntity
         
         if (player.ridingEntity != null) 
         {
-            // already riding some other entity
+            // player is already riding some other entity
             return false;
         }
         
@@ -1201,26 +1196,6 @@ public class ThxEntityHelicopter extends ThxEntity
         // rather, we let the player rotate the pilot and the helicopter follows
         prevRotationYaw = rotationYaw;
         prevRotationPitch = rotationPitch;
-
-        
-        // for fixed pilot position while piloting drone
-        /*
-        if (enable_drone_mode) 
-        {
-            if (pilot.onGround)
-            {
-                pilot.setPosition(dronePilotPosX, dronePilotPosY, dronePilotPosZ);
-            }
-            else
-            {
-                // update pilot position
-                dronePilotPosX = pilot.posX;
-                dronePilotPosY = pilot.posY;
-                dronePilotPosZ = pilot.posZ;
-            }
-            return;
-        }
-        */
         
         // use fwd XZ components to adjust front/back position of pilot based on helicopter pitch
         // when in 1st-person mode to improve view

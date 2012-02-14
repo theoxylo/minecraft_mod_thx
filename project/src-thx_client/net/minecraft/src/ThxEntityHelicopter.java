@@ -933,7 +933,7 @@ public class ThxEntityHelicopter extends ThxEntity
             //updateDelay = 5f; // 5 seconds
             updateDelay = 1f / UPDATE_RATE;
             
-            sendUpdatePacket(netId, "updatePacket from client helicopter entity " + entityId);
+            sendUpdatePacketToServer();
         }
     }
     
@@ -1097,7 +1097,7 @@ public class ThxEntityHelicopter extends ThxEntity
     @Override
     public double getMountedYOffset()
     {
-        return 0.0; //-.25;
+        return -.25;
     }
 
     @Override
@@ -1105,7 +1105,7 @@ public class ThxEntityHelicopter extends ThxEntity
     {
         System.out.println("interact called with player: " + player);
         
-        if (riddenByEntity == player)
+        if (player.equals(riddenByEntity))
         {
             if (onGround || isCollidedVertically)
             {
@@ -1190,7 +1190,7 @@ public class ThxEntityHelicopter extends ThxEntity
             }
             else
             {
-                // update pilot position
+                // update recorded pilot position
                 dronePilotPosX = pilot.posX;
                 dronePilotPosY = pilot.posY;
                 dronePilotPosZ = pilot.posZ;

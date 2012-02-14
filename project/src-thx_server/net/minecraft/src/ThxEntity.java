@@ -1,11 +1,13 @@
 package net.minecraft.src;
 
 
-public class ThxEntity extends Entity //implements ISpawnable
+public class ThxEntity extends Entity implements ISpawnable
 {
     final float RAD_PER_DEG = 00.01745329f;
     final float PI          = 03.14159265f;
 
+    Packet230ModLoader latestUpdatePacket;
+    
     boolean plog = true;
 
     boolean visible = true;
@@ -32,7 +34,7 @@ public class ThxEntity extends Entity //implements ISpawnable
     
     Vector3 pos;
     Vector3 vel;
-    //Vector3 ypr;
+    Vector3 ypr;
     
     Vector3 fwd;
     Vector3 side;
@@ -57,7 +59,7 @@ public class ThxEntity extends Entity //implements ISpawnable
 
         pos = new Vector3();
         vel = new Vector3();
-        // ypr = new Vector3();
+        ypr = new Vector3();
 
         prevTime = System.nanoTime();
     }
@@ -65,15 +67,23 @@ public class ThxEntity extends Entity //implements ISpawnable
     @Override
     public void onUpdate()
     {
-        //log("--- TE onUpdate before super: posX: " + posX + ", posY: " + posY + ", posZ: " + posZ + ", last tick X: " + lastTickPosX + ", airborne: " + isAirBorne);
-        
+        ticksExisted++;
+
         //super.onUpdate();
-        
-        //log("+++ TE onUpdate after super: posX: " + posX + ", posY: " + posY + ", posZ: " + posZ + ", ticks: " + ticksExisted);
-        
+
         long time = System.nanoTime();
         deltaTime = ((float)(time - prevTime)) / 1000000000f; // convert to sec
         prevTime = time;
+        
+        prevPosX = posX;
+        prevPosY = posY;
+        prevPosZ = posZ;
+        
+        prevRotationPitch = rotationPitch;
+        prevRotationYaw   = rotationYaw;
+        prevRotationRoll  = rotationRoll;
+	        
+        applyUpdatePacketFromClient();    
         
         updateRotation();
         updateVectors();
@@ -109,16 +119,14 @@ public class ThxEntity extends Entity //implements ISpawnable
     {
         float cosRoll  = (float) MathHelper.cos(-rollRad);
         float sinRoll  = (float) MathHelper.sin(-rollRad);
-        float sinYaw   = (float) MathHelper.sin(-yawRad - PI);
         float cosYaw   = (float) MathHelper.cos(-yawRad - PI);
-        float sinPitch = (float) MathHelper.sin(-pitchRad);
+        float sinYaw   = (float) MathHelper.sin(-yawRad - PI);
         float cosPitch = (float) MathHelper.cos(-pitchRad);
+        float sinPitch = (float) MathHelper.sin(-pitchRad);
         
         fwd.x = -sinYaw * cosPitch;
         fwd.y = sinPitch;
         fwd.z = -cosYaw * cosPitch;
-        
-        //System.out.println(this + ": forward delta: " + Vector3.sub(fwd, getForward(), null));
         
         side.x = cosYaw * cosRoll;
         side.y = -sinRoll;
@@ -127,23 +135,19 @@ public class ThxEntity extends Entity //implements ISpawnable
         //up.x = cosYaw * sinRoll - sinYaw * sinPitch * cosRoll; 
         //up.y = cosPitch * cosRoll;
         //up.z = -sinYaw * sinRoll - sinPitch * cosRoll * cosYaw;
-            
         Vector3.cross(fwd, side, up);
         
-        // refresh 
-        //log("--- pos vector3 before update: " + pos);
         pos.x = (float) posX;
         pos.y = (float) posY;
         pos.z = (float) posZ;
-        //log("+++ pos vector3 after update: " + pos);
         
         vel.x = (float) motionX;
         vel.y = (float) motionY;
         vel.z = (float) motionZ;
         
-        //ypr.z = rotationYaw;
-        //ypr.y = rotationPitch;
-        //ypr.z = rotationRoll;
+        ypr.x = rotationYaw;
+        ypr.y = rotationPitch;
+        ypr.z = rotationRoll;
     }
     
     public Vector3 getForward()
@@ -165,12 +169,7 @@ public class ThxEntity extends Entity //implements ISpawnable
 
     void plog(String s) // periodic log
     {
-        plogDelay -= deltaTime;
-        if (plogDelay > 0f) return; 
-        
-        plogDelay = 1f;
-        
-        if (plog) // && ticksExisted % 60 == 0)
+        if (plog && ticksExisted % 60 == 0)
         {
             log(s);
         }
@@ -178,7 +177,7 @@ public class ThxEntity extends Entity //implements ISpawnable
     
     void log(String s)
     {        
-        ThxConfig.log(this + ": " + s);
+        System.out.println("[" + ticksExisted + "] " + this + ": " + s);
     }
     
     @Override
@@ -206,18 +205,30 @@ public class ThxEntity extends Entity //implements ISpawnable
         log("writeEntityToNBT called");
     }
     
-    /* from ISpawnable interface 
-     * 
-     * Passed to the client to update local copy with new entity id, pos, etc
-     * */
-    //@Override
-    /*
+    /** ISpawnable server interface */
+    @Override
     public Packet230ModLoader getSpawnPacket()
     {
+        Packet230ModLoader packet = getUpdatePacket();
+        packet.dataString[0] = "thx spawn packet for entity " + entityId;
+        log("Created new spawn packet: " + packet);
+        return packet;
+    }
+        
+    public Packet230ModLoader getUpdatePacket()
+    {
+        log("getUpdatePacket()");
+        
         Packet230ModLoader packet = new Packet230ModLoader();
         
-        packet.dataInt = new int[1];
+        packet.modId = mod_Thx.instance.getId();
+        packet.packetType = 75; // entity.entityNetId;
+        
+        packet.dataString = new String[]{ "thx update packet for tick " + ticksExisted };
+        
+        packet.dataInt = new int[2];
         packet.dataInt[0] = entityId;
+        packet.dataInt[1] = riddenByEntity != null ? riddenByEntity.entityId : 0;
         
         packet.dataFloat = new float[9];
         packet.dataFloat[0] = (float) posX;
@@ -225,91 +236,78 @@ public class ThxEntity extends Entity //implements ISpawnable
         packet.dataFloat[2] = (float) posZ;
         packet.dataFloat[3] = rotationYaw;
         packet.dataFloat[4] = rotationPitch;
-        packet.dataFloat[5] = rotationYaw;
+        packet.dataFloat[5] = rotationRoll;
         packet.dataFloat[6] = (float) motionX;
         packet.dataFloat[7] = (float) motionY;
         packet.dataFloat[8] = (float) motionZ;
         
-        log("Created new spawn packet: " + packet);
-        
         return packet;
     }
-    */
     
-    public void handleUpdatePacket(Packet230ModLoader packet)
+    public void handleUpdatePacketFromClient(Packet230ModLoader packet)
     {
-        //log("handleUpdatePacket: " + packet.modId + "." + packet.packetType);
-        
-        if (packet.dataInt == null || packet.dataInt.length == 0) 
+        if (packet.dataInt == null || packet.dataInt.length != 2)
         {
-            log("Ignore update packet without entity id");
+            log("Ignoring update packet without entity IDs");
             return;
         }
         if (entityId != packet.dataInt[0])
         {
-            log("Ignoring update packet for entity " + packet.dataInt[0]);
+            log("Ignoring update packet with wrong entity id " + packet.dataInt[0]);
+            return;
+        }
+        if (riddenByEntity == null)
+        {
+            log("Ignoring update packet since we have no pilot");
+            return;
+        }
+        if (riddenByEntity.entityId != packet.dataInt[1])
+        {
+            log("Ignoring update packet with wrong pilot id " + packet.dataInt[1]);
             return;
         }
         
-        /* try not setting position, only movement and rotation.
-         * position will be set by server packets
-        prevPosX = posX;
-        prevPosY = posY;
-        prevPosZ = posZ;
+        log("handleUpdatePacket - posX: " + packet.dataFloat[0] + ", posY: " + packet.dataFloat[1] + ", posZ: " + packet.dataFloat[2]);
         
-        lastTickPosX = posX = packet.dataFloat[0];
-        lastTickPosY = posY = packet.dataFloat[1];
-        lastTickPosY = posZ = packet.dataFloat[2];
-        setPositionAndRotation(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2], packet.dataFloat[3], packet.dataFloat[4]);
-         */
-        
-        
-        setPositionAndRotation(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2], packet.dataFloat[3], packet.dataFloat[4]);
-        //setLocationAndAngles(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2], packet.dataFloat[3], packet.dataFloat[4]);
-        //setPosition(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2]);
-
-        /*
-        prevRotationYaw = rotationYaw;
-        prevRotationPitch = rotationPitch;
-        prevRotationRoll = rotationRoll;
-        */
-        
-        rotationYaw = packet.dataFloat[3];
-        rotationPitch = packet.dataFloat[4];
-        rotationRoll = packet.dataFloat[5];
-        
-        /*
-        prevMotionX = motionX;
-        prevMotionY = motionY;
-        prevMotionZ = motionZ;
-        motionX = packet.dataFloat[6];
-        motionY = packet.dataFloat[7];
-        motionZ = packet.dataFloat[8];
-        */
-        
-        log("handleUpdatePacket - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
-
-        
-        //log("Updated rotation and motion for entity " + entityId + ", rotationYaw " + rotationYaw + ", motionX " + motionX);
-        //log("Updated entity " + entityId + ", posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
+        latestUpdatePacket = packet;
     }
     
-    public void mountEntity(Entity entity)
+    private void applyUpdatePacketFromClient()
     {
-        super.mountEntity(entity);
-        log("mountEntity called with entity " + entity.entityId);
+        plog("applyUpdatePacketFromClient(), latest packet: " + latestUpdatePacket);
         
-        if (worldObj.isRemote)
+        if (latestUpdatePacket == null) return;
+        
+        Packet230ModLoader p = latestUpdatePacket;
+        //latestUpdatePacket = null; uncomment to only apply each packet once
+        
+        setPosition(p.dataFloat[0], p.dataFloat[1], p.dataFloat[2]);
+        setRotation(p.dataFloat[3], p.dataFloat[4]);
+        
+        rotationRoll  = p.dataFloat[5] % 360f;
+        
+        // for now, clear any motion
+        motionX       = .0; //p.dataFloat[6];
+        motionY       = .0; //p.dataFloat[7];
+        motionZ       = .0; //p.dataFloat[8];
+        
+        
+        if (riddenByEntity == null)
         {
-            log("mountEntity sending packets for entity " + entity.entityId);
-	        //playerNetServerHandler.sendPacket(new Packet39AttachEntity(this, ridingEntity));
-	        //playerNetServerHandler.teleportTo(posX, posY, posZ, rotationYaw, rotationPitch);
+            System.out.println("update received even though no pilot");
+            latestUpdatePacket = null;
+        }
+        else if (riddenByEntity.isDead)
+        {
+	        // last update for this player packet if player is dead
+            log ("pilot entity is dead");
+            riddenByEntity.mountEntity(this);
+            latestUpdatePacket = null;
+        }
+        else 
+        {
+            updateRiderPosition();
         }
     }
-    
-    public void updateRidden()
-    {
-        log("updateRidden() called");
-        super.updateRidden();
-    }
+
 }

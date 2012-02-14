@@ -43,7 +43,7 @@ public class mod_Thx extends BaseModMp
             ModLoaderMp.RegisterEntityTrackerEntry(ThxEntityHelicopter.class, ThxEntityHelicopter.netId);
             
             int distance = 30; //160; // spawn/despawn at this distance from entity
-            int frequency = 5; // constant updates //2; // 10 updates per second //20; // one update per second
+            int frequency = 1; // constant updates //2; // 10 updates per second //20; // one update per second
             ModLoaderMp.RegisterEntityTracker(ThxEntityHelicopter.class, distance, frequency);
 
             int entityId = ModLoader.getUniqueEntityId();
@@ -93,7 +93,7 @@ public class mod_Thx extends BaseModMp
         if (packet.packetType == ThxEntityHelicopter.netId && player.ridingEntity instanceof ThxEntityHelicopter)
         {
             //log("Packet is for helicopter update");
-            ((ThxEntity)player.ridingEntity).handleUpdatePacket(packet);
+            ((ThxEntity) player.ridingEntity).handleUpdatePacketFromClient(packet);
         }
     }
 
