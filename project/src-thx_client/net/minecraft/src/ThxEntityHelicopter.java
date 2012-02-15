@@ -211,7 +211,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 motionY = 0.0;
                 motionZ *= FRICTION;
             }
-            else if (inWater)
+            else if (isInWater())
 	        {
                 if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
                 if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
