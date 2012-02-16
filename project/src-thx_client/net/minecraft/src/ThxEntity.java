@@ -22,6 +22,8 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
     public void onUpdate()
     {
 		super.onUpdate();
+		
+		applyUpdatePacketFromServer();
 
         if (!worldObj.isRemote) // can only pause in single-player mode
         {
@@ -54,41 +56,61 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
     {
         log("Received spawn packet: " + packet);
 
-        // refresh ever actually needed?
-        minecraft = ModLoader.getMinecraftInstance();
-
         int entityIdOrig = entityId;
 
         entityId = packet.dataInt[0];
 
-        applyUpdatePacketFromServer(packet);
+        handleUpdatePacketFromServer(packet);
+        applyUpdatePacketFromServer();
+        updateRotation();
+        updateVectors();
 
         log("spawn with pos, rot, mot, and id for entity with previous id " + entityIdOrig);
         log("spawn(): posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
     }
 
-    public void applyUpdatePacketFromServer(Packet230ModLoader packet)
+    public void handleUpdatePacketFromServer(Packet230ModLoader packet)
     {
-        int pilotEntityId = packet.dataInt[1];
+        plog("handleUpdatePacketFromServer: " + packet); // inbound packet not aligned with plog unless very high update rate
         
-        if (pilotEntityId == 0)
+        int packetPilotId = packet.dataInt[1];
+        int player = minecraft.thePlayer.entityId;
+        
+        if (packetPilotId == 0 && riddenByEntity != null)
         {
-            log("Skipping server update with no pilot");
-            return;
+            log("current pilot id is missing from update packet. shouldn't happen");
+            //log("Skipping server update with no pilot");
+            //return;
         }
         
         if (riddenByEntity != null && riddenByEntity.entityId == minecraft.thePlayer.entityId)
         {
-            if (pilotEntityId != minecraft.thePlayer.entityId) log("ignoring server update that would replace player pilot");
+            if (packetPilotId != minecraft.thePlayer.entityId) log("ignoring server update that would replace player pilot");
             
-            log("Skipping server update for player pilot entity " + riddenByEntity.entityId);
+            //log("Skipping server update for player pilot entity " + riddenByEntity.entityId);
             return;
         }
         
+        latestUpdatePacket = packet;
+    }
+        
+        
+    private void applyUpdatePacketFromServer()
+    {
+        if (latestUpdatePacket == null) return;
+        
+        Packet230ModLoader packet = latestUpdatePacket;
+        latestUpdatePacket = null;
+        
+        plog("applyUpdatePacketFromServer: " + packet);
+        
+        int packetPilotId = packet.dataInt[1];
+        int player = minecraft.thePlayer.entityId;
+        
         // no or wrong current pilot
-        if (riddenByEntity == null || riddenByEntity.entityId != pilotEntityId)
+        if (riddenByEntity == null || riddenByEntity.entityId != packetPilotId)
         {
-            Entity pilot = ((WorldClient) worldObj).getEntityByID(pilotEntityId);
+            Entity pilot = ((WorldClient) worldObj).getEntityByID(packetPilotId);
             if (pilot != null && !pilot.isDead)
             {
                 log("applyUpdatePacket: pilot " + pilot + " now boarding");
@@ -96,13 +118,13 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
             }
         }
 
-        serverPosX = (int) packet.dataFloat[0] * 32;
-        serverPosY = (int) packet.dataFloat[1] * 32;
-        serverPosZ = (int) packet.dataFloat[2] * 32;
-
-        setPosition(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2]);
-        setRotation(packet.dataFloat[3], packet.dataFloat[4]);
-
+        serverPosX = MathHelper.floor_float(packet.dataFloat[0] * 32f);
+        serverPosY = MathHelper.floor_float(packet.dataFloat[1] * 32f);
+        serverPosZ = MathHelper.floor_float(packet.dataFloat[2] * 32f);
+        
+        setPositionAndRotation(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2], packet.dataFloat[3], packet.dataFloat[4]);
+        //setPositionAndRotation2(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2], packet.dataFloat[3], packet.dataFloat[4], 0);
+        
         rotationRoll = packet.dataFloat[5] % 360f;
 
         // for now, clear any motion
@@ -131,20 +153,19 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
         packet.dataInt[0] = entityId;
         packet.dataInt[1] = riddenByEntity.entityId;
 
-        packet.dataFloat = new float[9];
+        packet.dataFloat = new float[6];
         packet.dataFloat[0] = (float) posX;
         packet.dataFloat[1] = (float) posY;
         packet.dataFloat[2] = (float) posZ;
         packet.dataFloat[3] = rotationYaw;
         packet.dataFloat[4] = rotationPitch;
         packet.dataFloat[5] = rotationRoll;
-        packet.dataFloat[6] = (float) motionX;
-        packet.dataFloat[7] = (float) motionY;
-        packet.dataFloat[8] = (float) motionZ;
+        //packet.dataFloat[6] = (float) motionX;
+        //packet.dataFloat[7] = (float) motionY;
+        //packet.dataFloat[8] = (float) motionZ;
 
+        //log("Sending update packet: " + packet);
         minecraft.getSendQueue().addToSendQueue(packet);
-
-        log("Sent update packet: " + packet.modId + "." + packet.packetType + ", posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
     }
 
     @Override

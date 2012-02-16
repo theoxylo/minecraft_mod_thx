@@ -57,6 +57,7 @@ public abstract class ThxEntityBase extends Entity
     public void onUpdate()
     {
         ticksExisted++;
+        plog(String.format("start onUpdate, pilot %d [posX: %5.2f, posY: %5.2f, posZ: %5.2f, yaw: %5.2f]", getPilotId(), posX, posY, posZ, rotationYaw));
         
         long time = System.nanoTime();
         deltaTime = ((float) (time - prevTime)) / 1000000000f; // convert to sec
@@ -69,6 +70,11 @@ public abstract class ThxEntityBase extends Entity
         prevRotationPitch = rotationPitch;
         prevRotationYaw = rotationYaw;
         prevRotationRoll = rotationRoll;
+    }
+    
+    public int getPilotId()
+    {
+        return riddenByEntity != null ? riddenByEntity.entityId : 0;
     }
     
     public boolean isInWater()
@@ -149,6 +155,13 @@ public abstract class ThxEntityBase extends Entity
         super.setEntityDead();
     }
 
+    @Override
+    protected void fall(float f)
+    {
+        // no damage from falling, unlike super.fall
+        log("fall() called with arg " + f);
+    }
+    
     /* abstract methods from Entity base class */
     @Override
     protected void entityInit()
@@ -159,13 +172,13 @@ public abstract class ThxEntityBase extends Entity
     @Override
     protected void readEntityFromNBT(NBTTagCompound nbttagcompound)
     {
-        log("readEntityFromNBT called");
+        //log("readEntityFromNBT called");
     }
     
     @Override
     protected void writeEntityToNBT(NBTTagCompound nbttagcompound)
     {
-        log("writeEntityToNBT called");
+        //log("writeEntityToNBT called");
     }
     
     @Override
@@ -176,7 +189,7 @@ public abstract class ThxEntityBase extends Entity
 
     void log(String s)
     {
-        System.out.println(this + ": " + s);
+        System.out.println(String.format("[%4d] ", ticksExisted) + this + ": " + s);
     }
     
     void plog(String s) // periodic log
@@ -186,4 +199,5 @@ public abstract class ThxEntityBase extends Entity
             log(s);
         }
     }
+    
 }

@@ -5,10 +5,8 @@ import java.util.List;
 
 public class ThxEntityHelicopter extends ThxEntity
 {
-    public static int netId = 75;
+    public static final int netId = 75;
     
-    static int instanceCount = 0;
-
     // controls and options
     // set from mod_thx.properties
     static int KEY_ASCEND = 0;
@@ -124,40 +122,44 @@ public class ThxEntityHelicopter extends ThxEntity
         setSize(1.8f, 2f);
 
         yOffset = .6f;
-        //yOffset = 0f;
 
-        instanceCount++;
-        log("C1 - ThxEntityHelicopter instance count: " + instanceCount);
+        log("C1 - ThxEntityHelicopter() with world: " + world.getWorldInfo());
     }
 
+    /*
     public ThxEntityHelicopter(World world, double x, double y, double z)
     {
         this(world);
-        setPosition(x, y + yOffset, z);
+        //setPosition(x, y + yOffset, z);
+        setPosition(x, y, z);
         
-        log("C2 - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
+        log("Is this used? C2 - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
     }
+    */
 
     // constructor for item-use spawn
     public ThxEntityHelicopter(World world, double x, double y, double z, float yaw)
     {
         this(world);
-        setLocationAndAngles(x, y, z, yaw, 0f);
+        
+        //setLocationAndAngles(x, y, z, yaw, 0f);
+        //setPositionAndRotation(x, y, z, yaw, 0f);
+        setPosition(x, y, z);
+        setRotation(yaw, 0f);
         
         log("C3 - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ + ", yaw: " + yaw);
     }
 
-    public EntityPlayer getPilot()
+    public Entity getPilot()
     {
-        return (EntityPlayer) riddenByEntity;
+        //return (EntityPlayer) riddenByEntity;
+        return riddenByEntity;
     }
 
     @Override
     public void onUpdate()
     {
         super.onUpdate();
-        
-        plog("onUpdate " + ticksExisted + " - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
         
         // for auto-heal: 
         if (_damage > 0f) _damage -= deltaTime; // heal rate: 1 pt / sec
@@ -186,10 +188,10 @@ public class ThxEntityHelicopter extends ThxEntity
         rocketDelay  -= deltaTime;
         rocketReload -= deltaTime;
         
-        EntityPlayer pilot = getPilot();
+        Entity pilot = getPilot();
         if (pilot != null || targetHelicopter != null)
         {
-            if (pilot != null && pilot.isDead)
+            if (!worldObj.isRemote && pilot != null && pilot.isDead)
             {
                 //riddenByEntity = null;
                 pilot.mountEntity(this);
@@ -205,7 +207,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 motionY = 0.0;
                 motionZ *= FRICTION;
             }
-            else if (inWater)
+            else if (isInWater())
 	        {
                 if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
                 if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
@@ -238,7 +240,7 @@ public class ThxEntityHelicopter extends ThxEntity
             
             /* disable create item for now, too OP
             createItemDelay -= deltaTime;
-            if (isKeyDown(KEY_CREATE_ITEM) && createItemDelay < 0f && pilot != null)
+            if (Keyboard.isKeyDown(KEY_CREATE_ITEM) && createItemDelay < 0f && pilot != null)
             {
                 createItemDelay = 1f; // the delay in seconds
                 
@@ -247,7 +249,7 @@ public class ThxEntityHelicopter extends ThxEntity
             */
                         
             createMapDelay -= deltaTime;
-            if (isKeyDown(KEY_CREATE_MAP) && createMapDelay < 0f && pilot != null)
+            if (Keyboard.isKeyDown(KEY_CREATE_MAP) && createMapDelay < 0f && pilot != null)
             {
                 createMapDelay = 10f; // the delay in seconds
                 
@@ -304,7 +306,7 @@ public class ThxEntityHelicopter extends ThxEntity
             {
                 // no view changes for drone or AI
             }
-            else if (isKeyDown(KEY_LOOK_BACK)) // look back while key is held
+            else if (Keyboard.isKeyDown(KEY_LOOK_BACK)) // look back while key is held
             {
                 // remember current view mode and switch to reverse (only if not already)
                 /*
@@ -322,7 +324,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 prevViewMode = 2;
             }
             */
-            else if (isKeyDown(KEY_LOOK_PITCH) && lookPitchToggleDelay < 0f)
+            else if (Keyboard.isKeyDown(KEY_LOOK_PITCH) && lookPitchToggleDelay < 0f)
             {
                 lookPitchToggleDelay = .5f;
                 
@@ -343,7 +345,7 @@ public class ThxEntityHelicopter extends ThxEntity
                     //minecraft.ingameGUI.addChatMessage("Look-Pitch: OFF, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(_damage * 100 / MAX_HEALTH) + "%");
                 }
             }
-            else if (isKeyDown(KEY_HUD_MODE) && hudModeToggleDelay < 0f && pilot != null)
+            else if (Keyboard.isKeyDown(KEY_HUD_MODE) && hudModeToggleDelay < 0f && pilot != null)
             {
                 hudModeToggleDelay = .5f;
                 
@@ -371,14 +373,14 @@ public class ThxEntityHelicopter extends ThxEntity
             //if (minecraft.gameSettings.thirdPersonView != 0) model.visible = true;
 
             exitDelay -= deltaTime;
-            if (isKeyDown(KEY_EXIT) && exitDelay < 0f && pilot != null)
+            if (Keyboard.isKeyDown(KEY_EXIT) && exitDelay < 0f && pilot != null)
             {
                 exitDelay = 1f; // seconds before player can exit
                 pilotExit();
             }
 
             altitudeLockToggleDelay -= deltaTime;
-            if (isKeyDown(KEY_LOCK_ALT) && altitudeLockToggleDelay < 0f && pilot != null)
+            if (Keyboard.isKeyDown(KEY_LOCK_ALT) && altitudeLockToggleDelay < 0f && pilot != null)
             {
                 altitudeLockToggleDelay = .5f;
                 altitudeLock = !altitudeLock;
@@ -389,13 +391,11 @@ public class ThxEntityHelicopter extends ThxEntity
             {
 	            deltaPosToTarget.set((float)(targetHelicopter.posX - posX), 0f, (float)(targetHelicopter.posZ - posZ));
 	            thd = deltaPosToTarget.length();
-                //Vector3f deltaPos = Vector3f.add(targetHelicopter.pos, pos.negate(null), null);
-                //thd = deltaPos.length();
             }
             
             // FIRE ROCKET
             if (((targetHelicopter != null && !isTargetHelicopterFriendly && thd < 20f && thd > 5f && Math.abs(targetHelicopter.posY - posY) < 2f) 
-                || isKeyDown(KEY_FIRE_ROCKET)) 
+                || Keyboard.isKeyDown(KEY_FIRE_ROCKET)) 
                     && rocketDelay < 0f && rocketReload < 0f)
             {
                 rocketCount++;
@@ -460,7 +460,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 worldObj.spawnEntityInWorld(newMissile);
                 */
             }
-            else if (isKeyDown(KEY_FIRE_MISSILE) && missileDelay < 0f)
+            else if (Keyboard.isKeyDown(KEY_FIRE_MISSILE) && missileDelay < 0f)
             {
                 missileDelay = MISSILE_DELAY;
                 
@@ -538,11 +538,11 @@ public class ThxEntityHelicopter extends ThxEntity
             // buttonYaw:
             {
                 // button yaw
-                if (isKeyDown(KEY_ROTATE_LEFT)) // g, rotate left
+                if (Keyboard.isKeyDown(KEY_ROTATE_LEFT)) // g, rotate left
                 {
                     rotationYawSpeed -= 8f;
                 }
-                else if (isKeyDown(KEY_ROTATE_RIGHT)) // h, rotate right
+                else if (Keyboard.isKeyDown(KEY_ROTATE_RIGHT)) // h, rotate right
                 {
                     rotationYawSpeed += 8f;
                 }
@@ -577,7 +577,7 @@ public class ThxEntityHelicopter extends ThxEntity
             }
             else if (lookPitch) // helicopter follows player look pitch
             {
-                if (isKeyDown(KEY_AUTO_LEVEL))
+                if (Keyboard.isKeyDown(KEY_AUTO_LEVEL))
                 {
                     lookPitchZeroLevel = pilot.rotationPitch;
                 }
@@ -618,12 +618,12 @@ public class ThxEntityHelicopter extends ThxEntity
             else // normal button pitch and roll by player
             {
 	            // check for auto-level command, will be applied later if no other pitch key pressed
-                if (isKeyDown(KEY_AUTO_LEVEL))
+                if (Keyboard.isKeyDown(KEY_AUTO_LEVEL))
 	            {
 	                autoLevelDelay = 1.5f; // effect lasts a short time after key is released, but overriden by key presses
 	            }
                 
-	            if (isKeyDown(KEY_FORWARD))
+	            if (Keyboard.isKeyDown(KEY_FORWARD))
                 {
                     if (rotationPitch > MAX_PITCH)
                     {
@@ -642,7 +642,7 @@ public class ThxEntityHelicopter extends ThxEntity
 	                    rotationPitchSpeed = 0f;
                     }
                 }
-                else if (isKeyDown(KEY_BACK))
+                else if (Keyboard.isKeyDown(KEY_BACK))
                 {
                     if (rotationPitch < -MAX_PITCH / 1.5f)
                     {
@@ -692,7 +692,7 @@ public class ThxEntityHelicopter extends ThxEntity
                     // seek target
                 }
             }
-            else if (isKeyDown(KEY_LEFT) && pilot != null)
+            else if (Keyboard.isKeyDown(KEY_LEFT) && pilot != null)
             {
                 if (rotationRoll > MAX_ROLL)
                 {
@@ -710,7 +710,7 @@ public class ThxEntityHelicopter extends ThxEntity
                     rotationRollSpeed = 0f;
                 }
             }
-            else if (isKeyDown(KEY_RIGHT) && pilot != null)
+            else if (Keyboard.isKeyDown(KEY_RIGHT) && pilot != null)
             {
                 if (rotationRoll < -MAX_ROLL) 
                 {
@@ -772,15 +772,15 @@ public class ThxEntityHelicopter extends ThxEntity
                     throttle *= .6; // auto zero throttle   
                 }
             }
-            else if (isKeyDown(KEY_ASCEND) 
-                 || (isKeyDown(KEY_FORWARD) && lookPitch)) // player
+            else if (Keyboard.isKeyDown(KEY_ASCEND) 
+                 || (Keyboard.isKeyDown(KEY_FORWARD) && lookPitch)) // player
             {
                 if (throttle < THROTTLE_MAX) throttle += THROTTLE_INC;
                 if (throttle > THROTTLE_MAX) throttle = THROTTLE_MAX;
                 // throttle = THROTTLE_MAX;
             }
-            else if (isKeyDown(KEY_DESCEND)
-                 || (isKeyDown(KEY_BACK) && lookPitch)) 
+            else if (Keyboard.isKeyDown(KEY_DESCEND)
+                 || (Keyboard.isKeyDown(KEY_BACK) && lookPitch)) 
             {
                 if (throttle > THROTTLE_MIN) throttle -= THROTTLE_INC;
                 if (throttle < THROTTLE_MIN) throttle = THROTTLE_MIN;
@@ -870,7 +870,7 @@ public class ThxEntityHelicopter extends ThxEntity
             ((ThxModelHelicopter) model).bottomVisible = true;
             */
 
-            if (onGround || inWater)
+            if (onGround || isInWater())
             {
                 if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
                 if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
@@ -1121,7 +1121,7 @@ public class ThxEntityHelicopter extends ThxEntity
     @Override
     public boolean interact(EntityPlayer player)
     {
-        System.out.println("interact called with player: " + player);
+        log("interact called with player " + player.entityId);
         
         if (player.equals(riddenByEntity))
         {
@@ -1155,8 +1155,8 @@ public class ThxEntityHelicopter extends ThxEntity
         // new pilot boarding
         if (!worldObj.isRemote)
         {
-            log("interact() calling mountEntity on player " + player);
-            player.mountEntity(this);
+	        log("interact() calling mountEntity on player " + player.entityId);
+	        player.mountEntity(this);
         }
         
         // reset level to current look pitch
@@ -1187,7 +1187,7 @@ public class ThxEntityHelicopter extends ThxEntity
     {
         if (enable_drone_mode) return;
         
-        EntityPlayer pilot = getPilot();
+        Entity pilot = getPilot();
         if (pilot == null) return;
 
         // this will tell the default impl in Entity.updateRidden()
@@ -1208,8 +1208,6 @@ public class ThxEntityHelicopter extends ThxEntity
         //pilot.setLocationAndAngles(posX + fwd.x * posAdjust, posY -.7f, posZ + fwd.z * posAdjust, rotationYaw, rotationPitch);
         
         pilot.setPosition(posX + fwd.x * posAdjust, posY + pilot.getYOffset() + getMountedYOffset(), posZ + fwd.z * posAdjust);
-        
-
     }
 
     private void pilotExit()
@@ -1243,28 +1241,11 @@ public class ThxEntityHelicopter extends ThxEntity
         pilot.setPosition(posX + fwd.z * exitDist, posY + pilot.yOffset, posZ - fwd.x * exitDist);
     }
  
-    @Override
-    protected void writeEntityToNBT(NBTTagCompound nbttagcompound)
+    static class Keyboard // no-op replacement for client-side org.lwjgl.input.Keyboard
     {
-        //log("writeEntityToNBT called");
-        log("writeEntityToNBT - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
-    }
-
-    @Override
-    protected void readEntityFromNBT(NBTTagCompound nbttagcompound)
-    {
-        log("readEntityFromNBT called");
-    }
-
-    @Override
-    protected void fall(float f)
-    {
-        // no damage from falling, unlike super.fall
-        log("fall() called with arg " + f);
-    }
-    
-    public boolean isKeyDown(int key)
-    {
-        return false;
+	    public static boolean isKeyDown(int key)
+	    {
+	        return false;
+	    }
     }
 }

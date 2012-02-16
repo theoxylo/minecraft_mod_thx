@@ -3,7 +3,6 @@ package net.minecraft.src;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.src.NBTTagCompound;
 
 import org.lwjgl.input.Keyboard;
 
@@ -11,8 +10,6 @@ public class ThxEntityHelicopter extends ThxEntity
 {
     public static final int netId = 75;
     
-    static int instanceCount = 0;
-
     // controls and options
     // set from mod_thx.properties
     static int KEY_ASCEND = Keyboard.getKeyIndex(ThxConfig.getProperty("key_ascend"));
@@ -67,8 +64,7 @@ public class ThxEntityHelicopter extends ThxEntity
         return (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
     }
     
-    float updateDelay;
-    float UPDATE_RATE = 4; // update packets sent per second
+    float UPDATE_RATE = 2;
 
     // Vectors for repeated calculations
     Vector3 thrust = new Vector3();
@@ -125,47 +121,51 @@ public class ThxEntityHelicopter extends ThxEntity
     {
         super(world);
 
-        // new Exception("EntityThxHelicopter call stack:").printStackTrace();
-
         model = new ThxModelHelicopter();
         //model = new ThxModelHelicopterAlt();
 
         setSize(1.8f, 2f);
 
         yOffset = .6f;
-        //yOffset = .0f;
 
-        instanceCount++;
-        log("C1 - ThxEntityHelicopter instance count: " + instanceCount);
+        log("C1 - ThxEntityHelicopter() with world: " + world.getWorldInfo());
     }
 
+    /*
     public ThxEntityHelicopter(World world, double x, double y, double z)
     {
         this(world);
-        setPosition(x, y + yOffset, z);
+        //setPosition(x, y + yOffset, z);
+        setPosition(x, y, z);
         
-        log("C2 - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
+        log("Is this used? C2 - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
     }
+    */
 
+    // constructor for item-use spawn
     public ThxEntityHelicopter(World world, double x, double y, double z, float yaw)
     {
         this(world);
-        setLocationAndAngles(x, y, z, yaw, 0f);
+        
+        //setLocationAndAngles(x, y, z, yaw, 0f);
+        //setPositionAndRotation(x, y, z, yaw, 0f);
+        setPosition(x, y, z);
+        setRotation(yaw, 0f);
         
         log("C3 - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ + ", yaw: " + yaw);
     }
 
-    public EntityPlayer getPilot()
+    public Entity getPilot()
     {
-        return (EntityPlayer) riddenByEntity;
+        //return (EntityPlayer) riddenByEntity;
+        return riddenByEntity;
     }
 
     @Override
     public void onUpdate()
     {
-        plog("onUpdate - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
         super.onUpdate();
-	        
+        
         // for auto-heal: 
         if (_damage > 0f) _damage -= deltaTime; // heal rate: 1 pt / sec
 
@@ -196,10 +196,14 @@ public class ThxEntityHelicopter extends ThxEntity
         
         Minecraft minecraft = ModLoader.getMinecraftInstance();
         
-        EntityPlayer pilot = getPilot();
+        Entity pilot = getPilot();
         if (pilot != null || targetHelicopter != null)
         {
-            if (pilot != null && pilot.isDead) riddenByEntity = null;
+            if (!worldObj.isRemote && pilot != null && pilot.isDead)
+            {
+                //riddenByEntity = null;
+                pilot.mountEntity(this);
+            }
             
             if (onGround) // very slow on ground
             {
@@ -846,7 +850,7 @@ public class ThxEntityHelicopter extends ThxEntity
             ((ThxModelHelicopter) model).rotorSpeed = 0;
             ((ThxModelHelicopter) model).bottomVisible = true;
 
-            if (onGround || inWater)
+            if (onGround || isInWater())
             {
                 if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
                 if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
@@ -927,13 +931,9 @@ public class ThxEntityHelicopter extends ThxEntity
             //isCollidedVertically = false;
         }
         
-        updateDelay -= deltaTime;
-        if (pilot != null && updateDelay < 0)
+        if (pilot != null)
         {
-            //updateDelay = 5f; // 5 seconds
-            updateDelay = 1f / UPDATE_RATE;
-            
-            sendUpdatePacketToServer();
+            if (ticksExisted % UPDATE_RATE == 0) sendUpdatePacketToServer();
         }
     }
     
@@ -1103,7 +1103,7 @@ public class ThxEntityHelicopter extends ThxEntity
     @Override
     public boolean interact(EntityPlayer player)
     {
-        System.out.println("interact called with player: " + player);
+        log("interact called with player " + player.entityId);
         
         if (player.equals(riddenByEntity))
         {
@@ -1130,15 +1130,15 @@ public class ThxEntityHelicopter extends ThxEntity
         
         if (player.ridingEntity != null) 
         {
-            // already riding some other entity
+            // player is already riding some other entity
             return false;
         }
         
         // new pilot boarding
         if (!worldObj.isRemote)
         {
-            log("interact() calling mountEntity on player " + player);
-            player.mountEntity(this);
+	        log("interact() calling mountEntity on player " + player.entityId);
+	        player.mountEntity(this);
         }
         
         // reset level to current look pitch
@@ -1169,10 +1169,10 @@ public class ThxEntityHelicopter extends ThxEntity
     {
         if (enable_drone_mode) return;
         
-        EntityPlayer pilot = getPilot();
+        Entity pilot = getPilot();
         if (pilot == null) return;
 
-        // this will tell the default impl in pilot.updateRidden
+        // this will tell the default impl in Entity.updateRidden()
         // that no adjustment need be made to the pilot's yaw or pitch
         // as a direct result of riding this helicopter entity.
         // rather, we let the player rotate the pilot and the helicopter follows
@@ -1210,8 +1210,6 @@ public class ThxEntityHelicopter extends ThxEntity
         //pilot.setLocationAndAngles(posX + fwd.x * posAdjust, posY -.7f, posZ + fwd.z * posAdjust, rotationYaw, rotationPitch);
         
         pilot.setPosition(posX + fwd.x * posAdjust, posY + pilot.getYOffset() + getMountedYOffset(), posZ + fwd.z * posAdjust);
-        
-
     }
 
     private void pilotExit()
@@ -1243,25 +1241,5 @@ public class ThxEntityHelicopter extends ThxEntity
         // (use fwd XZ perp to exit left: x = z, z = -x)
         double exitDist = 1.9;
         pilot.setPosition(posX + fwd.z * exitDist, posY + pilot.yOffset, posZ - fwd.x * exitDist);
-    }
- 
-    @Override
-    protected void writeEntityToNBT(NBTTagCompound nbttagcompound)
-    {
-        //log("writeEntityToNBT called");
-        log("writeEntityToNBT - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
-    }
-
-    @Override
-    protected void readEntityFromNBT(NBTTagCompound nbttagcompound)
-    {
-        log("readEntityFromNBT called");
-    }
-
-    @Override
-    protected void fall(float f)
-    {
-        // no damage from falling, unlike super.fall
-        log("fall() called with arg " + f);
     }
 }
