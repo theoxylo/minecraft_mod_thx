@@ -180,4 +180,40 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
         return d < 128.0 * 128.0;
     }
 
+    // DEBUGGING OVERRIDES
+    // DEBUGGING OVERRIDES
+    // DEBUGGING OVERRIDES
+    
+    /* called by NetClientHandler for Packet28EntityVelocity */
+    @Override
+    public void setVelocity(double x, double y, double z)
+    {
+        log("setVelocity (Packet28?)");
+        super.setVelocity(x, y, z);
+        getDataWatcher();
+    }
+    
+    /* called by NetClientHandler for Packet40EntityMetadata */
+    @Override
+    public DataWatcher getDataWatcher()
+    {
+        log("getDataWatcher (Packet40?)");
+        return super.getDataWatcher();
+    }
+    
+    /* called by NetClientHandler for Packet30/31/32/33Entity and Packet34EntityTeleport */
+    @Override
+    public void setPositionAndRotation2(double d, double d1, double d2, float f, float f1, int i)
+    {
+        log("setPositionAndRotation2 (Packet30/31/32/33Entity and Packet34EntityTeleport?)");
+        super.setPositionAndRotation2(d, d1, d2, f, f1, i);
+    }
+    
+    /* called by NetClientHandler for Packet38EntityStatus */
+    @Override
+    public void handleHealthUpdate(byte b)
+    {
+        log("handleHealthUpdate (Packet38EntityStatus?)");
+        super.handleHealthUpdate(b);
+    }
 }

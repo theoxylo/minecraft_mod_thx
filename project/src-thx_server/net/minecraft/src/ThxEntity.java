@@ -106,5 +106,12 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
             updateRiderPosition();
         }
     }
-
+    
+    @Override
+    protected void setBeenAttacked()
+    {
+        log("setBeenAttacked called");
+        super.setBeenAttacked();
+        //above will set velocityChanged = true which will send extra packet if on server
+    }
 }

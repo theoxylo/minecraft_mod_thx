@@ -1,4 +1,4 @@
-Minecraft THX Helicopter Mod, v016, 20120208
+Minecraft THX Helicopter Mod, v016, 20120216
 
 
 
@@ -22,24 +22,46 @@ Please visit the forum thread to discuss, report issues, leave feedback, etc:
 
 
 
-SINGLE PLAYER INSTALLATION
---------------------------
+INSTALLATION
+------------
 
-If not done already, install ModLoader and test. This involves adding the ModLoader class files to your minecraft.jar file.
+Install Risugami's ModLoader 1.1 and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
 
-Then copy the zip file downloaded above to your '.minecraft/mods' directory and start Minecraft normally.
+    http://www.minecraftforum.net/index.php?showtopic=75440
 
-After running at least once, check out the options in file '.minecraft/mods/mod_thx.options' for controls and other settings (see end of this file for annotated listing).
-
-
-
-MULTIPLAYER CLIENT INSTALLATION
--------------------------------
+Then proceed below for the type of installation desired.
 
 
 
-MULTIPLAYER SERVER INSTALLATION
--------------------------------
+    SINGLE PLAYER INSTALLATION
+    --------------------------
+
+    Copy the mod SSP zip file to your '.minecraft/mods' directory and start Minecraft normally.
+
+    After running at least once, check out the options in file '.minecraft/mods/mod_thx.options' for controls and other settings (see below for annotated listing).
+
+
+
+    MULTIPLAYER CLIENT INSTALLATION
+    -------------------------------
+
+    Install Flan's ModLoaderMp 1.1 v2 client and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
+
+        http://www.minecraftforum.net/index.php?showtopic=182918
+
+    Then copy the client thx mod class files from the above download.
+
+
+
+
+    MULTIPLAYER SERVER INSTALLATION
+    -------------------------------
+
+    Install Flan's ModLoaderMp 1.1 v2.1 server and test. This involves adding the class files to your minecraft_server.jar file and NOT deleting META-INF. Please visit the official topic for detailed instructions and support:
+
+        http://www.minecraftforum.net/index.php?showtopic=182918
+
+    Then copy the server thx mod class files from the above download. The THX mod will replace some of the ModLoaderMp files, but comapatibility with existing mods should be preserved.
 
 
 
@@ -47,11 +69,13 @@ CRAFTING
 ---------
 The current crafting recipe is very cheap and simple -- build a boat and add a roof (rotor assembly)!
 
-XPX
-PxP
-PPP
+ ----- 
+|  P  |
+|P   P|
+|P P P|
+ ----- 
 
-Where X is nothing and P is wooden planks.
+Where P is wooden planks.
 
 
 
