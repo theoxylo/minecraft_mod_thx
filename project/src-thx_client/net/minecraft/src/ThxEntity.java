@@ -23,7 +23,10 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
     {
 		super.onUpdate();
 		
-		applyUpdatePacketFromServer();
+		if (net.minecraft.src.IPacketSource.class.isAssignableFrom(this.getClass()))
+		{
+			applyUpdatePacketFromServer();
+		}
 
         if (!worldObj.isRemote) // can only pause in single-player mode
         {
@@ -71,7 +74,7 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
 
     public void handleUpdatePacketFromServer(Packet230ModLoader packet)
     {
-        plog("handleUpdatePacketFromServer: " + packet); // inbound packet not aligned with plog unless very high update rate
+        //plog("handleUpdatePacketFromServer: " + packet); // inbound packet not aligned with plog unless very high update rate
         
         int packetPilotId = packet.dataInt[1];
         int player = minecraft.thePlayer.entityId;
@@ -117,13 +120,16 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
                 pilot.mountEntity(this);
             }
         }
+        
+        // ignore fire controls, only used by server to spawn projectiles
+        //fire1 = packet.dataInt[2];
+        //fire2 = packet.dataInt[3];
 
         serverPosX = MathHelper.floor_float(packet.dataFloat[0] * 32f);
         serverPosY = MathHelper.floor_float(packet.dataFloat[1] * 32f);
         serverPosZ = MathHelper.floor_float(packet.dataFloat[2] * 32f);
         
         setPositionAndRotation(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2], packet.dataFloat[3], packet.dataFloat[4]);
-        //setPositionAndRotation2(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2], packet.dataFloat[3], packet.dataFloat[4], 0);
         
         rotationRoll = packet.dataFloat[5] % 360f;
 
@@ -131,43 +137,22 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
         motionX = .0; // packet.dataFloat[6];
         motionY = .0; // packet.dataFloat[7];
         motionZ = .0; // packet.dataFloat[8];
+        
+        damage = packet.dataFloat[9];
+        throttle = packet.dataFloat[10];
     }
 
     public void sendUpdatePacketToServer()
     {
-        if (!worldObj.isRemote)
-            return;
+        if (!worldObj.isRemote) return;
 
         // only the pilot player can send updates to the server
-        if (!minecraft.thePlayer.equals(riddenByEntity))
-            return;
-
-        Packet230ModLoader packet = new Packet230ModLoader();
-
-        packet.modId = mod_Thx.instance.getId();
-        packet.packetType = 75; // entityNetId;
-
-        packet.dataString = new String[] { "thx update packet for entity " + entityId };
-
-        packet.dataInt = new int[2];
-        packet.dataInt[0] = entityId;
-        packet.dataInt[1] = riddenByEntity.entityId;
-
-        packet.dataFloat = new float[6];
-        packet.dataFloat[0] = (float) posX;
-        packet.dataFloat[1] = (float) posY;
-        packet.dataFloat[2] = (float) posZ;
-        packet.dataFloat[3] = rotationYaw;
-        packet.dataFloat[4] = rotationPitch;
-        packet.dataFloat[5] = rotationRoll;
-        //packet.dataFloat[6] = (float) motionX;
-        //packet.dataFloat[7] = (float) motionY;
-        //packet.dataFloat[8] = (float) motionZ;
+        if (!minecraft.thePlayer.equals(riddenByEntity)) return;
 
         //log("Sending update packet: " + packet);
-        minecraft.getSendQueue().addToSendQueue(packet);
+        minecraft.getSendQueue().addToSendQueue(getUpdatePacket());
     }
-
+    
     @Override
     public float getShadowSize()
     {

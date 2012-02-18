@@ -29,17 +29,29 @@ public class mod_Thx extends BaseModMp
         ModLoader.SetInGameHook(this, true, true);
 
         // register entity classes
-        /*
-         * coming soon! missile: { int entityId = ModLoader.getUniqueEntityId(); log("Registering entity class for Missile with entity id " + entityId); ModLoader.RegisterEntityID(classMissile, "thxMissile", entityId); }
-         */
         helicopter:
         {
-            log("Registering net client entity spawn detail handlers");
-            ModLoaderMp.RegisterNetClientHandlerEntity(ThxEntityHelicopter.class, ThxEntityHelicopter.netId);
+            ModLoaderMp.RegisterNetClientHandlerEntity(ThxEntityHelicopter.class, 75);
             
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Helicopter with entity id " + entityId);
             ModLoader.RegisterEntityID(ThxEntityHelicopter.class, "thxHelicopter", entityId);
+        }
+        rocket:
+        {
+            ModLoaderMp.RegisterNetClientHandlerEntity(ThxEntityRocket.class, 76);
+            
+            int entityId = ModLoader.getUniqueEntityId();
+            log("Registering entity class for Rocket with entity id " + entityId);
+            ModLoader.RegisterEntityID(ThxEntityRocket.class, "thxRocket", entityId);
+        }
+        missile:
+        {
+            ModLoaderMp.RegisterNetClientHandlerEntity(ThxEntityMissile.class, 77);
+            
+            int entityId = ModLoader.getUniqueEntityId();
+            log("Registering entity class for Missile with entity id " + entityId);
+            ModLoader.RegisterEntityID(ThxEntityMissile.class, "thxMissile", entityId);
         }
 
         helicopterItem:

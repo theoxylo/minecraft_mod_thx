@@ -20,6 +20,8 @@ public class ThxEntityRocket  extends ThxEntity
     {
         this(entity.worldObj);
         
+        owner = entity;
+        
         field_20050_h = 0;
         setPositionAndRotation(x, y, z, yaw, pitch);
         
@@ -39,7 +41,8 @@ public class ThxEntityRocket  extends ThxEntity
         worldObj.playSoundAtEntity(this, "random.fizz", 1f, 1f);
     }
 
-    public void setHeading(double d, double d1, double d2, float f, float f1)
+    public void setHeading(double d, double d1, double d2, float f, 
+            float f1)
     {
         float f2 = MathHelper.sqrt_double(d * d + d1 * d1 + d2 * d2);
         d /= f2;
@@ -100,7 +103,6 @@ public class ThxEntityRocket  extends ThxEntity
                 if(field_20050_h == 1200)
                 {
                     setEntityDead();
-                    log("rocket is dead");
 		            worldObj.playSoundAtEntity(this, "random.pop", 1f, 1f);
 		            log("field_20050_h: " + field_20050_h);
                 }
@@ -155,41 +157,6 @@ public class ThxEntityRocket  extends ThxEntity
                 movingobjectposition.entityHit.attackEntityFrom(new EntityDamageSource("player", owner), 9);
             }
             
-            // for hit markers
-            //worldObj.spawnParticle("flame", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
-            worldObj.playSoundAtEntity(this, "random.explode", .3f, 1f);
-
-	        // kick up some debris if we hit a block, but only works for top surface
-	        int i = MathHelper.floor_double(posX);
-	        int j = MathHelper.floor_double(posY - 0.20000000298023224D - (double)yOffset);
-	        int k = MathHelper.floor_double(posZ);
-	        int j1 = worldObj.getBlockId(i, j, k);
-	        if (j1 > 0)
-	        {
-	            log("motionX: " + motionX);
-	            for (int k1 = 0; k1 < 4; k1++)
-	            {
-		            worldObj.spawnParticle((new StringBuilder()).append("tilecrack_").append(j1).toString(), posX + ((double)rand.nextFloat() - 0.5D) * (double)width, boundingBox.minY + 0.10000000000000001D, posZ + ((double)rand.nextFloat() - 0.5D) * (double)width, 1.0 + ((double)rand.nextFloat() - 0.5D),  1.0 + ((double)rand.nextFloat() - 0.5D),  1.0 + ((double)rand.nextFloat() - 0.5D));
-	            }
-	        }
-	        else
-	        {
-	            for (int k1 = 0; k1 < 4; k1++)
-	            {
-		            //worldObj.spawnParticle("flame", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
-		            worldObj.spawnParticle("smoke", posX + ((double)rand.nextFloat() - 0.5D), boundingBox.minY + 0.1, posZ + ((double)rand.nextFloat() - 0.5D),  1.0 + ((double)rand.nextFloat() - 0.5D),  1.0 + ((double)rand.nextFloat() - 0.5D),  1.0 + ((double)rand.nextFloat() - 0.5D));
-	            }
-	        }
-	        
-	        
-            //boolean flaming = false;
-            //worldObj.newExplosion(this, posX, posY, posZ, power, flaming);
-	        /*
-            float power = .5f;
-            Explosion explosion = new Explosion(worldObj, owner != null ? owner : this, posX, posY, posZ, power);
-            explosion.doExplosionB(false);
-            */
-        
             setEntityDead();
             
             return;
@@ -204,13 +171,6 @@ public class ThxEntityRocket  extends ThxEntity
         if(!enteredWater && isInWater())
         {
             enteredWater = true;
-            
-            worldObj.playSoundAtEntity(this, "random.splash", 1f, 1f);
-            for(int l = 0; l < 4; l++)
-            {
-                float f3 = 0.25F;
-                worldObj.spawnParticle("bubble", posX - motionX * (double)f3, posY - motionY * (double)f3, posZ - motionZ * (double)f3, motionX, motionY, motionZ);
-            }
         }
         
         // pitch and yaw

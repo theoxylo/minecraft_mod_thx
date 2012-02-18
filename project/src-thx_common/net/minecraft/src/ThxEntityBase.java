@@ -32,6 +32,12 @@ public abstract class ThxEntityBase extends Entity
     Vector3 fwd;
     Vector3 side;
     Vector3 up;
+    
+    int NET_PACKET_TYPE;
+    float damage;
+    float throttle;
+    int fire1;
+    int fire2;
 
     public ThxEntityBase(World world)
     {
@@ -200,4 +206,38 @@ public abstract class ThxEntityBase extends Entity
         }
     }
     
+    public Packet230ModLoader getUpdatePacket()
+    {
+        Packet230ModLoader packet = new Packet230ModLoader();
+
+        packet.modId = mod_Thx.instance.getId();
+        packet.packetType = NET_PACKET_TYPE;
+
+        packet.dataString = new String[] { "thx update packet for tick " + ticksExisted };
+
+        packet.dataInt = new int[4];
+        packet.dataInt[0] = entityId;
+        packet.dataInt[1] = riddenByEntity != null ? riddenByEntity.entityId : 0;
+        packet.dataInt[2] = fire1;
+        packet.dataInt[3] = fire2;
+        
+        // clear fire flags after use
+        fire1 = 0;
+        fire2 = 0;
+
+        packet.dataFloat = new float[11];
+        packet.dataFloat[0] = (float) posX;
+        packet.dataFloat[1] = (float) posY;
+        packet.dataFloat[2] = (float) posZ;
+        packet.dataFloat[3] = rotationYaw;
+        packet.dataFloat[4] = rotationPitch;
+        packet.dataFloat[5] = rotationRoll;
+        packet.dataFloat[6] = (float) motionX;
+        packet.dataFloat[7] = (float) motionY;
+        packet.dataFloat[8] = (float) motionZ;
+        packet.dataFloat[9] = damage;
+        packet.dataFloat[10] = throttle;
+        
+        return packet;
+    }
 }

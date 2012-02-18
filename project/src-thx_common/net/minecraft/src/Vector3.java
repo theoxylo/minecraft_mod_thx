@@ -74,18 +74,25 @@ public class Vector3
         return dest;
     }
     
+    public static Vector3 add(Vector3 left, Vector3 right, Vector3 dest)
+    {
+        if (dest == null) dest = new Vector3();
+        dest.set( left.x + right.x, left.y + right.y, left.z + right.z);
+        return dest;
+    }
+    
+    public static Vector3 subtract(Vector3 left, Vector3 right, Vector3 dest)
+    {
+        if (dest == null) dest = new Vector3();
+        dest.set( left.x - right.x, left.y - right.y, left.z - right.z);
+        return dest;
+    }
+    
     public static float dot(Vector3 left, Vector3 right) 
     {
         return left.x * right.x + left.y * right.y + left.z * right.z;
     }
 
-    public static Vector3 add(Vector3 left, Vector3 right, Vector3 dest) 
-    {
-        if (dest == null) dest = new Vector3();
-        dest.set(left.x + right.x, left.y + right.y, left.z + right.z);
-        return dest;
-    }
-    
     public String toString()
     {
         return "[x " + x + ", y " + y + ", z " + z + "]";

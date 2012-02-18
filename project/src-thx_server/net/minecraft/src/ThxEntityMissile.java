@@ -20,7 +20,7 @@ public class ThxEntityMissile extends ThxEntity
     {
         super(world);
         
-        model = new ThxModelMissile();
+        //model = new ThxModelMissile();
 
         setSize(0.25f, 0.25f);
 
@@ -28,7 +28,7 @@ public class ThxEntityMissile extends ThxEntity
         log("Created ThxEntityMissile instance: " + instanceCount);
         
 	    thrust = new Vector3();
-
+	    
         NET_PACKET_TYPE = 77;
         
         //System.out.println(toString() + " - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);

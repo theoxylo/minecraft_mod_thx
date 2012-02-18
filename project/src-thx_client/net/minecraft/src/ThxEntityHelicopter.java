@@ -6,8 +6,8 @@ import net.minecraft.client.Minecraft;
 
 import org.lwjgl.input.Keyboard;
 
-public class ThxEntityHelicopter extends ThxEntity
-{
+public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
+{    
     public static final int netId = 75;
     
     // controls and options
@@ -41,9 +41,10 @@ public class ThxEntityHelicopter extends ThxEntity
     
     final float MAX_HEALTH = 100;
 
-    final float MAX_ACCEL    = 0.30f;
-    final float GRAVITY      = 0.301f;
-    final float MAX_VELOCITY = 0.44f;
+    final float MAX_ACCEL    = 0.20f;
+    final float GRAVITY      = 0.202f;
+    final float MAX_VELOCITY = 0.3f;
+    //final float MAX_VELOCITY = 0.44f;
     final float FRICTION = 0.98f;
 
     final float MAX_PITCH = 60.00f;
@@ -59,11 +60,6 @@ public class ThxEntityHelicopter extends ThxEntity
     final float THROTTLE_MAX = .07f;
     final float THROTTLE_INC = .005f;
 
-    public float getThrottlePower()
-    {
-        return (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
-    }
-    
     float UPDATE_RATE = 2;
 
     // Vectors for repeated calculations
@@ -74,7 +70,6 @@ public class ThxEntityHelicopter extends ThxEntity
     final float MOMENTUM = .2f;
 
     // total update count
-    float _damage;
     float timeSinceAttacked;
     float timeSinceCollided;
     float smokeDelay;
@@ -98,12 +93,10 @@ public class ThxEntityHelicopter extends ThxEntity
 
     float rocketDelay;
     final float ROCKET_DELAY = .12f;
-    
     int rocketCount;
     final int FULL_ROCKET_COUNT = 12;
-    
     float rocketReload;
-    final float ROCKET_RELOAD_DELAY = 2f;
+    final float ROCKET_RELOAD_DELAY = .1f; //2f;
     
     float autoLevelDelay;
     float exitDelay;
@@ -127,6 +120,8 @@ public class ThxEntityHelicopter extends ThxEntity
         setSize(1.8f, 2f);
 
         yOffset = .6f;
+        
+        NET_PACKET_TYPE = 75;
 
         log("C1 - ThxEntityHelicopter() with world: " + world.getWorldInfo());
     }
@@ -167,22 +162,22 @@ public class ThxEntityHelicopter extends ThxEntity
         super.onUpdate();
         
         // for auto-heal: 
-        if (_damage > 0f) _damage -= deltaTime; // heal rate: 1 pt / sec
+        if (damage > 0f) damage -= deltaTime; // heal rate: 1 pt / sec
 
         // create smoke to indicate damage
         if (smokeDelay < 0f)
         {
-            smokeDelay = 1f - _damage / MAX_HEALTH;
+            smokeDelay = 1f - damage / MAX_HEALTH;
             if (smokeDelay > .4f) smokeDelay = .4f;
 
-            for (int i = (int) (10f * _damage / MAX_HEALTH); i > 0; i--)
+            for (int i = (int) (10f * damage / MAX_HEALTH); i > 0; i--)
             {
                 if (i % 2 == 0) worldObj.spawnParticle("smoke", posX -.5f + Math.random(), posY -.5f + Math.random(), posZ -.5f + Math.random(), 0.0, 0.0, 0.0);
                 else worldObj.spawnParticle("largesmoke", posX -.5f + Math.random(), posY -.5f + Math.random(), posZ -.5f + Math.random(), 0.0, 0.0, 0.0);
                 
                 if (i > 6) break;
             }
-            if (_damage / MAX_HEALTH > .75f) worldObj.spawnParticle("flame", posX -.5f + Math.random(), posY -.5f + Math.random(), posZ -.5f + Math.random(), 0.0, 0.0, 0.0);
+            if (damage / MAX_HEALTH > .75f) worldObj.spawnParticle("flame", posX -.5f + Math.random(), posY -.5f + Math.random(), posZ -.5f + Math.random(), 0.0, 0.0, 0.0);
         }
         
         // decrement cooldown timers
@@ -339,13 +334,13 @@ public class ThxEntityHelicopter extends ThxEntity
                     lookPitchZeroLevel = 0f;
 
                     // show status message
-                    minecraft.ingameGUI.addChatMessage("Look-Pitch:  ON, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(_damage * 100 / MAX_HEALTH) + "%");
+                    minecraft.ingameGUI.addChatMessage("Look-Pitch:  ON, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
                 }
                 else
                 {
                     // turn off cockpit
                     lookPitch = false;
-                    minecraft.ingameGUI.addChatMessage("Look-Pitch: OFF, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(_damage * 100 / MAX_HEALTH) + "%");
+                    minecraft.ingameGUI.addChatMessage("Look-Pitch: OFF, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
                 }
             }
             else if (Keyboard.isKeyDown(KEY_HUD_MODE) && hudModeToggleDelay < 0f && pilot != null)
@@ -425,9 +420,17 @@ public class ThxEntityHelicopter extends ThxEntity
 	                pitch = targetHelicopter.riddenByEntity.rotationPitch;
                 }
                 
-                ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
-                newRocket.owner = this;
-                worldObj.spawnEntityInWorld(newRocket);
+                if (worldObj.isRemote)
+                {
+                    // queue fire command for server
+                    fire1 = 1;
+                }
+                else
+                {
+	                ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
+	                newRocket.owner = this;
+	                worldObj.spawnEntityInWorld(newRocket);
+                }
                 
                 if (rocketCount == FULL_ROCKET_COUNT)
                 {
@@ -438,7 +441,7 @@ public class ThxEntityHelicopter extends ThxEntity
             }
 
             // FIRE MISSILE
-            if (missileDelay < 0f && targetHelicopter != null && !isTargetHelicopterFriendly && Math.abs(targetHelicopter.posY - posY) < 2f) // && _damage > MAX_HEALTH / 2f) // ai fire missle when low health
+            if (missileDelay < 0f && targetHelicopter != null && !isTargetHelicopterFriendly && Math.abs(targetHelicopter.posY - posY) < 2f) // && damage > MAX_HEALTH / 2f) // ai fire missle when low health
             {
                 missileDelay = MISSILE_DELAY * 2f; // nerf fire rate
                 
@@ -449,9 +452,17 @@ public class ThxEntityHelicopter extends ThxEntity
                 float yaw = rotationYaw;
                 float pitch = rotationPitch;
                 
-                ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
-                newMissile.targetHelicopter = targetHelicopter;
-                worldObj.spawnEntityInWorld(newMissile);
+                if (worldObj.isRemote)
+                {
+                    // queue fire command for server packet
+                    fire2 = 1;
+                }
+                else
+                {
+	                ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
+	                newMissile.targetHelicopter = targetHelicopter;
+	                worldObj.spawnEntityInWorld(newMissile);
+                }
             }
             else if (Keyboard.isKeyDown(KEY_FIRE_MISSILE) && missileDelay < 0f)
             {
@@ -782,8 +793,8 @@ public class ThxEntityHelicopter extends ThxEntity
             }
             
             // adjust rotor speed
-	        ((ThxModelHelicopter) model).rotorSpeed = getThrottlePower() / 2f + .7f;
-	        //((ThxModelHelicopter) model).rotorSpeed = 1f;
+	        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
+	        ((ThxModelHelicopter) model).rotorSpeed = power / 2f + .7f;
             
             // now calculate thrust and velocity based on yaw, pitch, roll, throttle
             
@@ -822,6 +833,7 @@ public class ThxEntityHelicopter extends ThxEntity
             velocity.scale(FRICTION);
 
             // scale thrust by current throttle and delta time
+            //thrust.normalize().scale(MAX_ACCEL * (1f + throttle) * deltaTime / .05f);
             thrust.normalize().scale(MAX_ACCEL * (1f + throttle) * deltaTime / .05f);
 
             // apply the thrust
@@ -931,23 +943,24 @@ public class ThxEntityHelicopter extends ThxEntity
             //isCollidedVertically = false;
         }
         
-        if (pilot != null)
+        if (minecraft.thePlayer.equals(pilot))
         {
-            if (ticksExisted % UPDATE_RATE == 0) sendUpdatePacketToServer();
+            sendUpdatePacketToServer();
+            //if (ticksExisted % UPDATE_RATE == 0) sendUpdatePacketToServer();
         }
     }
     
     private void takeDamage(float damage)
     {
-        _damage += damage;
+        damage += damage;
                 
         if (riddenByEntity != null) // this is the player's helicopter, so show damage msg
         {
             Minecraft minecraft = ModLoader.getMinecraftInstance();
-            minecraft.ingameGUI.addChatMessage("Damage: " + (int) (_damage * 100 / MAX_HEALTH) + "%");
+            minecraft.ingameGUI.addChatMessage("Damage: " + (int) (damage * 100 / MAX_HEALTH) + "%");
         }
         
-        if (_damage > MAX_HEALTH && !worldObj.isRemote)
+        if (damage > MAX_HEALTH && !worldObj.isRemote)
         {
             //die();
 
@@ -1141,6 +1154,8 @@ public class ThxEntityHelicopter extends ThxEntity
 	        player.mountEntity(this);
         }
         
+        altitudeLock = false;
+        
         // reset level to current look pitch
         lookPitchZeroLevel = player.rotationPitch;
         
@@ -1204,7 +1219,10 @@ public class ThxEntityHelicopter extends ThxEntity
         double posAdjust = -.1 + .02f * rotationPitch;
 
         if (ModLoader.getMinecraftInstance().gameSettings.thirdPersonView != 0) posAdjust = 0.0;
-
+        
+        // no position adjust for now
+        posAdjust = 0.0;
+        
         // to force camera to follow helicopter exactly, but stutters:
         //pilot.setPositionAndRotation(posX + fwd.x * posAdjust, posY + pilot.getYOffset() + getMountedYOffset(), posZ + fwd.z * posAdjust, rotationYaw, rotationPitch);
         //pilot.setLocationAndAngles(posX + fwd.x * posAdjust, posY -.7f, posZ + fwd.z * posAdjust, rotationYaw, rotationPitch);
@@ -1215,6 +1233,8 @@ public class ThxEntityHelicopter extends ThxEntity
     private void pilotExit()
     {
         Entity pilot = getPilot();
+        
+        log("pilotExit called for pilot " + pilot + " " + getPilotId());
 
         if (pilot == null) return;
         
@@ -1222,12 +1242,6 @@ public class ThxEntityHelicopter extends ThxEntity
         
         // clear pitch speed to prevent judder
         rotationPitchSpeed = 0f;
-        
-        if (!worldObj.isRemote)
-        {
-            log("pilotExit() calling mountEntity on player " + pilot);
-            pilot.mountEntity(this); // riddenByEntity is now null
-        }
         
         ((ThxModelHelicopter) model).rotorSpeed = 0f; // turn off rotor, it will spin down slowly
         
@@ -1239,7 +1253,14 @@ public class ThxEntityHelicopter extends ThxEntity
         
         // place pilot to left of helicopter
         // (use fwd XZ perp to exit left: x = z, z = -x)
-        double exitDist = 1.9;
+        //double exitDist = 1.9;
+        double exitDist = 3.9;
         pilot.setPosition(posX + fwd.z * exitDist, posY + pilot.yOffset, posZ - fwd.x * exitDist);
+        
+        if (!worldObj.isRemote)
+        {
+            log("pilotExit() calling mountEntity on player " + pilot);
+            pilot.mountEntity(this); // riddenByEntity is now null
+        }
     }
 }
