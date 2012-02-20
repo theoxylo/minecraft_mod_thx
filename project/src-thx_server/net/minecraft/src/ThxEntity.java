@@ -28,13 +28,21 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
     {
         Packet230ModLoader packet = getUpdatePacket();
         packet.dataString[0] = "thx spawn packet for entity " + entityId;
+        
+        
+        // bump Y for non-piloted to avoid getting stuck in landscape
+        if (riddenByEntity == null)
+        {
+            packet.dataFloat[1] += .2;
+        }
+        
         log("Created new spawn packet: " + packet);
         return packet;
     }
         
     public void handleUpdatePacketFromClient(Packet230ModLoader packet)
     {
-        //plog("handleUpdatePacketFromClient: " + packet); // inbound packet not aligned with plog unless very high update rate
+        log("handleUpdatePacketFromClient: " + packet); // inbound packet not aligned with plog unless very high update rate
         
         latestUpdatePacket = packet;
     }

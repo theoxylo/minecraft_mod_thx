@@ -67,6 +67,8 @@ public class ThxEntityMissile extends ThxEntity
     @Override
     public void onUpdate()
     {
+        if (ticksExisted > 500) setEntityDead();
+	        
         super.onUpdate();
         
         exhaustTime += deltaTime;

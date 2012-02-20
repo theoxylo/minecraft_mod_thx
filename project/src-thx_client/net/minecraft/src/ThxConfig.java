@@ -81,6 +81,7 @@ public class ThxConfig
         writeFile = ensureDefault(props, "key_rotate_right", Keyboard.getKeyName(Keyboard.KEY_H)) || writeFile;
         writeFile = ensureDefault(props, "key_fire_missile", Keyboard.getKeyName(Keyboard.KEY_M)) || writeFile;
         writeFile = ensureDefault(props, "key_fire_rocket", Keyboard.getKeyName(Keyboard.KEY_R)) || writeFile;
+        writeFile = ensureDefault(props, "key_rocket_reload", Keyboard.getKeyName(Keyboard.KEY_T)) || writeFile;
         writeFile = ensureDefault(props, "key_look_pitch", Keyboard.getKeyName(Keyboard.KEY_L)) || writeFile;
         writeFile = ensureDefault(props, "key_auto_level", Keyboard.getKeyName(Keyboard.KEY_K)) || writeFile;
         writeFile = ensureDefault(props, "key_exit", Keyboard.getKeyName(Keyboard.KEY_Y)) || writeFile;

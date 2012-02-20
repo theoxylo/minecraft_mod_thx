@@ -78,6 +78,8 @@ public class ThxEntityRocket  extends ThxEntity
 
     public void onUpdate()
     {
+        if (ticksExisted > 500) setEntityDead();
+	        
         lastTickPosX = posX;
         lastTickPosY = posY;
         lastTickPosZ = posZ;
@@ -154,7 +156,7 @@ public class ThxEntityRocket  extends ThxEntity
             // we hit an entity!
             if(movingobjectposition.entityHit != null)
             {
-                movingobjectposition.entityHit.attackEntityFrom(new EntityDamageSource("player", owner), 9);
+                movingobjectposition.entityHit.attackEntityFrom(new EntityDamageSource("player", owner), 5);
             }
             
             setEntityDead();
@@ -194,29 +196,6 @@ public class ThxEntityRocket  extends ThxEntity
             rotationPitch = prevRotationPitch + (rotationPitch - prevRotationPitch) * 0.2F;
             rotationYaw = prevRotationYaw + (rotationYaw - prevRotationYaw) * 0.2F;
         }
-        
-        /*
-        // fricktion and gravity
-        float f1 = 0.99F;
-        if(isInWater())
-        {
-            for(int l = 0; l < 4; l++)
-            {
-                float f3 = 0.25F;
-                worldObj.spawnParticle("bubble", posX - motionX * (double)f3, posY - motionY * (double)f3, posZ - motionZ * (double)f3, motionX, motionY, motionZ);
-            }
-
-            f1 = 0.8F;
-        }
-        motionX *= f1;
-        motionY *= f1;
-        motionZ *= f1;
-        
-        float gravity = 0.001f;
-        motionY -= gravity;
-        
-        setPosition(posX, posY, posZ);
-        */
     }
 
     public void writeEntityToNBT(NBTTagCompound nbttagcompound)

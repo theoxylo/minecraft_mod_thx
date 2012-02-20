@@ -29,7 +29,7 @@ public class mod_Thx extends BaseModMp
         log("server.allowFlight: " + ModLoader.getMinecraftServerInstance().allowFlight);
 
         int distance = 100; // 160; // spawn/despawn at this distance from entity
-        int frequency = 1; // constant updates //2; // 10 updates per second //20; // one update per second
+        int frequency = 2; // ticks per update, 1 to 60 (20 ticks/sec)
         
         // register entity classes
         helicopter:

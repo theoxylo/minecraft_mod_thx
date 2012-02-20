@@ -20,6 +20,8 @@ public class ThxEntityRocket  extends ThxEntity
     {
         this(entity.worldObj);
         
+        owner = entity;
+        
         field_20050_h = 0;
         setPositionAndRotation(x, y, z, yaw, pitch);
         
@@ -75,6 +77,8 @@ public class ThxEntityRocket  extends ThxEntity
 
     public void onUpdate()
     {
+        if (ticksExisted > 500) setEntityDead();
+	        
         lastTickPosX = posX;
         lastTickPosY = posY;
         lastTickPosZ = posZ;
@@ -100,7 +104,7 @@ public class ThxEntityRocket  extends ThxEntity
                 if(field_20050_h == 1200)
                 {
                     setEntityDead();
-                    log("rocket is dead");
+                    log("?????????????? rocket is dead");
 		            worldObj.playSoundAtEntity(this, "random.pop", 1f, 1f);
 		            log("field_20050_h: " + field_20050_h);
                 }
@@ -147,12 +151,10 @@ public class ThxEntityRocket  extends ThxEntity
         }
         if(movingobjectposition != null)
         {
-            log("rocket hit an entity");
-            
             // we hit an entity!
-            if(movingobjectposition.entityHit != null)
+            if(movingobjectposition.entityHit != null && !worldObj.isRemote)
             {
-                movingobjectposition.entityHit.attackEntityFrom(new EntityDamageSource("player", owner), 9);
+                movingobjectposition.entityHit.attackEntityFrom(new EntityDamageSource("player", owner), 5);
             }
             
             // for hit markers
@@ -166,31 +168,21 @@ public class ThxEntityRocket  extends ThxEntity
 	        int j1 = worldObj.getBlockId(i, j, k);
 	        if (j1 > 0)
 	        {
-	            log("motionX: " + motionX);
-	            for (int k1 = 0; k1 < 4; k1++)
+	            for (int k1 = 0; k1 < 1; k1++)
 	            {
 		            worldObj.spawnParticle((new StringBuilder()).append("tilecrack_").append(j1).toString(), posX + ((double)rand.nextFloat() - 0.5D) * (double)width, boundingBox.minY + 0.10000000000000001D, posZ + ((double)rand.nextFloat() - 0.5D) * (double)width, 1.0 + ((double)rand.nextFloat() - 0.5D),  1.0 + ((double)rand.nextFloat() - 0.5D),  1.0 + ((double)rand.nextFloat() - 0.5D));
 	            }
 	        }
 	        else
 	        {
-	            for (int k1 = 0; k1 < 4; k1++)
+	            for (int k1 = 0; k1 < 1; k1++)
 	            {
 		            //worldObj.spawnParticle("flame", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
-		            worldObj.spawnParticle("smoke", posX + ((double)rand.nextFloat() - 0.5D), boundingBox.minY + 0.1, posZ + ((double)rand.nextFloat() - 0.5D),  1.0 + ((double)rand.nextFloat() - 0.5D),  1.0 + ((double)rand.nextFloat() - 0.5D),  1.0 + ((double)rand.nextFloat() - 0.5D));
+		            worldObj.spawnParticle("snowballpoof", posX + ((double)rand.nextFloat() - 0.5D), boundingBox.minY + 0.1, posZ + ((double)rand.nextFloat() - 0.5D),  1.0 + ((double)rand.nextFloat() - 0.5D),  1.0 + ((double)rand.nextFloat() - 0.5D),  1.0 + ((double)rand.nextFloat() - 0.5D));
 	            }
 	        }
 	        
-	        
-            //boolean flaming = false;
-            //worldObj.newExplosion(this, posX, posY, posZ, power, flaming);
-	        /*
-            float power = .5f;
-            Explosion explosion = new Explosion(worldObj, owner != null ? owner : this, posX, posY, posZ, power);
-            explosion.doExplosionB(false);
-            */
-        
-            setEntityDead();
+	        if (!worldObj.isRemote) setEntityDead();
             
             return;
         }
@@ -234,29 +226,6 @@ public class ThxEntityRocket  extends ThxEntity
             rotationPitch = prevRotationPitch + (rotationPitch - prevRotationPitch) * 0.2F;
             rotationYaw = prevRotationYaw + (rotationYaw - prevRotationYaw) * 0.2F;
         }
-        
-        /*
-        // fricktion and gravity
-        float f1 = 0.99F;
-        if(isInWater())
-        {
-            for(int l = 0; l < 4; l++)
-            {
-                float f3 = 0.25F;
-                worldObj.spawnParticle("bubble", posX - motionX * (double)f3, posY - motionY * (double)f3, posZ - motionZ * (double)f3, motionX, motionY, motionZ);
-            }
-
-            f1 = 0.8F;
-        }
-        motionX *= f1;
-        motionY *= f1;
-        motionZ *= f1;
-        
-        float gravity = 0.001f;
-        motionY -= gravity;
-        
-        setPosition(posX, posY, posZ);
-        */
     }
 
     public void writeEntityToNBT(NBTTagCompound nbttagcompound)

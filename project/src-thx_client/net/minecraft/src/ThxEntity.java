@@ -134,9 +134,9 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
         rotationRoll = packet.dataFloat[5] % 360f;
 
         // for now, clear any motion
-        motionX = .0; // packet.dataFloat[6];
-        motionY = .0; // packet.dataFloat[7];
-        motionZ = .0; // packet.dataFloat[8];
+        motionX = packet.dataFloat[6];
+        motionY = packet.dataFloat[7];
+        motionZ = packet.dataFloat[8];
         
         damage = packet.dataFloat[9];
         throttle = packet.dataFloat[10];

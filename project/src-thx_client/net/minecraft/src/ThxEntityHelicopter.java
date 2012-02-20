@@ -22,6 +22,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
     static int KEY_ROTATE_RIGHT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_rotate_right"));
     static int KEY_FIRE_MISSILE = Keyboard.getKeyIndex(ThxConfig.getProperty("key_fire_missile"));
     static int KEY_FIRE_ROCKET = Keyboard.getKeyIndex(ThxConfig.getProperty("key_fire_rocket"));
+    static int KEY_ROCKET_RELOAD = Keyboard.getKeyIndex(ThxConfig.getProperty("key_rocket_reload"));
     static int KEY_LOOK_PITCH = Keyboard.getKeyIndex(ThxConfig.getProperty("key_look_pitch"));
     static int KEY_AUTO_LEVEL = Keyboard.getKeyIndex(ThxConfig.getProperty("key_auto_level"));
     static int KEY_EXIT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_exit"));
@@ -96,7 +97,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
     int rocketCount;
     final int FULL_ROCKET_COUNT = 12;
     float rocketReload;
-    final float ROCKET_RELOAD_DELAY = .1f; //2f;
+    final float ROCKET_RELOAD_DELAY = 2f;
     
     float autoLevelDelay;
     float exitDelay;
@@ -190,6 +191,17 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
         
         
         Minecraft minecraft = ModLoader.getMinecraftInstance();
+        
+        if (worldObj.isRemote && riddenByEntity != null && !minecraft.thePlayer.equals(riddenByEntity))
+        {
+            // adjust rotor speed
+	        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
+	        ((ThxModelHelicopter) model).rotorSpeed = power / 2f + .7f;
+            
+	        moveEntity(motionX, motionY, motionZ);
+	        handleCollisions();
+	        return;
+        }
         
         Entity pilot = getPilot();
         if (pilot != null || targetHelicopter != null)
@@ -396,30 +408,6 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
                 rocketDelay = ROCKET_DELAY;
                 if (targetHelicopter != null) rocketDelay *= 2f;
                 
-                float leftRight = (rocketCount % 2 == 0) ? 1.0f : -1.0f;
-                
-                // starting position of rocket relative to helicopter, out in front quite a bit to avoid collision
-                float offsetX = side.x * leftRight + fwd.x * 2f;
-                float offsetY = side.y * leftRight + fwd.y * 2f;
-                float offsetZ = side.z * leftRight + fwd.z * 2f;
-                    
-                float yaw = rotationYaw;
-                float pitch = rotationPitch + 5f; // slight downward from helicopter pitch
-                
-                // use pilot aim when in 1st-person
-                if (pilot != null && minecraft.gameSettings.thirdPersonView == 0) 
-                {
-                    yaw = pilot.rotationYaw;
-                    pitch = pilot.rotationPitch;
-                }
-                
-                // ai helicopter will use owner pilot aim
-                if (targetHelicopter != null && isTargetHelicopterFriendly && targetHelicopter.riddenByEntity != null)
-                {
-	                yaw = targetHelicopter.riddenByEntity.rotationYaw;
-	                pitch = targetHelicopter.riddenByEntity.rotationPitch;
-                }
-                
                 if (worldObj.isRemote)
                 {
                     // queue fire command for server
@@ -427,17 +415,34 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
                 }
                 else
                 {
+	                float leftRight = (rocketCount % 2 == 0) ? 1.0f : -1.0f;
+	                
+	                // starting position of rocket relative to helicopter, out in front quite a bit to avoid collision
+	                float offsetX = side.x * leftRight + fwd.x * 2f;
+	                float offsetY = side.y * leftRight + fwd.y * 2f;
+	                float offsetZ = side.z * leftRight + fwd.z * 2f;
+	                    
+	                float yaw = rotationYaw;
+	                float pitch = rotationPitch + 5f; // slight downward from helicopter pitch
+	                
+	                // use pilot aim when in 1st-person
+	                if (pilot != null && minecraft.gameSettings.thirdPersonView == 0) 
+	                {
+	                    yaw = pilot.rotationYaw;
+	                    pitch = pilot.rotationPitch;
+	                }
+                
 	                ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
 	                newRocket.owner = this;
 	                worldObj.spawnEntityInWorld(newRocket);
                 }
-                
-                if (rocketCount == FULL_ROCKET_COUNT)
-                {
-                    // must reload before next volley
-                    rocketReload = ROCKET_RELOAD_DELAY;
-                    rocketCount = 0;
-                }
+            }
+            
+            // AUTO/MANUAL ROCKET RELOAD
+            if (rocketCount == FULL_ROCKET_COUNT || (Keyboard.isKeyDown(KEY_ROCKET_RELOAD) && rocketCount > 0))
+            {
+                rocketReload = ROCKET_RELOAD_DELAY;
+                rocketCount = 0;
             }
 
             // FIRE MISSILE
@@ -889,6 +894,17 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
         
         // move in all cases
         moveEntity(motionX, motionY, motionZ);
+        handleCollisions();
+        
+        if (minecraft.thePlayer.equals(pilot))
+        {
+            sendUpdatePacketToServer();
+            //if (ticksExisted % UPDATE_RATE == 0) sendUpdatePacketToServer();
+        }
+    }
+    
+    private void handleCollisions()
+    {
 
         /*
         detectCollisionsAndBounce:
@@ -928,7 +944,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
                 
                 worldObj.playSoundAtEntity(this, "random.explode",  volume, pitch);
                 
-                takeDamage((float) velSq * 100f);
+                takeDamage((float) velSq * 300f);
                 
 	            motionX *= .7;
 	            motionY *= .7;
@@ -941,12 +957,6 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
 	        }
             //isCollidedHorizontally = false;
             //isCollidedVertically = false;
-        }
-        
-        if (minecraft.thePlayer.equals(pilot))
-        {
-            sendUpdatePacketToServer();
-            //if (ticksExisted % UPDATE_RATE == 0) sendUpdatePacketToServer();
         }
     }
     
@@ -1254,7 +1264,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
         // place pilot to left of helicopter
         // (use fwd XZ perp to exit left: x = z, z = -x)
         //double exitDist = 1.9;
-        double exitDist = 3.9;
+        double exitDist = 2.9;
         pilot.setPosition(posX + fwd.z * exitDist, posY + pilot.yOffset, posZ - fwd.x * exitDist);
         
         if (!worldObj.isRemote)
