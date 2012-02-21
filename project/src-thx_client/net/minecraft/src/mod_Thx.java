@@ -4,10 +4,6 @@ public class mod_Thx extends BaseModMp
 {
     public static mod_Thx instance;
 
-    /*
-     * coming soon! static Class classMissile = net.minecraft.src.ThxEntityMissile.class; static Class classRocket = net.minecraft.src.ThxEntityRocket.class;
-     */
-
     public mod_Thx()
     {
         log("mod_Thx() called");
@@ -84,7 +80,7 @@ public class mod_Thx extends BaseModMp
     public void AddRenderer(java.util.Map map)
     {
         map.put(ThxEntityHelicopter.class, new ThxRender());
-        // map.put(classMissile, new ThxRender());
+        map.put(ThxEntityRocket.class, new ThxRender());
     }
 
     @Override

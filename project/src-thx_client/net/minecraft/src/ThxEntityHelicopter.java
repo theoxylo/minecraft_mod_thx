@@ -28,7 +28,6 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
     static int KEY_EXIT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_exit"));
     static int KEY_LOOK_BACK = Keyboard.getKeyIndex(ThxConfig.getProperty("key_look_back"));
     static int KEY_CREATE_MAP = Keyboard.getKeyIndex(ThxConfig.getProperty("key_create_map"));
-    static int KEY_CREATE_ITEM = Keyboard.getKeyIndex(ThxConfig.getProperty("key_create_item"));
     static int KEY_HUD_MODE = Keyboard.getKeyIndex(ThxConfig.getProperty("key_hud_mode"));
     static int KEY_LOCK_ALT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_lock_alt"));
     
@@ -85,7 +84,6 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
     float lookPitchZeroLevel;
     
     float createMapDelay;
-    float createItemDelay;
     
     int prevViewMode = 2;
     
@@ -127,28 +125,13 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
         log("C1 - ThxEntityHelicopter() with world: " + world.getWorldInfo());
     }
 
-    /*
-    public ThxEntityHelicopter(World world, double x, double y, double z)
-    {
-        this(world);
-        //setPosition(x, y + yOffset, z);
-        setPosition(x, y, z);
-        
-        log("Is this used? C2 - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
-    }
-    */
-
-    // constructor for item-use spawn
     public ThxEntityHelicopter(World world, double x, double y, double z, float yaw)
     {
         this(world);
         
-        //setLocationAndAngles(x, y, z, yaw, 0f);
-        //setPositionAndRotation(x, y, z, yaw, 0f);
-        setPosition(x, y, z);
-        setRotation(yaw, 0f);
+        setPositionAndRotation(x, y + yOffset, z, yaw, 0f);
         
-        log("C3 - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ + ", yaw: " + yaw);
+        log("C2 - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ + ", yaw: " + yaw);
     }
 
     public Entity getPilot()
@@ -192,714 +175,621 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
         
         Minecraft minecraft = ModLoader.getMinecraftInstance();
         
+        
+        
         if (worldObj.isRemote && riddenByEntity != null && !minecraft.thePlayer.equals(riddenByEntity))
         {
-            // adjust rotor speed
-	        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
-	        ((ThxModelHelicopter) model).rotorSpeed = power / 2f + .7f;
-            
-	        moveEntity(motionX, motionY, motionZ);
-	        handleCollisions();
-	        return;
+	        // piloted by other player client, so just update from server and be done
+            // pos, motion already handled in super.onUpdate()
+        }
+        else if (minecraft.thePlayer.equals(riddenByEntity))
+        {
+	        // piloted by current player
+            onUpdatePlayerPilot();
+        }
+        else if (targetHelicopter != null)
+        {
+	        // drone, ai is engaged
+            onUpdateDrone();
+        }
+        else
+        {
+            // unattended
+            onUpdateVacant();
         }
         
-        Entity pilot = getPilot();
-        if (pilot != null || targetHelicopter != null)
+        // adjust model rotor speed to match current throttle
+        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
+        ((ThxModelHelicopter) model).rotorSpeed = power / 2f + .7f;
+        
+        
+        updateMotion();
+            
+        if (minecraft.thePlayer.equals(riddenByEntity))
         {
-            if (!worldObj.isRemote && pilot != null && pilot.isDead)
-            {
-                //riddenByEntity = null;
-                pilot.mountEntity(this);
-            }
+            sendUpdatePacketToServer();
+            //if (ticksExisted % UPDATE_RATE == 0) sendUpdatePacketToServer();
+        }
+    }
+    
+    private void onUpdatePlayerPilot()
+    {
+        Entity pilot = getPilot();
+        
+        if (!worldObj.isRemote && pilot != null && pilot.isDead)
+        {
+            //riddenByEntity = null;
+            pilot.mountEntity(this);
+        }
             
-            if (onGround) // very slow on ground
-            {
-                if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
-                if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
+        if (onGround) // very slow on ground
+        {
+            if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
+            if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
 
-                // double apply friction when on ground
-                motionX *= FRICTION;
-                motionY = 0.0;
-                motionZ *= FRICTION;
-            }
-            else if (isInWater())
-	        {
-                if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
-                if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
+            // double apply friction when on ground
+            motionX *= FRICTION;
+            motionY = 0.0;
+            motionZ *= FRICTION;
+        }
+        else if (isInWater())
+        {
+            if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
+            if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
                 
-	            motionX *= .7;
-	            motionY *= .7;
-	            motionZ *= .7;
-	            
-	            // float up
-	            motionY += 0.02;
-	        }
-            /*
-            else
-            {
-                if (ENABLE_LOOK_DOWN_TRANS && pilot != null)
-                {
-	                // hide bottom panel for looking down when in air
-	                //if (pilot.rotationPitch - rotationPitch > 60f)
-	                if (pilot.rotationPitch > 70f)
-	                {
-	                    ((ThxModelHelicopter) model).bottomVisible = false;
-	                }
-	                else
-	                {
-	                    ((ThxModelHelicopter) model).bottomVisible = true;
-	                }
-                }
-            }
-            */
+            motionX *= .7;
+            motionY *= .7;
+            motionZ *= .7;
             
-            /* disable create item for now, too OP
-            createItemDelay -= deltaTime;
-            if (Keyboard.isKeyDown(KEY_CREATE_ITEM) && createItemDelay < 0f && pilot != null)
-            {
-                createItemDelay = 1f; // the delay in seconds
-                
-                dropItem(Item.egg.shiftedIndex, 1);
-            }
-            */
+            // float up
+            motionY += 0.02;
+        }
                         
-            createMapDelay -= deltaTime;
-            if (Keyboard.isKeyDown(KEY_CREATE_MAP) && createMapDelay < 0f && pilot != null)
+        createMapDelay -= deltaTime;
+        if (Keyboard.isKeyDown(KEY_CREATE_MAP) && createMapDelay < 0f && pilot != null)
+        {
+            createMapDelay = 10f; // the delay in seconds
+                
+            int mapSize = 960; // full size region is 1024, but we want a little bit of overlap
+                
+            int mapIdxX = (int)posX / mapSize;
+            if (posX < 0d) mapIdxX -= 1;
+            else mapIdxX += 1;
+                
+            int mapIdxZ = (int)posZ / mapSize;
+            if (posZ < 0d) mapIdxZ -= 1;
+            else mapIdxZ += 1;
+                
+            // create 4 digit number with first 2 digits indicating
+            // x and last 2 z in region units
+            // (only works within 49 * mapSize of origin)
+            int mapIdx = ((mapIdxX + 50) * 100) + mapIdxZ + 50;
+            //System.out.println("Map idx: " + mapIdx);
+                
+            ItemStack mapStack = new ItemStack(Item.map.shiftedIndex, 1, mapIdx);
+                
+            String mapIdxString = "map_" + mapIdx;
+                
+            // this code was adapted from MapItem.onCreate to initialize the map location
+            MapData mapdata = (MapData)worldObj.loadItemData(MapData.class, mapIdxString);
+            if(mapdata == null)
             {
-                createMapDelay = 10f; // the delay in seconds
-                
-                int mapSize = 960; // full size region is 1024, but we want a little bit of overlap
-                
-                int mapIdxX = (int)posX / mapSize;
-                if (posX < 0d) mapIdxX -= 1;
-                else mapIdxX += 1;
-                
-                int mapIdxZ = (int)posZ / mapSize;
-                if (posZ < 0d) mapIdxZ -= 1;
-                else mapIdxZ += 1;
-                
-                // create 4 digit number with first 2 digits indicating
-                // x and last 2 z in region units
-                // (only works within 49 * mapSize of origin)
-                int mapIdx = ((mapIdxX + 50) * 100) + mapIdxZ + 50;
-                //System.out.println("Map idx: " + mapIdx);
-                
-                ItemStack mapStack = new ItemStack(Item.map.shiftedIndex, 1, mapIdx);
-                
-                String mapIdxString = "map_" + mapIdx;
-                
-                // this code was adapted from MapItem.onCreate to initialize the map location
-                MapData mapdata = (MapData)worldObj.loadItemData(MapData.class, mapIdxString);
-                if(mapdata == null)
-                {
-	                mapdata = new MapData(mapIdxString);
-	                worldObj.setItemData(mapIdxString, mapdata);
+                mapdata = new MapData(mapIdxString);
+                worldObj.setItemData(mapIdxString, mapdata);
 
-	                int mapX = mapIdxX * mapSize;
-	                if (mapX < 0) mapX += mapSize / 2;
-	                else mapX -= mapSize / 2;
-	                mapdata.xCenter = mapX;
-	                
-	                int mapZ = mapIdxZ * mapSize;
-	                if (mapZ < 0) mapZ += mapSize / 2;
-	                else mapZ -= mapSize / 2;
-	                mapdata.zCenter = mapZ;	                
-	                
-	                mapdata.scale = 3;
-	                mapdata.dimension = (byte)worldObj.worldProvider.worldType;
-	                mapdata.markDirty();
-                }
-
-                entityDropItem(mapStack, .5f);
+                int mapX = mapIdxX * mapSize;
+                if (mapX < 0) mapX += mapSize / 2;
+                else mapX -= mapSize / 2;
+                mapdata.xCenter = mapX;
+                
+                int mapZ = mapIdxZ * mapSize;
+                if (mapZ < 0) mapZ += mapSize / 2;
+                else mapZ -= mapSize / 2;
+                mapdata.zCenter = mapZ;                
+                
+                mapdata.scale = 3;
+                mapdata.dimension = (byte)worldObj.worldProvider.worldType;
+                mapdata.markDirty();
             }
+
+            entityDropItem(mapStack, .5f);
+        }
             
-            hudModeToggleDelay -= deltaTime;
-            lookPitchToggleDelay -= deltaTime;
+        hudModeToggleDelay -= deltaTime;
+        lookPitchToggleDelay -= deltaTime;
             
-            if (enable_drone_mode || pilot == null)
+        if (Keyboard.isKeyDown(KEY_LOOK_BACK)) // look back while key is held
+        {
+            // remember current view mode and switch to reverse (only if not already)
+            if (minecraft.gameSettings.thirdPersonView != 2)
             {
-                // no view changes for drone or AI
+                prevViewMode = minecraft.gameSettings.thirdPersonView; 
+                minecraft.gameSettings.thirdPersonView = 2; // switch to 3rd-person REVERSE view
             }
-            else if (Keyboard.isKeyDown(KEY_LOOK_BACK)) // look back while key is held
-            {
-                // remember current view mode and switch to reverse (only if not already)
-                if (minecraft.gameSettings.thirdPersonView != 2)
-                {
-                    prevViewMode = minecraft.gameSettings.thirdPersonView; 
-	                minecraft.gameSettings.thirdPersonView = 2; // switch to 3rd-person REVERSE view
-                }
-            }
-            else if (prevViewMode != 2 && minecraft.gameSettings.thirdPersonView == 2) // return to original view after look back key released
-            {
-                minecraft.gameSettings.thirdPersonView = prevViewMode;
-                prevViewMode = 2;
-            }
-            else if (Keyboard.isKeyDown(KEY_LOOK_PITCH) && lookPitchToggleDelay < 0f)
-            {
-                lookPitchToggleDelay = .5f;
+        }
+        else if (prevViewMode != 2 && minecraft.gameSettings.thirdPersonView == 2) // return to original view after look back key released
+        {
+            minecraft.gameSettings.thirdPersonView = prevViewMode;
+            prevViewMode = 2;
+        }
+        else if (Keyboard.isKeyDown(KEY_LOOK_PITCH) && lookPitchToggleDelay < 0f)
+        {
+            lookPitchToggleDelay = .5f;
                 
-                if (!lookPitch)
-                {
-                    lookPitch = true;
-
-                    // reset level offset
-                    lookPitchZeroLevel = 0f;
-
-                    // show status message
-                    minecraft.ingameGUI.addChatMessage("Look-Pitch:  ON, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
-                }
-                else
-                {
-                    // turn off cockpit
-                    lookPitch = false;
-                    minecraft.ingameGUI.addChatMessage("Look-Pitch: OFF, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
-                }
-            }
-            else if (Keyboard.isKeyDown(KEY_HUD_MODE) && hudModeToggleDelay < 0f && pilot != null)
+            if (!lookPitch)
             {
-                hudModeToggleDelay = .5f;
-                
-                if (model.visible)
-                {
-                    // change to 1st-person and hide model
-                    if (minecraft.gameSettings.thirdPersonView != 0) minecraft.gameSettings.thirdPersonView = 0;
-                    model.visible = false;
-                }
-                else
-                {
-                    model.visible = true;
-                }
-            }
-            else if (minecraft.gameSettings.thirdPersonView == 2) // must hold look back key, not a toggle, so cancel here
-            {
-                minecraft.gameSettings.thirdPersonView = 0;
-            }
-            
-            // view could be switched by player using F5
-            if (minecraft.gameSettings.thirdPersonView != 0) model.visible = true;
+                lookPitch = true;
 
-            exitDelay -= deltaTime;
-            if (Keyboard.isKeyDown(KEY_EXIT) && exitDelay < 0f && pilot != null)
-            {
-                exitDelay = 1f; // seconds before player can exit
-                pilotExit();
-            }
+                // reset level offset
+                lookPitchZeroLevel = 0f;
 
-            altitudeLockToggleDelay -= deltaTime;
-            if (Keyboard.isKeyDown(KEY_LOCK_ALT) && altitudeLockToggleDelay < 0f && pilot != null)
-            {
-                altitudeLockToggleDelay = .5f;
-                altitudeLock = !altitudeLock;
-            }
-
-            float thd = 0f; // thd is targetHelicopter distance
-            if (targetHelicopter != null)
-            {
-	            deltaPosToTarget.set((float)(targetHelicopter.posX - posX), 0f, (float)(targetHelicopter.posZ - posZ));
-	            thd = deltaPosToTarget.length();
-            }
-            
-            // FIRE ROCKET
-            if (((targetHelicopter != null && !isTargetHelicopterFriendly && thd < 20f && thd > 5f && Math.abs(targetHelicopter.posY - posY) < 2f) 
-                || Keyboard.isKeyDown(KEY_FIRE_ROCKET)) 
-                    && rocketDelay < 0f && rocketReload < 0f)
-            {
-                rocketCount++;
-                rocketDelay = ROCKET_DELAY;
-                if (targetHelicopter != null) rocketDelay *= 2f;
-                
-                if (worldObj.isRemote)
-                {
-                    // queue fire command for server
-                    fire1 = 1;
-                }
-                else
-                {
-	                float leftRight = (rocketCount % 2 == 0) ? 1.0f : -1.0f;
-	                
-	                // starting position of rocket relative to helicopter, out in front quite a bit to avoid collision
-	                float offsetX = side.x * leftRight + fwd.x * 2f;
-	                float offsetY = side.y * leftRight + fwd.y * 2f;
-	                float offsetZ = side.z * leftRight + fwd.z * 2f;
-	                    
-	                float yaw = rotationYaw;
-	                float pitch = rotationPitch + 5f; // slight downward from helicopter pitch
-	                
-	                // use pilot aim when in 1st-person
-	                if (pilot != null && minecraft.gameSettings.thirdPersonView == 0) 
-	                {
-	                    yaw = pilot.rotationYaw;
-	                    pitch = pilot.rotationPitch;
-	                }
-                
-	                ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
-	                newRocket.owner = this;
-	                worldObj.spawnEntityInWorld(newRocket);
-                }
-            }
-            
-            // AUTO/MANUAL ROCKET RELOAD
-            if (rocketCount == FULL_ROCKET_COUNT || (Keyboard.isKeyDown(KEY_ROCKET_RELOAD) && rocketCount > 0))
-            {
-                rocketReload = ROCKET_RELOAD_DELAY;
-                rocketCount = 0;
-            }
-
-            // FIRE MISSILE
-            if (missileDelay < 0f && targetHelicopter != null && !isTargetHelicopterFriendly && Math.abs(targetHelicopter.posY - posY) < 2f) // && damage > MAX_HEALTH / 2f) // ai fire missle when low health
-            {
-                missileDelay = MISSILE_DELAY * 2f; // nerf fire rate
-                
-                float offX = fwd.x * 2f;
-                float offY = fwd.y * 2f;
-                float offZ = fwd.z * 2f;
-
-                float yaw = rotationYaw;
-                float pitch = rotationPitch;
-                
-                if (worldObj.isRemote)
-                {
-                    // queue fire command for server packet
-                    fire2 = 1;
-                }
-                else
-                {
-	                ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
-	                newMissile.targetHelicopter = targetHelicopter;
-	                worldObj.spawnEntityInWorld(newMissile);
-                }
-            }
-            else if (Keyboard.isKeyDown(KEY_FIRE_MISSILE) && missileDelay < 0f)
-            {
-                missileDelay = MISSILE_DELAY;
-                
-                float offX = fwd.x * 2f;
-                float offY = fwd.y * 2f;
-                float offZ = fwd.z * 2f;
-
-                float yaw = rotationYaw;
-                float pitch = rotationPitch + 5f; // slight downward from helicopter pitch
-                
-                // use pilot aim when in 1st-person
-                if (pilot != null && minecraft.gameSettings.thirdPersonView == 0)
-                {
-                    yaw = pilot.rotationYaw;
-                    pitch = pilot.rotationPitch;
-                }
-                if (targetHelicopter != null && isTargetHelicopterFriendly && targetHelicopter.riddenByEntity != null)
-                {
-                    yaw = targetHelicopter.riddenByEntity.rotationYaw;
-                    pitch = targetHelicopter.riddenByEntity.rotationPitch;
-                }
-
-                ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
-                worldObj.spawnEntityInWorld(newMissile);
-            }
-
-            // START YAW
-            if (targetHelicopter != null && isTargetHelicopterFriendly && thd < 10f)
-            {
-	                // mimic friendly target yaw rotation when close by
-	                float deltaYawDeg = targetHelicopter.rotationYaw - rotationYaw;
-	
-	                while (deltaYawDeg > 180f) deltaYawDeg -= 360f;
-	                while (deltaYawDeg < -180f) deltaYawDeg += 360f;
-	
-	                rotationYawSpeed = deltaYawDeg * 3f; // saving this for render use
-	                if (rotationYawSpeed > 90f) rotationYawSpeed = 90f;
-	                if (rotationYawSpeed < -90f) rotationYawSpeed = -90f;
-	                rotationYaw += rotationYawSpeed * deltaTime;
-            }
-            else if (targetHelicopter != null) // && !isTargetHelicopterFriendly)
-            {
-                // turn toward target helicopter
-                
-                Vector3 deltaPos = Vector3.add(targetHelicopter.pos, pos.negate(null), null);
-                //deltaPos.add(vel, deltaPos, deltaPos);
-                
-                if (Vector3.dot(side, deltaPos) > 0f)
-                {
-                    rotationYaw += 60f * deltaTime;
-                }
-                else
-                {
-                    rotationYaw -= 60f * deltaTime;
-                }
-            }
-            else if (ENABLE_LOOK_YAW && pilot != null)
-            {
-                // input from look control (mouse or analog stick)
-                float deltaYawDeg = pilot.rotationYaw - rotationYaw;
-
-                while (deltaYawDeg > 180f) deltaYawDeg -= 360f;
-                while (deltaYawDeg < -180f) deltaYawDeg += 360f;
-
-                rotationYawSpeed = deltaYawDeg * 3f; // saving this for render use
-                if (rotationYawSpeed > 90f) rotationYawSpeed = 90f;
-                if (rotationYawSpeed < -90f) rotationYawSpeed = -90f;
-                rotationYaw += rotationYawSpeed * deltaTime;
+                // show status message
+                minecraft.ingameGUI.addChatMessage("Look-Pitch:  ON, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
             }
             else
-            // buttonYaw:
             {
-                // button yaw
-                if (Keyboard.isKeyDown(KEY_ROTATE_LEFT)) // g, rotate left
-                {
-                    rotationYawSpeed -= 8f;
-                }
-                else if (Keyboard.isKeyDown(KEY_ROTATE_RIGHT)) // h, rotate right
-                {
-                    rotationYawSpeed += 8f;
-                }
-                else
-                {
-                    rotationYawSpeed *= .9f;
-                }
-                if (rotationYawSpeed > 80f) rotationYawSpeed = 80f;
-                if (rotationYawSpeed < -80f) rotationYawSpeed = -80f;
-                rotationYaw += rotationYawSpeed * deltaTime;
+                // turn off cockpit
+                lookPitch = false;
+                minecraft.ingameGUI.addChatMessage("Look-Pitch: OFF, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
             }
-            
-            rotationYaw %= 360f;
-
-            // PITCH CONTROL
-            //
-            // the cyclic (tilt control)
-            // only affects pitch and roll, acceleration done later
-            // zero pitch is level, positive pitch is leaning forward
-            
-            if (targetHelicopter != null) // we are AI
+        }
+        else if (Keyboard.isKeyDown(KEY_HUD_MODE) && hudModeToggleDelay < 0f && pilot != null)
+        {
+            hudModeToggleDelay = .5f;
+                
+            if (model.visible)
             {
-                if (thd > 10f)
-                {
-                    rotationPitch = 45f * (thd - 10f) / 20f;
-                }
-				else 
-			    {
-				   if (!isTargetHelicopterFriendly) rotationPitch =  (1 - (thd / 10f)) * -20f;// -20f;
-			    }
+                // change to 1st-person and hide model
+                if (minecraft.gameSettings.thirdPersonView != 0) minecraft.gameSettings.thirdPersonView = 0;
+                model.visible = false;
+            }
+            else
+            {
+                model.visible = true;
+            }
+        }
+        else if (minecraft.gameSettings.thirdPersonView == 2) // must hold look back key, not a toggle, so cancel here
+        {
+            minecraft.gameSettings.thirdPersonView = 0;
+        }
+            
+        // view could be switched by player using F5
+        if (minecraft.gameSettings.thirdPersonView != 0) model.visible = true;
+
+        exitDelay -= deltaTime;
+        if (Keyboard.isKeyDown(KEY_EXIT) && exitDelay < 0f && pilot != null)
+        {
+            exitDelay = 1f; // seconds before player can exit
+            pilotExit();
+        }
+
+        altitudeLockToggleDelay -= deltaTime;
+        if (Keyboard.isKeyDown(KEY_LOCK_ALT) && altitudeLockToggleDelay < 0f && pilot != null)
+        {
+            altitudeLockToggleDelay = .5f;
+            altitudeLock = !altitudeLock;
+        }
+
+        // FIRE ROCKET
+        if (Keyboard.isKeyDown(KEY_FIRE_ROCKET))
+        {
+            fireRocket();
+        }
+            
+        // MANUAL ROCKET RELOAD
+        if (Keyboard.isKeyDown(KEY_ROCKET_RELOAD) && rocketCount > 0)
+        {
+            rocketReload = ROCKET_RELOAD_DELAY;
+            rocketCount = 0;
+        }
+
+        // FIRE MISSILE
+        if (Keyboard.isKeyDown(KEY_FIRE_MISSILE))
+        {
+            fireMissile();
+        }
+
+        if (ENABLE_LOOK_YAW && pilot != null)
+        {
+            // input from look control (mouse or analog stick)
+            float deltaYawDeg = pilot.rotationYaw - rotationYaw;
+
+            while (deltaYawDeg > 180f) deltaYawDeg -= 360f;
+            while (deltaYawDeg < -180f) deltaYawDeg += 360f;
+
+            rotationYawSpeed = deltaYawDeg * 3f; // saving this for render use
+            if (rotationYawSpeed > 90f) rotationYawSpeed = 90f;
+            if (rotationYawSpeed < -90f) rotationYawSpeed = -90f;
+            rotationYaw += rotationYawSpeed * deltaTime;
+        }
+        else
+        // buttonYaw:
+        {
+            // button yaw
+            if (Keyboard.isKeyDown(KEY_ROTATE_LEFT)) // g, rotate left
+            {
+                rotationYawSpeed -= 8f;
+            }
+            else if (Keyboard.isKeyDown(KEY_ROTATE_RIGHT)) // h, rotate right
+            {
+                rotationYawSpeed += 8f;
+            }
+            else
+            {
+                rotationYawSpeed *= .9f;
+            }
+            if (rotationYawSpeed > 80f) rotationYawSpeed = 80f;
+            if (rotationYawSpeed < -80f) rotationYawSpeed = -80f;
+            rotationYaw += rotationYawSpeed * deltaTime;
+        }
+            
+        rotationYaw %= 360f;
+
+        // PITCH CONTROL
+        //
+        // the cyclic (tilt control)
+        // only affects pitch and roll, acceleration done later
+        // zero pitch is level, positive pitch is leaning forward
+            
+        if (lookPitch) // helicopter follows player look pitch
+        {
+            if (Keyboard.isKeyDown(KEY_AUTO_LEVEL))
+            {
+                lookPitchZeroLevel = pilot.rotationPitch;
+            }
+                
+            if (rotationPitch > MAX_PITCH)
+            {
+                rotationPitch = MAX_PITCH;
                 rotationPitchSpeed = 0f;
             }
-            else if (lookPitch) // helicopter follows player look pitch
+            else if (rotationPitch < -MAX_PITCH / 1.5f)
             {
-                if (Keyboard.isKeyDown(KEY_AUTO_LEVEL))
-                {
-                    lookPitchZeroLevel = pilot.rotationPitch;
-                }
+                rotationPitch = -MAX_PITCH / 1.5f;
+                rotationPitchSpeed = 0f;
+            }
+            else
+            {
+                float targetPitch = (pilot.rotationPitch / 80f) * MAX_PITCH - lookPitchZeroLevel;
+                    
+                // leaning backward, so further limit
+                if (targetPitch < 0f) targetPitch *= .3f;
+                    
+                rotationPitchSpeed = 3f * (targetPitch - rotationPitch); // look down slightly
+
+                rotationPitch += rotationPitchSpeed * deltaTime;
+            }
                 
+            if (rotationPitch > MAX_PITCH) // check again to prevent judder
+            {
+                rotationPitch = MAX_PITCH;
+                rotationPitchSpeed = 0f;
+            }
+            else if (rotationPitch < -MAX_PITCH / 1.5f)
+            {
+                rotationPitch = -MAX_PITCH / 1.5f;
+                rotationPitchSpeed = 0f;
+            }
+        }
+        else // normal button pitch and roll by player
+        {
+            // check for auto-level command, will be applied later if no other pitch key pressed
+            if (Keyboard.isKeyDown(KEY_AUTO_LEVEL))
+            {
+                autoLevelDelay = 1.5f; // effect lasts a short time after key is released, but overriden by key presses
+            }
+                
+            if (Keyboard.isKeyDown(KEY_FORWARD))
+            {
                 if (rotationPitch > MAX_PITCH)
                 {
                     rotationPitch = MAX_PITCH;
                     rotationPitchSpeed = 0f;
                 }
-                else if (rotationPitch < -MAX_PITCH / 1.5f)
-                {
-                    rotationPitch = -MAX_PITCH / 1.5f;
-                    rotationPitchSpeed = 0f;
-                }
                 else
                 {
-                    float targetPitch = (pilot.rotationPitch / 80f) * MAX_PITCH - lookPitchZeroLevel;
-                    
-                    // leaning backward, so further limit
-                    if (targetPitch < 0f) targetPitch *= .3f;
-                    
-                    rotationPitchSpeed = 3f * (targetPitch - rotationPitch); // look down slightly
-
+                    rotationPitchSpeed = PITCH_SPEED_DEG;
                     rotationPitch += rotationPitchSpeed * deltaTime;
                 }
-                
+                    
                 if (rotationPitch > MAX_PITCH) // check again to prevent judder
                 {
                     rotationPitch = MAX_PITCH;
                     rotationPitchSpeed = 0f;
                 }
-                else if (rotationPitch < -MAX_PITCH / 1.5f)
+            }
+            else if (Keyboard.isKeyDown(KEY_BACK))
+            {
+                if (rotationPitch < -MAX_PITCH / 1.5f)
+                {
+                    rotationPitch = -MAX_PITCH / 1.5f;
+                    rotationPitchSpeed = 0f;
+                }
+                else
+                {
+                    rotationPitchSpeed = -PITCH_SPEED_DEG;
+                    rotationPitch += rotationPitchSpeed * deltaTime;
+                }
+                if (rotationPitch < -MAX_PITCH / 1.5f) // check again to prevent judder
                 {
                     rotationPitch = -MAX_PITCH / 1.5f;
                     rotationPitchSpeed = 0f;
                 }
             }
-            else // normal button pitch and roll by player
-            {
-	            // check for auto-level command, will be applied later if no other pitch key pressed
-                if (Keyboard.isKeyDown(KEY_AUTO_LEVEL))
-	            {
-	                autoLevelDelay = 1.5f; // effect lasts a short time after key is released, but overriden by key presses
-	            }
-                
-	            if (Keyboard.isKeyDown(KEY_FORWARD))
-                {
-                    if (rotationPitch > MAX_PITCH)
-                    {
-                        rotationPitch = MAX_PITCH;
-	                    rotationPitchSpeed = 0f;
-                    }
-                    else
-                    {
-	                    rotationPitchSpeed = PITCH_SPEED_DEG;
-                        rotationPitch += rotationPitchSpeed * deltaTime;
-                    }
-                    
-                    if (rotationPitch > MAX_PITCH) // check again to prevent judder
-                    {
-                        rotationPitch = MAX_PITCH;
-	                    rotationPitchSpeed = 0f;
-                    }
-                }
-                else if (Keyboard.isKeyDown(KEY_BACK))
-                {
-                    if (rotationPitch < -MAX_PITCH / 1.5f)
-                    {
-                        rotationPitch = -MAX_PITCH / 1.5f;
-	                    rotationPitchSpeed = 0f;
-                    }
-                    else
-                    {
-	                    rotationPitchSpeed = -PITCH_SPEED_DEG;
-                        rotationPitch += rotationPitchSpeed * deltaTime;
-                    }
-                    if (rotationPitch < -MAX_PITCH / 1.5f) // check again to prevent judder
-                    {
-                        rotationPitch = -MAX_PITCH / 1.5f;
-	                    rotationPitchSpeed = 0f;
-                    }
-                }
-                else if (autoLevelDelay > 0) // this is fast, on-demand auto-level
-                {
-                    autoLevelDelay -= deltaTime;
-                    
-                    rotationPitchSpeed = -rotationPitch * 1.6f; // a bit faster than the normal auto-level
-                    rotationPitch += rotationPitchSpeed * deltaTime;
-                }
-                else
-                {
-                    if (ENABLE_AUTO_LEVEL) // this is always-on auto-level, if enabled
-                    {
-		                rotationPitchSpeed = -rotationPitch * .5f;
-		                rotationPitch += rotationPitchSpeed * deltaTime;
-                    }
-                    else
-                    {
-                        rotationPitchSpeed = 0f;
-                    }
-                }
-            }
-
-            if (targetHelicopter != null) // we are AI
-            {
-                if (!isTargetHelicopterFriendly)
-                {
-                    // roll toward or away?
-                }
-                if (thd > 10f)
-                {
-                    // seek target
-                }
-            }
-            else if (Keyboard.isKeyDown(KEY_LEFT) && pilot != null)
-            {
-                if (rotationRoll > MAX_ROLL)
-                {
-                    rotationRoll = MAX_ROLL;
-                    rotationRollSpeed = 0f;
-                }
-                else
-                {
-	                rotationRollSpeed = ROLL_SPEED_DEG;
-	                rotationRoll += rotationRollSpeed * deltaTime;
-                }
-                if (rotationRoll > MAX_ROLL)
-                {
-                    rotationRoll = MAX_ROLL;
-                    rotationRollSpeed = 0f;
-                }
-            }
-            else if (Keyboard.isKeyDown(KEY_RIGHT) && pilot != null)
-            {
-                if (rotationRoll < -MAX_ROLL) 
-                {
-                    rotationRoll = -MAX_ROLL;
-                    rotationRollSpeed = 0f;
-                }
-                else
-                {
-	                rotationRollSpeed = -ROLL_SPEED_DEG;
-	                rotationRoll += rotationRollSpeed * deltaTime;
-                }
-                if (rotationRoll < -MAX_ROLL) 
-                {
-                    rotationRoll = -MAX_ROLL;
-                    rotationRollSpeed = 0f;
-                }
-            }
             else if (autoLevelDelay > 0) // this is fast, on-demand auto-level
             {
-                rotationRollSpeed = -rotationRoll * 1.6f;
-                rotationRoll += rotationRollSpeed * deltaTime;
+                autoLevelDelay -= deltaTime;
+                    
+                rotationPitchSpeed = -rotationPitch * 1.6f; // a bit faster than the normal auto-level
+                rotationPitch += rotationPitchSpeed * deltaTime;
             }
             else
             {
-                // auto-level roll
-                rotationRollSpeed = -rotationRoll * .6f;
-                rotationRoll += rotationRollSpeed * deltaTime;
-            }
-            
-            
-            // allow direct control of nearby ai friendly helicopters
-            if (targetHelicopter != null && isTargetHelicopterFriendly && thd < 10f)
-            {
-                rotationPitch = targetHelicopter.rotationPitch;
-                rotationPitchSpeed = targetHelicopter.rotationPitchSpeed;
-                
-                rotationRoll = targetHelicopter.rotationRoll;
-                rotationRollSpeed = targetHelicopter.rotationRollSpeed;
-            }
-
-
-            // collective (throttle) control
-            // default space, increase throttle
-            
-            if (targetHelicopter != null) // ai
-            {
-                if (posY + 1f < targetHelicopter.posY)
+                if (ENABLE_AUTO_LEVEL) // this is always-on auto-level, if enabled
                 {
-	                if (throttle < THROTTLE_MAX * .6f) throttle += THROTTLE_INC * .4f;
-	                if (throttle > THROTTLE_MAX * .6f) throttle = THROTTLE_MAX * .6f;
-                }
-                else if (posY - 2f > targetHelicopter.posY)
-                {
-	                if (throttle > THROTTLE_MIN * .6f) throttle -= THROTTLE_INC * .4f;
-	                if (throttle < THROTTLE_MIN * .6f) throttle = THROTTLE_MIN * .6f;
+	                rotationPitchSpeed = -rotationPitch * .5f;
+	                rotationPitch += rotationPitchSpeed * deltaTime;
                 }
                 else
                 {
-                    throttle *= .6; // auto zero throttle   
+                    rotationPitchSpeed = 0f;
                 }
             }
-            else if (Keyboard.isKeyDown(KEY_ASCEND) 
-                 || (Keyboard.isKeyDown(KEY_FORWARD) && lookPitch)) // player
+        }
+
+        // ROLL
+        if (Keyboard.isKeyDown(KEY_LEFT) && pilot != null)
+        {
+            if (rotationRoll > MAX_ROLL)
             {
-                if (throttle < THROTTLE_MAX) throttle += THROTTLE_INC;
-                if (throttle > THROTTLE_MAX) throttle = THROTTLE_MAX;
-                // throttle = THROTTLE_MAX;
-            }
-            else if (Keyboard.isKeyDown(KEY_DESCEND)
-                 || (Keyboard.isKeyDown(KEY_BACK) && lookPitch)) 
-            {
-                if (throttle > THROTTLE_MIN) throttle -= THROTTLE_INC;
-                if (throttle < THROTTLE_MIN) throttle = THROTTLE_MIN;
-                // throttle = THROTTLE_MIN;
+                rotationRoll = MAX_ROLL;
+                rotationRollSpeed = 0f;
             }
             else
             {
-                // zero throttle
-                if (ENABLE_AUTO_THROTTLE_ZERO) throttle *= .6; // quickly zero throttle
+                rotationRollSpeed = ROLL_SPEED_DEG;
+                rotationRoll += rotationRollSpeed * deltaTime;
             }
-            
-            // adjust rotor speed
-	        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
-	        ((ThxModelHelicopter) model).rotorSpeed = power / 2f + .7f;
-            
-            // now calculate thrust and velocity based on yaw, pitch, roll, throttle
-            
-            ascendDescendLift:
+            if (rotationRoll > MAX_ROLL)
             {
-                // as pitch increases, lift decreases by fall-off function
-                thrust.y = MathHelper.cos(pitchRad) * MathHelper.cos(rollRad);
+                rotationRoll = MAX_ROLL;
+                rotationRollSpeed = 0f;
             }
-
-            forwardBack:
+        }
+        else if (Keyboard.isKeyDown(KEY_RIGHT) && pilot != null)
+        {
+            if (rotationRoll < -MAX_ROLL) 
             {
-                // as pitch increases, forward-back motion increases
-                // but sin function was too touchy so using 1-cos
-                float accel = 1f - MathHelper.cos(pitchRad);
-                if (pitchRad > 0f) accel *= -1f;
-                
-                thrust.x = -fwd.x * accel;
-                thrust.z = -fwd.z * accel;
+                rotationRoll = -MAX_ROLL;
+                rotationRollSpeed = 0f;
             }
-
-            strafeLeftRight:
+            else
             {
-                // double strafe = (double) -MathHelper.sin(roll);
-                float strafe = 1f - MathHelper.cos(rollRad);
-                if (rollRad > 0f) strafe *= -1f;
-
-                // use perp of yaw and scale by roll
-                thrust.x -= fwd.z * strafe;
-                thrust.z += fwd.x * strafe;
+                rotationRollSpeed = -ROLL_SPEED_DEG;
+                rotationRoll += rotationRollSpeed * deltaTime;
             }
-
-            // start with current velocity
-            velocity.set((float)motionX, (float)motionY, (float)motionZ);
-
-            // friction, very little!
-            velocity.scale(FRICTION);
-
-            // scale thrust by current throttle and delta time
-            //thrust.normalize().scale(MAX_ACCEL * (1f + throttle) * deltaTime / .05f);
-            thrust.normalize().scale(MAX_ACCEL * (1f + throttle) * deltaTime / .05f);
-
-            // apply the thrust
-            Vector3.add(velocity, thrust, velocity);
-
-            // gravity is always straight down
-            velocity.y -= GRAVITY * deltaTime / .05f;
-
-            // limit max velocity
-            if (velocity.lengthSquared() > MAX_VELOCITY * MAX_VELOCITY)
+            if (rotationRoll < -MAX_ROLL) 
             {
-                velocity.scale(MAX_VELOCITY / velocity.length());
+                rotationRoll = -MAX_ROLL;
+                rotationRollSpeed = 0f;
             }
-
-            // apply velocity changes
-            motionX = velocity.x;
-            motionY = velocity.y;
-            motionZ = velocity.z;
-            
-            if (altitudeLock) motionY = 0f;
+        }
+        else if (autoLevelDelay > 0) // this is fast, on-demand auto-level
+        {
+            rotationRollSpeed = -rotationRoll * 1.6f;
+            rotationRoll += rotationRollSpeed * deltaTime;
         }
         else
-        // no pilot -- slowly sink to the ground
         {
-            model.visible = true;
-            ((ThxModelHelicopter) model).rotorSpeed = 0;
-            ((ThxModelHelicopter) model).bottomVisible = true;
+            // auto-level roll
+            rotationRollSpeed = -rotationRoll * .6f;
+            rotationRoll += rotationRollSpeed * deltaTime;
+        }
+            
 
-            if (onGround || isInWater())
+        // collective (throttle) control
+        // default space, increase throttle
+            
+        if (Keyboard.isKeyDown(KEY_ASCEND) || (Keyboard.isKeyDown(KEY_FORWARD) && lookPitch)) // player
+        {
+            if (throttle < THROTTLE_MAX) throttle += THROTTLE_INC;
+            if (throttle > THROTTLE_MAX) throttle = THROTTLE_MAX;
+            // throttle = THROTTLE_MAX;
+        }
+        else if (Keyboard.isKeyDown(KEY_DESCEND) || (Keyboard.isKeyDown(KEY_BACK) && lookPitch)) 
+        {
+            if (throttle > THROTTLE_MIN) throttle -= THROTTLE_INC;
+            if (throttle < THROTTLE_MIN) throttle = THROTTLE_MIN;
+            // throttle = THROTTLE_MIN;
+        }
+        else
+        {
+            // zero throttle
+            if (ENABLE_AUTO_THROTTLE_ZERO) throttle *= .6; // quickly zero throttle
+        }
+    }
+    
+    private void updateMotion()
+    {
+        // now calculate thrust and velocity based on yaw, pitch, roll, throttle
+        ascendDescendLift:
+        {
+            // as pitch increases, lift decreases by fall-off function
+            thrust.y = MathHelper.cos(pitchRad) * MathHelper.cos(rollRad);
+        }
+
+        forwardBack:
+        {
+            // as pitch increases, forward-back motion increases
+            // but sin function was too touchy so using 1-cos
+            float accel = 1f - MathHelper.cos(pitchRad);
+            if (pitchRad > 0f) accel *= -1f;
+                
+            thrust.x = -fwd.x * accel;
+            thrust.z = -fwd.z * accel;
+        }
+
+        strafeLeftRight:
+        {
+            // double strafe = (double) -MathHelper.sin(roll);
+            float strafe = 1f - MathHelper.cos(rollRad);
+            if (rollRad > 0f) strafe *= -1f;
+
+            // use perp of yaw and scale by roll
+            thrust.x -= fwd.z * strafe;
+            thrust.z += fwd.x * strafe;
+        }
+
+        // start with current velocity
+        velocity.set((float)motionX, (float)motionY, (float)motionZ);
+
+        // friction, very little!
+        velocity.scale(FRICTION);
+
+        // scale thrust by current throttle and delta time
+        //thrust.normalize().scale(MAX_ACCEL * (1f + throttle) * deltaTime / .05f);
+        thrust.normalize().scale(MAX_ACCEL * (1f + throttle) * deltaTime / .05f);
+
+        // apply the thrust
+        Vector3.add(velocity, thrust, velocity);
+
+        // gravity is always straight down
+        velocity.y -= GRAVITY * deltaTime / .05f;
+
+        // limit max velocity
+        if (velocity.lengthSquared() > MAX_VELOCITY * MAX_VELOCITY)
+        {
+            velocity.scale(MAX_VELOCITY / velocity.length());
+        }
+
+        // apply velocity changes
+        motionX = velocity.x;
+        motionY = velocity.y;
+        motionZ = velocity.z;
+            
+        if (altitudeLock) motionY = 0f;
+        
+        moveEntity(motionX, motionY, motionZ);
+        
+        handleCollisions();
+    }
+    
+    private void onUpdateDrone()
+    {
+        if (targetHelicopter == null) return;
+    
+        float thd = 0f; // thd is targetHelicopter distance
+        if (targetHelicopter != null)
+        {
+            deltaPosToTarget.set((float)(targetHelicopter.posX - posX), 0f, (float)(targetHelicopter.posZ - posZ));
+            thd = deltaPosToTarget.length();
+        }
+            
+        if (!isTargetHelicopterFriendly 
+                && thd < 20f 
+                && thd > 5f 
+                && Math.abs(targetHelicopter.posY - posY) < 2f 
+           )
+        {
+            // fire rocket
+        }
+        
+        // YAW
+        if (isTargetHelicopterFriendly && thd < 10f)
+        {
+            // mimic friendly target yaw rotation when close by
+            float deltaYawDeg = targetHelicopter.rotationYaw - rotationYaw;
+
+            while (deltaYawDeg > 180f) deltaYawDeg -= 360f;
+            while (deltaYawDeg < -180f) deltaYawDeg += 360f;
+
+            rotationYawSpeed = deltaYawDeg * 3f; // saving this for render use
+            if (rotationYawSpeed > 90f) rotationYawSpeed = 90f;
+            if (rotationYawSpeed < -90f) rotationYawSpeed = -90f;
+            rotationYaw += rotationYawSpeed * deltaTime;
+        }
+        else
+        {
+            // turn toward target helicopter
+                
+            Vector3 deltaPos = Vector3.add(targetHelicopter.pos, pos.negate(null), null);
+            //deltaPos.add(vel, deltaPos, deltaPos);
+                
+            if (Vector3.dot(side, deltaPos) > 0f)
             {
-                if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
-                if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
-                
-                // tend to stay put on ground
-                motionY = 0.;
-                motionX *= .7;
-                motionZ *= .7;
-                
-                rotationYawSpeed = 0f;
+                rotationYaw += 60f * deltaTime;
             }
             else
             {
-                // settle back to ground naturally if pilot bails
-                
-	            rotationPitch *= PITCH_RETURN;
-	            rotationRoll *= ROLL_RETURN;
-                
-                motionX *= FRICTION;
-                motionY -= GRAVITY * .16f * deltaTime / .05f;
-                motionZ *= FRICTION;
+                rotationYaw -= 60f * deltaTime;
             }
         }
         
-        // move in all cases
-        moveEntity(motionX, motionY, motionZ);
-        handleCollisions();
-        
-        if (minecraft.thePlayer.equals(pilot))
+        // PITCH
+        if (thd > 10f)
         {
-            sendUpdatePacketToServer();
-            //if (ticksExisted % UPDATE_RATE == 0) sendUpdatePacketToServer();
+            rotationPitch = 45f * (thd - 10f) / 20f;
+        }
+		else 
+	    {
+		   if (!isTargetHelicopterFriendly) rotationPitch =  (1 - (thd / 10f)) * -20f;// -20f;
+	    }
+        rotationPitchSpeed = 0f;
+        
+        
+        if (isTargetHelicopterFriendly && thd < 10f)
+        {
+            rotationPitch = targetHelicopter.rotationPitch;
+            rotationPitchSpeed = targetHelicopter.rotationPitchSpeed;
+                
+            rotationRoll = targetHelicopter.rotationRoll;
+            rotationRollSpeed = targetHelicopter.rotationRollSpeed;
+        }
+
+        if (posY + 1f < targetHelicopter.posY)
+        {
+            if (throttle < THROTTLE_MAX * .6f) throttle += THROTTLE_INC * .4f;
+            if (throttle > THROTTLE_MAX * .6f) throttle = THROTTLE_MAX * .6f;
+        }
+        else if (posY - 2f > targetHelicopter.posY)
+        {
+            if (throttle > THROTTLE_MIN * .6f) throttle -= THROTTLE_INC * .4f;
+            if (throttle < THROTTLE_MIN * .6f) throttle = THROTTLE_MIN * .6f;
+        }
+        else
+        {
+            throttle *= .6; // auto zero throttle   
+        }
+    }
+    
+    private void onUpdateVacant()
+    {
+        throttle *= .6; // quickly zero throttle
+        
+        model.visible = true;
+
+        if (onGround || isInWater())
+        {
+            if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
+            if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
+                
+            // tend to stay put on ground
+            motionY = 0.;
+            motionX *= .7;
+            motionZ *= .7;
+                
+            rotationYawSpeed = 0f;
+        }
+        else
+        {
+            // settle back to ground naturally if pilot bails
+                
+            rotationPitch *= PITCH_RETURN;
+            rotationRoll *= ROLL_RETURN;
+                
+            motionX *= FRICTION;
+            motionY -= GRAVITY * .16f * deltaTime / .05f;
+            motionZ *= FRICTION;
         }
     }
     
@@ -1253,8 +1143,6 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
         // clear pitch speed to prevent judder
         rotationPitchSpeed = 0f;
         
-        ((ThxModelHelicopter) model).rotorSpeed = 0f; // turn off rotor, it will spin down slowly
-        
         if (enable_drone_mode) 
         {
             enable_drone_mode = false;
@@ -1271,6 +1159,82 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
         {
             log("pilotExit() calling mountEntity on player " + pilot);
             pilot.mountEntity(this); // riddenByEntity is now null
+        }
+    }
+    
+    private void fireRocket()
+    {
+        if (rocketDelay > 0f) return;
+        if (rocketReload > 0f) return;
+        
+        rocketCount++;
+        rocketDelay = ROCKET_DELAY;
+                
+        if (worldObj.isRemote)
+        {
+            // queue fire command for server
+            fire1 = 1;
+        }
+        else
+        {
+            float leftRightAmount = .6f;
+            float leftRight = (rocketCount % 2 == 0) ? leftRightAmount  : -leftRightAmount;
+                
+	        // starting position of rocket relative to helicopter, out in front quite a bit to avoid collision
+	        float offsetX = (side.x * leftRight) + (fwd.x * 2f) + (up.x * -.8f);
+	        float offsetY = (side.y * leftRight) + (fwd.y * 2f) + (up.y * -.8f);
+	        float offsetZ = (side.z * leftRight) + (fwd.z * 2f) + (up.z * -.8f);
+                    
+            float yaw = rotationYaw;
+            float pitch = rotationPitch + 5f; // slight downward from helicopter pitch
+                
+            // use pilot aim when in 1st-person
+            if (riddenByEntity != null && minecraft.gameSettings.thirdPersonView == 0) 
+            {
+                yaw = riddenByEntity.rotationYaw;
+                pitch = riddenByEntity.rotationPitch;
+            }
+                
+            ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
+            newRocket.owner = this;
+            worldObj.spawnEntityInWorld(newRocket);
+        }
+        
+        if (rocketCount == FULL_ROCKET_COUNT)
+        {
+            rocketReload = ROCKET_RELOAD_DELAY;
+            rocketCount = 0;
+        }
+    }
+    
+    private void fireMissile()
+    {
+        if (missileDelay > 0f) return;
+        missileDelay = MISSILE_DELAY;
+                
+        if (worldObj.isRemote)
+        {
+            // queue fire command for server packet
+            fire2 = 1;
+        }
+        else
+        {
+	        float offX = fwd.x * 2f;
+	        float offY = fwd.y * 2f;
+	        float offZ = fwd.z * 2f;
+	
+	        float yaw = rotationYaw;
+	        float pitch = rotationPitch + 5f; // slight downward from helicopter pitch
+	                
+	        // use pilot aim when in 1st-person
+	        if (riddenByEntity != null && minecraft.gameSettings.thirdPersonView == 0)
+	        {
+	            yaw = riddenByEntity.rotationYaw;
+	            pitch = riddenByEntity.rotationPitch;
+	        }
+
+            ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
+            worldObj.spawnEntityInWorld(newMissile);
         }
     }
 }

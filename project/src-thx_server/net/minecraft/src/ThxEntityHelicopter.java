@@ -40,9 +40,14 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
     {
         this(world);
         
-        setPositionAndRotation(x, y, z, yaw, 0f);
-        //setPosition(x, y, z);
-        //setRotation(f, f1);
+        setPositionAndRotation(x, y + yOffset, z, yaw, 0f);
+        
+        log("C2 - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ + ", yaw: " + yaw);
+    }
+
+    @Override
+    public void onUpdate()
+    {
         
         // adjust position height to avoid collisions
         List list = worldObj.getCollidingBoundingBoxes(this, boundingBox.contract(0.03125D, 0.0D, 0.03125D));
@@ -58,17 +63,11 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
                 }
             }
 
-            y += d3 - boundingBox.minY;
-            setPosition(x, y, z);
+            posY += d3 - boundingBox.minY;
+            setPosition(posX, posY, posZ);
         }
-
         
-        log("C3 - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ + ", yaw: " + yaw);
-    }
 
-    @Override
-    public void onUpdate()
-    {
         super.onUpdate(); // ThxEntity.onUpdate will apply latest client packet if there is one
         
         // decrement cooldown timers
@@ -98,6 +97,8 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
 	        
             return;
         }
+        
+        throttle *= .6; // quickly zero throttle
         
         // for auto-heal: 
         if (damage > 0f) damage -= deltaTime; // heal rate: 1 pt / sec
@@ -409,12 +410,12 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
         float leftRight = (rocketCount % 2 == 0) ? leftRightAmount  : -leftRightAmount;
                 
         // starting position of rocket relative to helicopter, out in front quite a bit to avoid collision
-        float offsetX = side.x * leftRight + fwd.x * 2f;
-        float offsetY = side.y * leftRight + fwd.y * 2f;
-        float offsetZ = side.z * leftRight + fwd.z * 2f;
+        float offsetX = (side.x * leftRight) + (fwd.x * 2f) + (up.x * -.8f);
+        float offsetY = (side.y * leftRight) + (fwd.y * 2f) + (up.y * -.8f);
+        float offsetZ = (side.z * leftRight) + (fwd.z * 2f) + (up.z * -.8f);
                     
         float yaw = rotationYaw;
-        float pitch = rotationPitch + 10f; // slight downward from helicopter pitch
+        float pitch = rotationPitch; // + 5f; // slight downward from helicopter pitch
                 
         ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
         worldObj.spawnEntityInWorld(newRocket);
@@ -426,8 +427,9 @@ public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
         float offY = fwd.y * 2f;
         float offZ = fwd.z * 2f;
 
-        float yaw = rotationYaw;
-        float pitch = rotationPitch;
+        // aim with cursor if pilot
+        float yaw = riddenByEntity != null ? riddenByEntity.rotationYaw : rotationYaw;
+        float pitch = riddenByEntity != null ? riddenByEntity.rotationPitch : rotationPitch;
                 
         ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
         worldObj.spawnEntityInWorld(newMissile);

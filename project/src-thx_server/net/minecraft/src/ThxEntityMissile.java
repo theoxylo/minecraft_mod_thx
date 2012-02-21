@@ -59,15 +59,13 @@ public class ThxEntityMissile extends ThxEntity
     }
 
     @Override
-    protected void entityInit()
-    {
-        // log("EntityThxMissile entityInit called");
-    }
-
-    @Override
     public void onUpdate()
     {
-        if (ticksExisted > 500) setEntityDead();
+        if (ticksExisted > 500) 
+        {
+            setEntityDead();
+            return;
+        }
 	        
         super.onUpdate();
         
@@ -80,14 +78,12 @@ public class ThxEntityMissile extends ThxEntity
         
         // guide missile to target helicopter
         Vector3 toTarget = new Vector3();
-        if (targetHelicopter != null) toTarget.set((float)(targetHelicopter.posX - posX), (float)(targetHelicopter.posY - posY), (float)(targetHelicopter.posZ - posZ));
+        if (targetHelicopter != null)
+        {
+            toTarget.set((float)(targetHelicopter.posX - posX), (float)(targetHelicopter.posY - posY), (float)(targetHelicopter.posZ - posZ));
+        }
         toTarget.normalize();
         toTarget = toTarget.scale(.05f);
-        
-
-        prevPosX = posX;
-        prevPosY = posY;
-        prevPosZ = posZ;
         
         // gravity pull
         //if (motionY > -.09) motionY -= GRAVITY;
@@ -103,7 +99,7 @@ public class ThxEntityMissile extends ThxEntity
         }
         Vector3 motion = new Vector3((float)motionX, (float)motionY, (float)motionZ);
         
-        moveEntity(motionX, motionY, motionZ);
+        moveEntity(motionX, motionY, motionZ); // this will update posX, posY, posZ
         
         float dx = (float)(posX - prevPosX);
         float dy = (float)(posY - prevPosY);

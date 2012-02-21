@@ -14,6 +14,8 @@ public class ThxEntityRocket  extends ThxEntity
         inTile = 0;
         inGround = false;
         setSize(0.25F, 0.25F);
+        
+        model = new ThxModelMissile();
     }
 
     public ThxEntityRocket(Entity entity, double x, double y, double z, double dx, double dy, double dz, float yaw, float pitch)
@@ -56,9 +58,9 @@ public class ThxEntityRocket  extends ThxEntity
         motionX = d;
         motionY = d1;
         motionZ = d2;
-        float f3 = MathHelper.sqrt_double(d * d + d2 * d2);
-        prevRotationYaw = rotationYaw = (float)((Math.atan2(d, d2) * 180D) / 3.1415927410125732D);
-        prevRotationPitch = rotationPitch = (float)((Math.atan2(d1, f3) * 180D) / 3.1415927410125732D);
+        //float f3 = MathHelper.sqrt_double(d * d + d2 * d2);
+        //prevRotationYaw = rotationYaw = (float)((Math.atan2(d, d2) * 180D) / 3.1415927410125732D);
+        //prevRotationPitch = rotationPitch = (float)((Math.atan2(d1, f3) * 180D) / 3.1415927410125732D);
         field_20050_h = 0;
     }
 
@@ -67,22 +69,24 @@ public class ThxEntityRocket  extends ThxEntity
         motionX = d;
         motionY = d1;
         motionZ = d2;
+        /*
         if(prevRotationPitch == 0.0F && prevRotationYaw == 0.0F)
         {
             float f = MathHelper.sqrt_double(d * d + d2 * d2);
             prevRotationYaw = rotationYaw = (float)((Math.atan2(d, d2) * 180D) / 3.1415927410125732D);
             prevRotationPitch = rotationPitch = (float)((Math.atan2(d1, f) * 180D) / 3.1415927410125732D);
         }
+        */
     }
 
     public void onUpdate()
     {
-        if (ticksExisted > 500) setEntityDead();
+        if (ticksExisted > 500) 
+        {
+            setEntityDead();
+            return;
+        }
 	        
-        lastTickPosX = posX;
-        lastTickPosY = posY;
-        lastTickPosZ = posZ;
-        
         super.onUpdate();
         
         if(inGround)
@@ -206,6 +210,7 @@ public class ThxEntityRocket  extends ThxEntity
         }
         
         // pitch and yaw
+        /*
         if (!launched)
         {
             launched = true;
@@ -226,6 +231,7 @@ public class ThxEntityRocket  extends ThxEntity
             rotationPitch = prevRotationPitch + (rotationPitch - prevRotationPitch) * 0.2F;
             rotationYaw = prevRotationYaw + (rotationYaw - prevRotationYaw) * 0.2F;
         }
+        */
     }
 
     public void writeEntityToNBT(NBTTagCompound nbttagcompound)
@@ -244,11 +250,6 @@ public class ThxEntityRocket  extends ThxEntity
         zTile = nbttagcompound.getShort("zTile");
         inTile = nbttagcompound.getByte("inTile") & 0xff;
         inGround = nbttagcompound.getByte("inGround") == 1;
-    }
-
-    public float getShadowSize()
-    {
-        return 0.0F;
     }
 
     private int xTile;

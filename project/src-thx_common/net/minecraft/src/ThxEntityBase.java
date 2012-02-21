@@ -69,9 +69,9 @@ public abstract class ThxEntityBase extends Entity
         deltaTime = ((float) (time - prevTime)) / 1000000000f; // convert to sec
         prevTime = time;
 
-        prevPosX = posX;
-        prevPosY = posY;
-        prevPosZ = posZ;
+        lastTickPosX = prevPosX = posX;
+        lastTickPosY = prevPosY = posY;
+        lastTickPosZ = prevPosZ = posZ;
 
         prevRotationPitch = rotationPitch;
         prevRotationYaw = rotationYaw;
@@ -130,7 +130,7 @@ public abstract class ThxEntityBase extends Entity
         // up.x = cosYaw * sinRoll - sinYaw * sinPitch * cosRoll;
         // up.y = cosPitch * cosRoll;
         // up.z = -sinYaw * sinRoll - sinPitch * cosRoll * cosYaw;
-        Vector3.cross(fwd, side, up);
+        Vector3.cross(side, fwd, up);
 
         pos.x = (float) posX;
         pos.y = (float) posY;
