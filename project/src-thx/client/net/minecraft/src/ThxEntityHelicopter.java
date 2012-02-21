@@ -6,7 +6,7 @@ import net.minecraft.client.Minecraft;
 
 import org.lwjgl.input.Keyboard;
 
-public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
+public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
 {    
     public static final int netId = 75;
     

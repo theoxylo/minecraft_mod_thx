@@ -23,7 +23,7 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
     {
 		super.onUpdate();
 		
-		if (net.minecraft.src.IPacketSource.class.isAssignableFrom(this.getClass()))
+		if (net.minecraft.src.IClientDriven.class.isAssignableFrom(this.getClass()))
 		{
 			applyUpdatePacketFromServer();
 		}

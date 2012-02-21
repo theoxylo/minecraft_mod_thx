@@ -79,9 +79,9 @@ public class EntityTrackerEntry
         field_28165_t++;
         if (++updateCounter % frequency == 0 || trackedEntity.isAirBorne)
         {
-	        if (trackedEntity instanceof IPacketSource && trackedEntity.riddenByEntity != null)
+	        if (trackedEntity instanceof IClientDriven && trackedEntity.riddenByEntity != null)
 	        {
-                sendPacketToTrackedPlayers(((IPacketSource) trackedEntity).getUpdatePacket());
+                sendPacketToTrackedPlayers(((IClientDriven) trackedEntity).getUpdatePacket());
 	            
                 // used by updatePlayerEntity for spawn/despawn trigger
 	            encodedPosX          = MathHelper.floor_double(trackedEntity.posX * 32D);
@@ -226,7 +226,7 @@ public class EntityTrackerEntry
                 trackedPlayers.add(entityplayermp);
                 entityplayermp.playerNetServerHandler.sendPacket(getSpawnPacket());
                 
-                if (trackedEntity instanceof IPacketSource)
+                if (trackedEntity instanceof IClientDriven)
                 {
                     System.out.println("ETE-THX: Adding player " + entityplayermp.entityId + " to trackedPlayers list for trackedEntity " + trackedEntity.entityId);
                     return;
@@ -265,7 +265,7 @@ public class EntityTrackerEntry
         }
         else if (trackedPlayers.contains(entityplayermp))
         {
-            if (trackedEntity instanceof IPacketSource)
+            if (trackedEntity instanceof IClientDriven)
             {
                 System.out.println("ETE-THX: Removing player " + entityplayermp.entityId + " from trackedPlayers list for trackedEntity " + trackedEntity.entityId);
             }

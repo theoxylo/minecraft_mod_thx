@@ -3,7 +3,7 @@ package net.minecraft.src;
 import java.util.List;
 
 
-public class ThxEntityHelicopter extends ThxEntity implements IPacketSource
+public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
 {
     final float MAX_HEALTH = 100;
 
