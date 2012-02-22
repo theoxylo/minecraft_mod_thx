@@ -14,6 +14,8 @@ public class ThxEntityRocket  extends ThxEntity
         inTile = 0;
         inGround = false;
         setSize(0.25F, 0.25F);
+        
+        NET_PACKET_TYPE = 76;
     }
 
     public ThxEntityRocket(Entity entity, double x, double y, double z, double dx, double dy, double dz, float yaw, float pitch)
@@ -35,10 +37,6 @@ public class ThxEntityRocket  extends ThxEntity
         motionZ += dz;
         
         setHeading(motionX, motionY, motionZ, 1.5f, 1.0f);
-        
-        NET_PACKET_TYPE = 76;
-        
-        worldObj.playSoundAtEntity(this, "random.fizz", 1f, 1f);
     }
 
     public void setHeading(double d, double d1, double d2, float f, 
@@ -91,6 +89,9 @@ public class ThxEntityRocket  extends ThxEntity
         
         if(inGround)
         {
+            // stuck in block like an arrow after spawn from save file,
+            // will expires soon
+            
             log("inGround: " + inGround);
             
             int i = worldObj.getBlockId(xTile, yTile, zTile);
@@ -108,7 +109,6 @@ public class ThxEntityRocket  extends ThxEntity
                 if(field_20050_h == 1200)
                 {
                     setEntityDead();
-		            worldObj.playSoundAtEntity(this, "random.pop", 1f, 1f);
 		            log("field_20050_h: " + field_20050_h);
                 }
                 return;
@@ -177,30 +177,6 @@ public class ThxEntityRocket  extends ThxEntity
         {
             enteredWater = true;
         }
-        
-        // pitch and yaw
-        /*
-        if (!launched)
-        {
-            launched = true;
-            float f = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
-            rotationYaw = (float) ((Math.atan2(motionX, motionZ) * 180D) / 3.1415927410125732D);
-            for (rotationPitch = (float) ((Math.atan2(motionY, f) * 180D) / 3.1415927410125732D); rotationPitch - prevRotationPitch < -180F; prevRotationPitch -= 360F)
-            {
-            }
-            for (; rotationPitch - prevRotationPitch >= 180F; prevRotationPitch += 360F)
-            {
-            }
-            for (; rotationYaw - prevRotationYaw < -180F; prevRotationYaw -= 360F)
-            {
-            }
-            for (; rotationYaw - prevRotationYaw >= 180F; prevRotationYaw += 360F)
-            {
-            }
-            rotationPitch = prevRotationPitch + (rotationPitch - prevRotationPitch) * 0.2F;
-            rotationYaw = prevRotationYaw + (rotationYaw - prevRotationYaw) * 0.2F;
-        }
-        */
     }
 
     public void writeEntityToNBT(NBTTagCompound nbttagcompound)

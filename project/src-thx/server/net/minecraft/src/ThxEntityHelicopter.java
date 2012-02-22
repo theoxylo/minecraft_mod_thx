@@ -98,11 +98,19 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
             return;
         }
         
-        throttle *= .6; // quickly zero throttle
-        
-        // for auto-heal: 
+        // for auto-heal unattended, otherwise damage set by pilot client
         if (damage > 0f) damage -= deltaTime; // heal rate: 1 pt / sec
 
+        onUpdateVacant();
+            
+        moveEntity(motionX, motionY, motionZ);
+        handleCollisions();
+    }
+    
+    protected void onUpdateVacant()
+    {
+        throttle *= .6; // quickly zero throttle
+        
         if (onGround || isInWater())
         {
             if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
@@ -126,10 +134,8 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
             motionY -= GRAVITY * .16f * deltaTime / .05f;
             motionZ *= FRICTION;
         }
-            
-        moveEntity(motionX, motionY, motionZ);
-        handleCollisions();
     }
+    
     
     private void handleCollisions()
     {

@@ -24,6 +24,7 @@ public abstract class ThxModel extends ModelBase
     float rotationRollSpeed;
     
     String renderTexture;
+    
     RenderManager renderManager;
     
     //StringBuilder log = new StringBuilder();

@@ -175,7 +175,9 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         
         Minecraft minecraft = ModLoader.getMinecraftInstance();
         
-        
+        // adjust model rotor speed to match old throttle
+        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
+        ((ThxModelHelicopter) model).rotorSpeed = power / 2f + .7f;
         
         if (worldObj.isRemote && riddenByEntity != null && !minecraft.thePlayer.equals(riddenByEntity))
         {
@@ -194,13 +196,12 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         }
         else
         {
-            // unattended
-            onUpdateVacant();
+            // unattended helicopter
+            
+	        ((ThxModelHelicopter) model).rotorSpeed = 0f;
+	        
+            onUpdateVacant(); // effective for single player only. for smp, handled by server
         }
-        
-        // adjust model rotor speed to match current throttle
-        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
-        ((ThxModelHelicopter) model).rotorSpeed = power / 2f + .7f;
         
         
         updateMotion();
@@ -379,6 +380,8 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         // MANUAL ROCKET RELOAD
         if (Keyboard.isKeyDown(KEY_ROCKET_RELOAD) && rocketCount > 0)
         {
+            worldObj.playSoundAtEntity(this, "random.click",  .3f, .4f); // volume, pitch
+                
             rocketReload = ROCKET_RELOAD_DELAY;
             rocketCount = 0;
         }
@@ -667,7 +670,8 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         motionY = velocity.y;
         motionZ = velocity.z;
             
-        if (altitudeLock) motionY = 0f;
+        //if (altitudeLock) motionY = 0f;
+        if (altitudeLock) motionY *= .3f;
         
         moveEntity(motionX, motionY, motionZ);
         
@@ -762,7 +766,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         }
     }
     
-    private void onUpdateVacant()
+    protected void onUpdateVacant()
     {
         throttle *= .6; // quickly zero throttle
         
@@ -1202,6 +1206,8 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         
         if (rocketCount == FULL_ROCKET_COUNT)
         {
+            worldObj.playSoundAtEntity(this, "random.click",  .3f, .4f); // volume, pitch
+                
             rocketReload = ROCKET_RELOAD_DELAY;
             rocketCount = 0;
         }

@@ -5,6 +5,9 @@ import java.util.Random;
 
 public class ThxEntityRocket  extends ThxEntity
 {
+    final float exhaustDelay = .01f;
+    float exhaustTimer = 0f;
+    
 	public ThxEntityRocket(World world)
     {
         super(world);
@@ -15,7 +18,11 @@ public class ThxEntityRocket  extends ThxEntity
         inGround = false;
         setSize(0.25F, 0.25F);
         
+        NET_PACKET_TYPE = 76;
+        
         model = new ThxModelMissile();
+        model.renderTexture = "/thx/rocket.png";
+        model.rotationRollSpeed = 10f; // units?
     }
 
     public ThxEntityRocket(Entity entity, double x, double y, double z, double dx, double dy, double dz, float yaw, float pitch)
@@ -37,10 +44,6 @@ public class ThxEntityRocket  extends ThxEntity
         motionZ += dz;
         
         setHeading(motionX, motionY, motionZ, 1.5f, 1.0f);
-        
-        NET_PACKET_TYPE = 76;
-        
-        worldObj.playSoundAtEntity(this, "random.fizz", 1f, 1f);
     }
 
     public void setHeading(double d, double d1, double d2, float f, float f1)
@@ -72,6 +75,8 @@ public class ThxEntityRocket  extends ThxEntity
         /*
         if(prevRotationPitch == 0.0F && prevRotationYaw == 0.0F)
         {
+            // if only receiving motion updates, this would be needed to set yaw and pitch,
+            // but should get direct yaw/pitch updates
             float f = MathHelper.sqrt_double(d * d + d2 * d2);
             prevRotationYaw = rotationYaw = (float)((Math.atan2(d, d2) * 180D) / 3.1415927410125732D);
             prevRotationPitch = rotationPitch = (float)((Math.atan2(d1, f) * 180D) / 3.1415927410125732D);
@@ -89,8 +94,25 @@ public class ThxEntityRocket  extends ThxEntity
 	        
         super.onUpdate();
         
+        
+        if (!launched)
+        {
+            launched = true;
+	        worldObj.playSoundAtEntity(this, "random.fizz", 1f, 1f);
+        }
+        
+        exhaustTimer -= deltaTime;
+        if (exhaustTimer < 0f)
+        {
+            exhaustTimer = exhaustDelay;
+            worldObj.spawnParticle("smoke", posX, posY, posZ, 0.0, 0.0, 0.0);
+        }
+        
         if(inGround)
         {
+            // stuck in block like an arrow after spawn from save file,
+            // will expires soon
+            
             log("inGround: " + inGround);
             
             int i = worldObj.getBlockId(xTile, yTile, zTile);
@@ -109,7 +131,7 @@ public class ThxEntityRocket  extends ThxEntity
                 {
                     setEntityDead();
                     log("?????????????? rocket is dead");
-		            worldObj.playSoundAtEntity(this, "random.pop", 1f, 1f);
+		            worldObj.playSoundAtEntity(this, "random.explode", 1f, 1f);
 		            log("field_20050_h: " + field_20050_h);
                 }
                 return;
@@ -167,22 +189,22 @@ public class ThxEntityRocket  extends ThxEntity
 
 	        // kick up some debris if we hit a block, but only works for top surface
 	        int i = MathHelper.floor_double(posX);
-	        int j = MathHelper.floor_double(posY - 0.20000000298023224D - (double)yOffset);
+	        int j = MathHelper.floor_double(posY - 0.2 -(double)yOffset);
 	        int k = MathHelper.floor_double(posZ);
 	        int j1 = worldObj.getBlockId(i, j, k);
 	        if (j1 > 0)
 	        {
-	            for (int k1 = 0; k1 < 1; k1++)
+	            for (int k1 = 0; k1 < 2; k1++)
 	            {
-		            worldObj.spawnParticle((new StringBuilder()).append("tilecrack_").append(j1).toString(), posX + ((double)rand.nextFloat() - 0.5D) * (double)width, boundingBox.minY + 0.10000000000000001D, posZ + ((double)rand.nextFloat() - 0.5D) * (double)width, 1.0 + ((double)rand.nextFloat() - 0.5D),  1.0 + ((double)rand.nextFloat() - 0.5D),  1.0 + ((double)rand.nextFloat() - 0.5D));
+		            worldObj.spawnParticle((new StringBuilder()).append("tilecrack_").append(j1).toString(), posX + ((double)rand.nextFloat() - 0.5) * (double)width, boundingBox.minY + 0.1, posZ + ((double)rand.nextFloat() - 0.5) * (double)width, 1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5));
 	            }
 	        }
 	        else
 	        {
-	            for (int k1 = 0; k1 < 1; k1++)
+	            for (int k1 = 0; k1 < 2; k1++)
 	            {
-		            //worldObj.spawnParticle("flame", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
-		            worldObj.spawnParticle("snowballpoof", posX + ((double)rand.nextFloat() - 0.5D), boundingBox.minY + 0.1, posZ + ((double)rand.nextFloat() - 0.5D),  1.0 + ((double)rand.nextFloat() - 0.5D),  1.0 + ((double)rand.nextFloat() - 0.5D),  1.0 + ((double)rand.nextFloat() - 0.5D));
+		            //worldObj.spawnParticle("flame", posX, posY, posZ, 0.0, 0.0, 0.0);
+		            worldObj.spawnParticle("snowballpoof", posX + ((double)rand.nextFloat() - 0.5), boundingBox.minY + 0.1, posZ + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5));
 	            }
 	        }
 	        
@@ -208,30 +230,6 @@ public class ThxEntityRocket  extends ThxEntity
                 worldObj.spawnParticle("bubble", posX - motionX * (double)f3, posY - motionY * (double)f3, posZ - motionZ * (double)f3, motionX, motionY, motionZ);
             }
         }
-        
-        // pitch and yaw
-        /*
-        if (!launched)
-        {
-            launched = true;
-            float f = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
-            rotationYaw = (float) ((Math.atan2(motionX, motionZ) * 180D) / 3.1415927410125732D);
-            for (rotationPitch = (float) ((Math.atan2(motionY, f) * 180D) / 3.1415927410125732D); rotationPitch - prevRotationPitch < -180F; prevRotationPitch -= 360F)
-            {
-            }
-            for (; rotationPitch - prevRotationPitch >= 180F; prevRotationPitch += 360F)
-            {
-            }
-            for (; rotationYaw - prevRotationYaw < -180F; prevRotationYaw -= 360F)
-            {
-            }
-            for (; rotationYaw - prevRotationYaw >= 180F; prevRotationYaw += 360F)
-            {
-            }
-            rotationPitch = prevRotationPitch + (rotationPitch - prevRotationPitch) * 0.2F;
-            rotationYaw = prevRotationYaw + (rotationYaw - prevRotationYaw) * 0.2F;
-        }
-        */
     }
 
     public void writeEntityToNBT(NBTTagCompound nbttagcompound)

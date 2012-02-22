@@ -9,9 +9,11 @@ public class ThxEntityMissile extends ThxEntity
     final float GRAVITY       = .002f;
     
     final int maxAge = 6000;
-    final float exhaustTimer = .04f;
-    float exhaustTime = 0f;
     
+    final float exhaustDelay = .04f;
+    float exhaustTimer = 0f;
+    
+    boolean launched;
     Vector3 thrust;
     
     public ThxEntityHelicopter targetHelicopter;
@@ -54,8 +56,6 @@ public class ThxEntityMissile extends ThxEntity
         motionX = thrust.x;
         motionY = thrust.y;
         motionZ = thrust.z;
-
-        worldObj.playSoundAtEntity(this, "mob.ghast.fireball", 1f, 1f);
     }
 
     @Override
@@ -69,11 +69,17 @@ public class ThxEntityMissile extends ThxEntity
 	        
         super.onUpdate();
         
-        exhaustTime += deltaTime;
-        if (exhaustTime > exhaustTimer)
+        if (!launched)
         {
-            exhaustTime = 0f;
-            worldObj.spawnParticle("smoke", posX, posY, posZ, 0.0, 0.0, 0.0);
+            launched = true;
+	        worldObj.playSoundAtEntity(this, "mob.ghast.fireball", 1f, 1f);
+        }
+
+        exhaustTimer -= deltaTime;
+        if (exhaustTimer < 0f)
+        {
+            exhaustTimer = exhaustDelay;
+            worldObj.spawnParticle("largesmoke", posX, posY, posZ, 0.0, 0.0, 0.0);
         }
         
         // guide missile to target helicopter

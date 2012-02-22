@@ -42,7 +42,7 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
         
     public void handleUpdatePacketFromClient(Packet230ModLoader packet)
     {
-        log("handleUpdatePacketFromClient: " + packet); // inbound packet not aligned with plog unless very high update rate
+        //log("handleUpdatePacketFromClient: " + packet); // inbound packet not aligned with plog unless very high update rate
         
         latestUpdatePacket = packet;
     }

@@ -81,6 +81,7 @@ public class mod_Thx extends BaseModMp
     {
         map.put(ThxEntityHelicopter.class, new ThxRender());
         map.put(ThxEntityRocket.class, new ThxRender());
+        map.put(ThxEntityMissile.class, new ThxRender());
     }
 
     @Override
