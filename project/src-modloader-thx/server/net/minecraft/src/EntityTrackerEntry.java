@@ -79,9 +79,20 @@ public class EntityTrackerEntry
         field_28165_t++;
         if (++updateCounter % frequency == 0 || trackedEntity.isAirBorne)
         {
+	        //if (trackedEntity instanceof IClientDriven) //&& trackedEntity.riddenByEntity != null)
 	        if (trackedEntity instanceof IClientDriven && trackedEntity.riddenByEntity != null)
 	        {
-                sendPacketToTrackedPlayers(((IClientDriven) trackedEntity).getUpdatePacket());
+                //sendPacketToTrackedPlayers(((IClientDriven) trackedEntity).getUpdatePacket());
+	            //Packet34EntityTeleport packet = new Packet34EntityTeleport(trackedEntity.entityId, encodedPosX, encodedPosY, encodedPosZ, (byte)encodedRotationYaw, (byte)encodedRotationPitch);
+	            
+	            Packet packet = ((IClientDriven) trackedEntity).getUpdatePacket();
+		        for (Object player : trackedPlayers)
+		        {
+		            // send update packet to all clients except pilot
+		            if (player.equals(trackedEntity.riddenByEntity)) continue;
+		            ((EntityPlayerMP)player).playerNetServerHandler.sendPacket(packet);
+		        }
+	            
 	            
                 // used by updatePlayerEntity for spawn/despawn trigger
 	            encodedPosX          = MathHelper.floor_double(trackedEntity.posX * 32D);
@@ -89,16 +100,6 @@ public class EntityTrackerEntry
 	            encodedPosZ          = MathHelper.floor_double(trackedEntity.posZ * 32D);
 	            encodedRotationYaw   = MathHelper.floor_float((trackedEntity.rotationYaw * 256F) / 360F);
 	            encodedRotationPitch = MathHelper.floor_float((trackedEntity.rotationPitch * 256F) / 360F);
-	            
-                /*
-	            Packet34EntityTeleport packet = new Packet34EntityTeleport(trackedEntity.entityId, encodedPosX, encodedPosY, encodedPosZ, (byte)encodedRotationYaw, (byte)encodedRotationPitch);
-		        for (Object player : trackedPlayers)
-		        {
-		            // send teleport packet to all clients except pilot
-		            if (trackedEntity.riddenByEntity.equals(player)) continue;
-		            ((EntityPlayerMP)player).playerNetServerHandler.sendPacket(packet);
-		        }
-		        */
 	            
 	            return;
 	        }

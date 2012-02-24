@@ -173,7 +173,7 @@ public class ThxEntityRocket  extends ThxEntity
         
         setPosition(posX, posY, posZ);
         
-        if(!enteredWater && isInWater())
+        if(!enteredWater && inWater)
         {
             enteredWater = true;
         }

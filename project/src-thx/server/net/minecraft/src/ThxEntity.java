@@ -22,8 +22,6 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
         updateVectors();
     }
     
-    /** ISpawnable server interface */
-    @Override
     public Packet230ModLoader getSpawnPacket()
     {
         Packet230ModLoader packet = getUpdatePacket();

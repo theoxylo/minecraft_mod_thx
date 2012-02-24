@@ -67,7 +67,9 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
     Vector3 velocity = new Vector3();
     
     // amount of vehicle motion to transfer upon projectile launch
-    final float MOMENTUM = .2f;
+    // -- higher values like .4 seem more realistic but it becomes 
+    // much harder to hit things -- low numbers like .1 are like auto-aim
+    final float MOMENTUM = .1f;
 
     // total update count
     float timeSinceAttacked;
@@ -233,7 +235,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
             motionY = 0.0;
             motionZ *= FRICTION;
         }
-        else if (isInWater())
+        else if (inWater)
         {
             if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
             if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
@@ -657,7 +659,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         Vector3.add(velocity, thrust, velocity);
 
         // gravity is always straight down
-        velocity.y -= GRAVITY * deltaTime / .05f;
+        if (!inWater && !onGround) velocity.y -= GRAVITY * deltaTime / .05f;
 
         // limit max velocity
         if (velocity.lengthSquared() > MAX_VELOCITY * MAX_VELOCITY)
@@ -772,7 +774,12 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         
         model.visible = true;
 
-        if (onGround || isInWater())
+        if (inWater)
+        {
+            motionY += 0.0;
+            //motionY += 0.02;
+        }
+        else if (onGround)
         {
             if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
             if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
@@ -792,6 +799,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
             rotationRoll *= ROLL_RETURN;
                 
             motionX *= FRICTION;
+            //motionY -= GRAVITY * .10f * deltaTime / .05f; // causes bouncing!
             motionY -= GRAVITY * .16f * deltaTime / .05f;
             motionZ *= FRICTION;
         }
@@ -1118,22 +1126,25 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         }
         */
         
-        // use fwd XZ components to adjust front/back position of pilot based on helicopter pitch
-        // when in 1st-person mode to improve view
-        double posAdjust = -.1 + .02f * rotationPitch;
+        double posAdjust = 0.0;
+        /*
+        if (!worldObj.isRemote && ModLoader.getMinecraftInstance().gameSettings.thirdPersonView == 0)
+        {
+            // for now, only when in 1st-person mode to improve cockpit view
+            //posAdjust = -.1 + .02f * rotationPitch;
+            // for TESTING:
+            posAdjust = -.1 + .07f * rotationPitch;
+        }
+        */
 
-        if (ModLoader.getMinecraftInstance().gameSettings.thirdPersonView != 0) posAdjust = 0.0;
-        
-        // no position adjust for now
-        posAdjust = 0.0;
-        
-        // to force camera to follow helicopter exactly, but stutters:
-        //pilot.setPositionAndRotation(posX + fwd.x * posAdjust, posY + pilot.getYOffset() + getMountedYOffset(), posZ + fwd.z * posAdjust, rotationYaw, rotationPitch);
-        //pilot.setLocationAndAngles(posX + fwd.x * posAdjust, posY -.7f, posZ + fwd.z * posAdjust, rotationYaw, rotationPitch);
-        
         pilot.setPosition(posX + fwd.x * posAdjust, posY + pilot.getYOffset() + getMountedYOffset(), posZ + fwd.z * posAdjust);
     }
-
+    
+    double getPilotPositionAdjustment()
+    {
+        return 0.0;
+    }
+    
     private void pilotExit()
     {
         Entity pilot = getPilot();
@@ -1155,8 +1166,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         
         // place pilot to left of helicopter
         // (use fwd XZ perp to exit left: x = z, z = -x)
-        //double exitDist = 1.9;
-        double exitDist = 2.9;
+        double exitDist = 1.9;
         pilot.setPosition(posX + fwd.z * exitDist, posY + pilot.yOffset, posZ - fwd.x * exitDist);
         
         if (!worldObj.isRemote)
@@ -1185,22 +1195,15 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
             float leftRight = (rocketCount % 2 == 0) ? leftRightAmount  : -leftRightAmount;
                 
 	        // starting position of rocket relative to helicopter, out in front quite a bit to avoid collision
-	        float offsetX = (side.x * leftRight) + (fwd.x * 2f) + (up.x * -.8f);
-	        float offsetY = (side.y * leftRight) + (fwd.y * 2f) + (up.y * -.8f);
-	        float offsetZ = (side.z * leftRight) + (fwd.z * 2f) + (up.z * -.8f);
-                    
+            float offsetX = (side.x * leftRight) + (fwd.x * 1.9f) + (up.x * -.5f);
+            float offsetY = (side.y * leftRight) + (fwd.y * 1.9f) + (up.y * -.5f);
+            float offsetZ = (side.z * leftRight) + (fwd.z * 1.9f) + (up.z * -.5f);
+                        
             float yaw = rotationYaw;
-            float pitch = rotationPitch + 5f; // slight downward from helicopter pitch
-                
-            // use pilot aim when in 1st-person
-            if (riddenByEntity != null && minecraft.gameSettings.thirdPersonView == 0) 
-            {
-                yaw = riddenByEntity.rotationYaw;
-                pitch = riddenByEntity.rotationPitch;
-            }
+            float pitch = rotationPitch;
                 
             ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
-            newRocket.owner = this;
+            newRocket.owner = riddenByEntity;
             worldObj.spawnEntityInWorld(newRocket);
         }
         
@@ -1213,34 +1216,32 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         }
     }
     
-    private void fireMissile()
+    void fireMissile()
     {
         if (missileDelay > 0f) return;
         missileDelay = MISSILE_DELAY;
                 
+        // queue fire command for next server packet
+        //fire2 = 1;
+        
         if (worldObj.isRemote)
         {
-            // queue fire command for server packet
             fire2 = 1;
+            return;
         }
-        else
-        {
-	        float offX = fwd.x * 2f;
-	        float offY = fwd.y * 2f;
-	        float offZ = fwd.z * 2f;
-	
-	        float yaw = rotationYaw;
-	        float pitch = rotationPitch + 5f; // slight downward from helicopter pitch
-	                
-	        // use pilot aim when in 1st-person
-	        if (riddenByEntity != null && minecraft.gameSettings.thirdPersonView == 0)
-	        {
-	            yaw = riddenByEntity.rotationYaw;
-	            pitch = riddenByEntity.rotationPitch;
-	        }
+        
+        if (missileDelay > 0f) return;
+        missileDelay = MISSILE_DELAY;
+                
+        float offX = (fwd.x * 1.9f) + (up.x * -.5f);
+        float offY = (fwd.y * 1.9f) + (up.y * -.5f);
+        float offZ = (fwd.z * 1.9f) + (up.z * -.5f);
 
-            ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
-            worldObj.spawnEntityInWorld(newMissile);
-        }
+        // aim with cursor if pilot
+        float yaw = riddenByEntity != null ? riddenByEntity.rotationYaw : rotationYaw;
+        float pitch = riddenByEntity != null ? riddenByEntity.rotationPitch : rotationPitch;
+                
+        ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
+        worldObj.spawnEntityInWorld(newMissile);
     }
 }

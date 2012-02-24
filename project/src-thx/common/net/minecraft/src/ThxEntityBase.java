@@ -76,6 +76,8 @@ public abstract class ThxEntityBase extends Entity
         prevRotationPitch = rotationPitch;
         prevRotationYaw = rotationYaw;
         prevRotationRoll = rotationRoll;
+        
+        inWater = isInWater();
     }
     
     public int getPilotId()

@@ -7,15 +7,28 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
 {
     final float MAX_HEALTH = 100;
 
-    final float GRAVITY      = 0.301f;
-    final float MAX_VELOCITY = 0.44f;
+    final float MAX_ACCEL    = 0.20f;
+    final float GRAVITY      = 0.202f;
+    final float MAX_VELOCITY = 0.3f;
+    //final float MAX_VELOCITY = 0.44f;
     final float FRICTION = 0.98f;
 
     final float PITCH_RETURN = 0.98f;
     final float ROLL_RETURN = 0.92f;
 
+    float throttle = 0.0f;
+    final float THROTTLE_MIN = -.03f;
+    final float THROTTLE_MAX = .07f;
+    final float THROTTLE_INC = .005f;
+
+    float UPDATE_RATE = 2;
+
+    // Vectors for repeated calculations
+    Vector3 thrust = new Vector3();
+    Vector3 velocity = new Vector3();
+    
     // amount of vehicle motion to transfer upon projectile launch
-    final float MOMENTUM = .2f;
+    final float MOMENTUM = .4f;
 
     // total update count
     float timeSinceAttacked;
@@ -27,12 +40,15 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
     {
         super(world);
 
+        //model = new ThxModelHelicopter();
+        //model = new ThxModelHelicopterAlt();
+
         setSize(1.8f, 2f);
 
         yOffset = .6f;
         
         NET_PACKET_TYPE = 75;
-        
+
         log("C1 - ThxEntityHelicopter() with world: " + world.getWorldInfo());
     }
 
@@ -43,6 +59,12 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         setPositionAndRotation(x, y + yOffset, z, yaw, 0f);
         
         log("C2 - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ + ", yaw: " + yaw);
+    }
+
+    public Entity getPilot()
+    {
+        //return (EntityPlayer) riddenByEntity;
+        return riddenByEntity;
     }
 
     @Override
@@ -111,7 +133,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
     {
         throttle *= .6; // quickly zero throttle
         
-        if (onGround || isInWater())
+        if (onGround || inWater)
         {
             if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
             if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
@@ -185,14 +207,6 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
     {
         damage += damage;
                 
-        /*
-        if (riddenByEntity != null) // this is the player's helicopter, so show damage msg
-        {
-            Minecraft minecraft = ModLoader.getMinecraftInstance();
-            minecraft.ingameGUI.addChatMessage("Damage: " + (int) (damage * 100 / MAX_HEALTH) + "%");
-        }
-        */
-        
         if (damage > MAX_HEALTH && !worldObj.isRemote) // helicopter destroyed!
         {
             // show message if not player helicopter
@@ -204,35 +218,9 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
             boolean flaming = true;
             worldObj.newExplosion(this, posX, posY, posZ, 2.3f, flaming);
             
-            // TEST drop item if helicopter is destroyed by crashes or attacks
 	        dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0); // will it be destroy or launched if placed after explosion?
 
             setEntityDead();
-            
-		    /*
-	        spawnParticles: // does server spawn particles?
-	        {
-	            double d13 = Math.cos(((double) rotationYaw * 3.1415926535897931D) / 180D);
-	            double d15 = Math.sin(((double) rotationYaw * 3.1415926535897931D) / 180D);
-	            for (int i1 = 0; (double) i1 < 1.2 * 60D; i1++)
-	            {
-	                double d18 = rand.nextFloat() * 2.0F - 1.0F;
-	                double d20 = (double) (rand.nextInt(2) * 2 - 1) * 0.69999999999999996D;
-	                if (rand.nextBoolean())
-	                {
-	                    double d21 = (posX - d13 * d18 * 0.80000000000000004D) + d15 * d20;
-	                    double d23 = posZ - d15 * d18 * 0.80000000000000004D - d13 * d20;
-	                    worldObj.spawnParticle("smoke", d21, posY - 0.125D, d23, motionX, motionY, motionZ);
-	                }
-	                else
-	                {
-	                    double d22 = posX + d13 + d15 * d18 * 0.69999999999999996D;
-	                    double d24 = (posZ + d15) - d13 * d18 * 0.69999999999999996D;
-	                    worldObj.spawnParticle("explode", d22, posY - 0.125D, d24, motionX, motionY, motionZ);
-	                }
-	            }
-	        }
-		    */
         }
     }
     
@@ -249,7 +237,15 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
       
         if (attackingEntity == null) return false; // when is this the case?
         if (attackingEntity.equals(this)) return false; // ignore damage from self
-        if (attackingEntity.equals(riddenByEntity)) return false; // ignore damage from pilot
+        
+        if (attackingEntity.equals(riddenByEntity))
+        {
+            //riddenByEntity.mountEntity(this);
+            pilotExit();
+            setEntityDead();
+	        dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0);
+            return false; // ignore damage from pilot
+        }
 	        
         log("attacked by entity: " + attackingEntity);
         
@@ -328,16 +324,24 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
             return true;
         }
         
-        if (riddenByEntity != null)
-        {
-            // already ridden by some other entity
-            return false;
-        }
-        
         if (player.ridingEntity != null) 
         {
             // player is already riding some other entity
             return false;
+        }
+        
+        if (riddenByEntity != null)
+        {
+            // already ridden by some other entity, allow takeover if close
+            if (getDistanceSqToEntity(player) < 2.0)
+            {
+                log("current pilot was ejected");
+                pilotExit();
+            }
+            else
+            {
+	            return false;
+            }
         }
         
         // new pilot boarding
@@ -386,18 +390,29 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         
         if (riddenByEntity == null) return;
         
+        EntityPlayerMP pilot = (EntityPlayerMP) riddenByEntity;
+        
         //model.visible = true; // hard to find otherwise!
         
         // clear pitch speed to prevent judder
         rotationPitchSpeed = 0f;
         
-        // place pilot to left of helicopter
-        // (use fwd XZ perp to exit left: x = z, z = -x)
-        double exitDist = 2.9;
-        riddenByEntity.setPosition(posX + fwd.z * exitDist, posY + riddenByEntity.getYOffset(), posZ - fwd.x * exitDist);
-        
+        Packet packet = new Packet39AttachEntity(riddenByEntity, null);
+        List players = ModLoader.getMinecraftServerInstance().configManager.playerEntities;
+        for (Object player : players)
+        {
+            ((EntityPlayerMP) player).playerNetServerHandler.sendPacket(packet);
+        }
+
         log("pilotExit() calling mountEntity on player " + riddenByEntity);
         riddenByEntity.mountEntity(this); // riddenByEntity is now null
+        
+        // place pilot to left of helicopter
+        // (use fwd XZ perp to exit left: x = z, z = -x)
+        double exitDist = 1.9;
+        //pilot.setPosition(posX + fwd.z * exitDist, posY + pilot.getYOffset(), posZ - fwd.x * exitDist);
+        pilot.playerNetServerHandler.teleportTo(posX + fwd.z * exitDist, posY + pilot.getYOffset(), posZ - fwd.x * exitDist, rotationYaw, 0f);
+
     }
  
     static class Keyboard // no-op replacement for client-side org.lwjgl.input.Keyboard
@@ -416,22 +431,23 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         float leftRight = (rocketCount % 2 == 0) ? leftRightAmount  : -leftRightAmount;
                 
         // starting position of rocket relative to helicopter, out in front quite a bit to avoid collision
-        float offsetX = (side.x * leftRight) + (fwd.x * 2f) + (up.x * -.8f);
-        float offsetY = (side.y * leftRight) + (fwd.y * 2f) + (up.y * -.8f);
-        float offsetZ = (side.z * leftRight) + (fwd.z * 2f) + (up.z * -.8f);
+        float offsetX = (side.x * leftRight) + (fwd.x * 1.9f) + (up.x * -.5f);
+        float offsetY = (side.y * leftRight) + (fwd.y * 1.9f) + (up.y * -.5f);
+        float offsetZ = (side.z * leftRight) + (fwd.z * 1.9f) + (up.z * -.5f);
                     
         float yaw = rotationYaw;
-        float pitch = rotationPitch; // + 5f; // slight downward from helicopter pitch
+        float pitch = rotationPitch;
                 
         ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
+        newRocket.owner = riddenByEntity;
         worldObj.spawnEntityInWorld(newRocket);
     }
     
     private void fireMissile()
     {
-        float offX = fwd.x * 2f;
-        float offY = fwd.y * 2f;
-        float offZ = fwd.z * 2f;
+        float offX = (fwd.x * 1.9f) + (up.x * -.5f);
+        float offY = (fwd.y * 1.9f) + (up.y * -.5f);
+        float offZ = (fwd.z * 1.9f) + (up.z * -.5f);
 
         // aim with cursor if pilot
         float yaw = riddenByEntity != null ? riddenByEntity.rotationYaw : rotationYaw;

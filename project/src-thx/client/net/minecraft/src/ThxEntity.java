@@ -53,8 +53,6 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
         updateVectors();
     }
 
-    /** ISpawnable client interface */
-    @Override
     public void spawn(Packet230ModLoader packet)
     {
         log("Received spawn packet: " + packet);
@@ -79,14 +77,7 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
         int packetPilotId = packet.dataInt[1];
         int player = minecraft.thePlayer.entityId;
         
-        if (packetPilotId == 0 && riddenByEntity != null)
-        {
-            log("current pilot id is missing from update packet. shouldn't happen");
-            //log("Skipping server update with no pilot");
-            //return;
-        }
-        
-        if (riddenByEntity != null && riddenByEntity.entityId == minecraft.thePlayer.entityId)
+        if (minecraft.thePlayer.equals(riddenByEntity))
         {
             if (packetPilotId != minecraft.thePlayer.entityId) log("ignoring server update that would replace player pilot");
             
@@ -108,10 +99,10 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
         plog("applyUpdatePacketFromServer: " + packet);
         
         int packetPilotId = packet.dataInt[1];
-        int player = minecraft.thePlayer.entityId;
+        int playerId = minecraft.thePlayer.entityId;
         
         // no or wrong current pilot
-        if (riddenByEntity == null || riddenByEntity.entityId != packetPilotId)
+        if (packetPilotId > 0 && (riddenByEntity == null || riddenByEntity.entityId != packetPilotId))
         {
             Entity pilot = ((WorldClient) worldObj).getEntityByID(packetPilotId);
             if (pilot != null && !pilot.isDead)
@@ -120,6 +111,12 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
                 pilot.mountEntity(this);
             }
         }
+        else if (packetPilotId == 0 && riddenByEntity != null)
+        {
+            log("current pilot id " + riddenByEntity.entityId + " is exiting");
+            riddenByEntity.mountEntity(this);
+        }
+        
         
         // ignore fire controls, only used by server to spawn projectiles
         //fire1 = packet.dataInt[2];
