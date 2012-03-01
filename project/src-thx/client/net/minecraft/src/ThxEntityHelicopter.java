@@ -221,7 +221,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
             motionZ *= .7;
             
             // float up
-            motionY += 0.02;
+            motionY += 0.01;
         }
                         
         createMapDelay -= deltaTime;
@@ -573,12 +573,14 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
             
         if (Keyboard.isKeyDown(KEY_ASCEND) || (Keyboard.isKeyDown(KEY_FORWARD) && lookPitch)) // player
         {
+	        altitudeLock = false;
             if (throttle < THROTTLE_MAX) throttle += THROTTLE_INC;
             if (throttle > THROTTLE_MAX) throttle = THROTTLE_MAX;
             // throttle = THROTTLE_MAX;
         }
         else if (Keyboard.isKeyDown(KEY_DESCEND) || (Keyboard.isKeyDown(KEY_BACK) && lookPitch)) 
         {
+	        altitudeLock = false;
             if (throttle > THROTTLE_MIN) throttle -= THROTTLE_INC;
             if (throttle < THROTTLE_MIN) throttle = THROTTLE_MIN;
             // throttle = THROTTLE_MIN;
@@ -587,6 +589,8 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         {
             // zero throttle
             if (ENABLE_AUTO_THROTTLE_ZERO) throttle *= .6; // quickly zero throttle
+            
+	        //altitudeLock = true; // no falling during pitch/roll -- beginner mode 
         }
     }
     
@@ -605,14 +609,14 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
             // but sin function was too touchy so using 1-cos
             float accel = 1f - MathHelper.cos(pitchRad);
             if (pitchRad > 0f) accel *= -1f;
-                
+            
             thrust.x = -fwd.x * accel;
             thrust.z = -fwd.z * accel;
         }
 
         strafeLeftRight:
         {
-            // double strafe = (double) -MathHelper.sin(roll);
+            // float strafe = -MathHelper.sin(roll);
             float strafe = 1f - MathHelper.cos(rollRad);
             if (rollRad > 0f) strafe *= -1f;
 
@@ -650,7 +654,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         motionZ = velocity.z;
             
         //if (altitudeLock) motionY = 0f;
-        if (altitudeLock) motionY *= .3f;
+        if (altitudeLock) motionY *= .5f;
         
         moveEntity(motionX, motionY, motionZ);
         
@@ -762,22 +766,29 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         
         model.visible = true;
 
-        if (inWater)
+        if (onGround) // very slow on ground
         {
-            motionY += 0.0;
-            //motionY += 0.02;
+            if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
+            if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
+
+            // double apply friction when on ground
+            motionX *= FRICTION;
+            motionY = 0.0;
+            motionZ *= FRICTION;
+                
+            rotationYawSpeed = 0f;
         }
-        else if (onGround)
+        else if (inWater)
         {
             if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
             if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
                 
-            // tend to stay put on ground
-            motionY = 0.;
             motionX *= .7;
+            motionY *= .7;
             motionZ *= .7;
-                
-            rotationYawSpeed = 0f;
+            
+            // float up
+            motionY += 0.01;
         }
         else
         {
@@ -787,8 +798,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
             rotationRoll *= ROLL_RETURN;
                 
             motionX *= FRICTION;
-            //motionY -= GRAVITY * .10f * deltaTime / .05f; // causes bouncing!
-            motionY -= GRAVITY * .16f * deltaTime / .05f;
+            motionY -= (GRAVITY / 2f) * deltaTime; // weakened gravity since no thrust
             motionZ *= FRICTION;
         }
     }
@@ -1126,6 +1136,6 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
     
     public String toString()
     {
-        return getClass().getName() + " " + entityId;
+        return getClass().getSimpleName() + " " + entityId;
     }
 }

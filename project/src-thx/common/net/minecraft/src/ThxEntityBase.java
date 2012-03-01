@@ -42,8 +42,8 @@ public abstract class ThxEntityBase extends Entity
 
     float MAX_HEALTH = 100;
 
-    float MAX_ACCEL    = 0.20f;
-    float GRAVITY      = 0.20f;
+    float MAX_ACCEL    = 0.40f;
+    float GRAVITY      = 0.40f;
     float MAX_VELOCITY = 0.30f;
     float FRICTION = 0.98f;
 
@@ -308,13 +308,19 @@ public abstract class ThxEntityBase extends Entity
         {
 	        double velSq = motionX * motionX + motionY * motionY + motionZ * motionZ;
             
-	        if (velSq > .005 && timeSinceCollided  < 0f)
+	        if (velSq > .005 && timeSinceCollided  < 0f && !onGround)
 	        {
 	            log("crash velSq: " + velSq);
                 
                 timeSinceCollided = 1f; // sec delay before another collision possible
 	            
-                takeDamage((float) velSq * 100f); // crash damage based on velocity
+                float crashDamage = (float) velSq * 1000f; 
+                // velSq seems to range between .010 and .080, 10 to 80 damage, so limit:
+                if (crashDamage < 3f) crashDamage = 3f; 
+                if (crashDamage > 49f) crashDamage = 49f; 
+                
+	            log("crash damage: " + crashDamage);
+                takeDamage(crashDamage); // crash damage based on velocity
                 
 	            for (int i = 0; i < 5; i++)
 	            {
@@ -341,9 +347,9 @@ public abstract class ThxEntityBase extends Entity
         return false;
     }
     
-    void takeDamage(float damage)
+    void takeDamage(float amount)
     {
-        damage += damage;
+        damage += amount;
                 
         if (damage > MAX_HEALTH && !worldObj.isRemote) // helicopter destroyed!
         {
@@ -356,7 +362,7 @@ public abstract class ThxEntityBase extends Entity
             boolean flaming = true;
             worldObj.newExplosion(this, posX, posY, posZ, 2.3f, flaming);
             
-	        dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0); // will it be destroy or launched if placed after explosion?
+	        //dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0);
 
             setEntityDead();
         }
