@@ -16,13 +16,14 @@ public class ThxEntityRocket  extends ThxEntity
         zTile = -1;
         inTile = 0;
         inGround = false;
-        setSize(0.25F, 0.25F);
+        //setSize(0.25F, 0.25F);
+        setSize(0.5f, 0.5f);
         
         NET_PACKET_TYPE = 76;
         
         model = new ThxModelMissile();
         model.renderTexture = "/thx/rocket.png";
-        model.rotationRollSpeed = 10f; // units?
+        model.rotationRollSpeed = 90f; // units?
     }
 
     public ThxEntityRocket(Entity entity, double x, double y, double z, double dx, double dy, double dz, float yaw, float pitch)
@@ -177,10 +178,13 @@ public class ThxEntityRocket  extends ThxEntity
         }
         if(movingobjectposition != null)
         {
+            log("rocket hit an entity");
+
             // we hit an entity!
             if(movingobjectposition.entityHit != null && !worldObj.isRemote)
             {
-                movingobjectposition.entityHit.attackEntityFrom(new EntityDamageSource("player", owner), 5);
+                int attackStrength = 8;
+                movingobjectposition.entityHit.attackEntityFrom(new EntityDamageSource("player", owner), attackStrength);
             }
             
             // for hit markers

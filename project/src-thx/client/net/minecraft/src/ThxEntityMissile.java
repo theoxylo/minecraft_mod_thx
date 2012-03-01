@@ -5,7 +5,6 @@ public class ThxEntityMissile extends ThxEntity
 	static int instanceCount = 0;
 
     final float MISSILE_ACCEL = .6f;
-    final float MAX_VELOCITY  = .90f;
     final float GRAVITY       = .002f;
     
     final int maxAge = 6000;
@@ -22,6 +21,8 @@ public class ThxEntityMissile extends ThxEntity
     {
         super(world);
         
+	    MAX_VELOCITY  = .90f;
+	    
         model = new ThxModelMissile();
 
         setSize(0.25f, 0.25f);

@@ -28,7 +28,7 @@ public class mod_Thx extends BaseModMp
         ModLoader.getMinecraftServerInstance().allowFlight = true;
         log("server.allowFlight: " + ModLoader.getMinecraftServerInstance().allowFlight);
 
-        int distance = 20; // 160; // spawn/despawn at this distance from entity
+        int distance = 200; // 160; // spawn/despawn at this distance from entity
         int frequency = 1; // ticks per update, 1 to 60 (20 ticks/sec)
         
         // register entity classes

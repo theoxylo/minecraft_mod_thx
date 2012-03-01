@@ -1,5 +1,7 @@
 package net.minecraft.src;
 
+import java.util.List;
+
 public abstract class ThxEntityBase extends Entity
 {
     boolean plog = true; // enable periodic logging for rapidly repeating events
@@ -35,10 +37,40 @@ public abstract class ThxEntityBase extends Entity
     
     int NET_PACKET_TYPE;
     float damage;
-    float throttle;
     int fire1;
     int fire2;
 
+    float MAX_HEALTH = 100;
+
+    float MAX_ACCEL    = 0.20f;
+    float GRAVITY      = 0.20f;
+    float MAX_VELOCITY = 0.30f;
+    float FRICTION = 0.98f;
+
+    float MAX_PITCH = 60.00f;
+    float PITCH_SPEED_DEG = 40f;
+    float PITCH_RETURN = 0.98f;
+
+    float MAX_ROLL = 30.00f;
+    float ROLL_SPEED_DEG = 40f;
+    float ROLL_RETURN = 0.92f;
+
+    float throttle = 0.0f;
+    float THROTTLE_MIN = -.03f;
+    float THROTTLE_MAX = .07f;
+    float THROTTLE_INC = .005f;
+
+    // Vectors for repeated calculations
+    Vector3 thrust = new Vector3();
+    Vector3 velocity = new Vector3();
+    
+    // amount of vehicle motion to transfer upon projectile launch
+    float MOMENTUM = .2f;
+
+    // total update count
+    float timeSinceAttacked;
+    float timeSinceCollided;
+    
     public ThxEntityBase(World world)
     {
         super(world);
@@ -242,4 +274,92 @@ public abstract class ThxEntityBase extends Entity
         
         return packet;
     }
+    
+    
+    /**
+     * 
+     * @return boolean if damage was taken as a result of collision
+     */
+    boolean handleCollisions()
+    {
+        boolean isCollidedWithEntity = false;
+        
+        detectCollisionsAndBounce:
+        {
+            List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(0.2, 0.2, 0.2));
+            if (list != null && list.size() > 0)
+            {
+                for (int j1 = 0; j1 < list.size(); j1++)
+                {
+                    Entity entity = (Entity) list.get(j1);
+                    if (entity != riddenByEntity && entity.canBePushed())
+                    {
+                        log("collided with entity " + entity.entityId);
+                        entity.applyEntityCollision(this);
+                        
+                        isCollidedWithEntity = true;
+                    }
+                }
+            }
+        }
+        
+        // crash, take damage and slow down
+        if (isCollidedHorizontally || isCollidedVertically || isCollidedWithEntity)
+        {
+	        double velSq = motionX * motionX + motionY * motionY + motionZ * motionZ;
+            
+	        if (velSq > .005 && timeSinceCollided  < 0f)
+	        {
+	            log("crash velSq: " + velSq);
+                
+                timeSinceCollided = 1f; // sec delay before another collision possible
+	            
+                takeDamage((float) velSq * 100f); // crash damage based on velocity
+                
+	            for (int i = 0; i < 5; i++)
+	            {
+	                worldObj.spawnParticle("explode", posX - 1f + Math.random() *2f, posY - 1f + Math.random() *2f, posZ - 1f + Math.random() *2f, 0.0, 0.0, 0.0);
+	            }
+	            
+                float volume = (float) velSq * 10f;
+                if (volume > .8f) volume = .8f;
+                
+                float pitch = .4f + worldObj.rand.nextFloat() * .4f;
+                log("volume: " + volume + ", pitch: " + pitch);
+                
+                worldObj.playSoundAtEntity(this, "random.explode",  volume, pitch);
+                
+	            motionX *= .7;
+	            motionY *= .7;
+	            motionZ *= .7;
+	        
+		        return true;
+	        }
+            //isCollidedHorizontally = false;
+            //isCollidedVertically = false;
+        }
+        return false;
+    }
+    
+    void takeDamage(float damage)
+    {
+        damage += damage;
+                
+        if (damage > MAX_HEALTH && !worldObj.isRemote) // helicopter destroyed!
+        {
+            // show message if not player helicopter
+            if (riddenByEntity != null)
+            {
+                riddenByEntity.mountEntity(this);
+            }
+            
+            boolean flaming = true;
+            worldObj.newExplosion(this, posX, posY, posZ, 2.3f, flaming);
+            
+	        dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0); // will it be destroy or launched if placed after explosion?
+
+            setEntityDead();
+        }
+    }
+    
 }

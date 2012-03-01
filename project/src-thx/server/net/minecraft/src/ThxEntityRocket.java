@@ -13,7 +13,8 @@ public class ThxEntityRocket  extends ThxEntity
         zTile = -1;
         inTile = 0;
         inGround = false;
-        setSize(0.25F, 0.25F);
+        //setSize(0.25F, 0.25F);
+        setSize(0.5f, 0.5f);
         
         NET_PACKET_TYPE = 76;
     }
@@ -159,7 +160,8 @@ public class ThxEntityRocket  extends ThxEntity
             // we hit an entity!
             if(movingobjectposition.entityHit != null)
             {
-                movingobjectposition.entityHit.attackEntityFrom(new EntityDamageSource("player", owner), 5);
+                int attackStrength = 8;
+                movingobjectposition.entityHit.attackEntityFrom(new EntityDamageSource("player", owner), attackStrength);
             }
             
             setEntityDead();

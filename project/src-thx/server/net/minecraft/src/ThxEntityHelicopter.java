@@ -5,34 +5,6 @@ import java.util.List;
 
 public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
 {
-    final float MAX_HEALTH = 100;
-
-    final float MAX_ACCEL    = 0.20f;
-    final float GRAVITY      = 0.202f;
-    final float MAX_VELOCITY = 0.3f;
-    //final float MAX_VELOCITY = 0.44f;
-    final float FRICTION = 0.98f;
-
-    final float PITCH_RETURN = 0.98f;
-    final float ROLL_RETURN = 0.92f;
-
-    float throttle = 0.0f;
-    final float THROTTLE_MIN = -.03f;
-    final float THROTTLE_MAX = .07f;
-    final float THROTTLE_INC = .005f;
-
-    float UPDATE_RATE = 2;
-
-    // Vectors for repeated calculations
-    Vector3 thrust = new Vector3();
-    Vector3 velocity = new Vector3();
-    
-    // amount of vehicle motion to transfer upon projectile launch
-    final float MOMENTUM = .4f;
-
-    // total update count
-    float timeSinceAttacked;
-    float timeSinceCollided;
     
     int rocketCount;
     
@@ -131,6 +103,8 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
     
     protected void onUpdateVacant()
     {
+        if (throttle > .001) log("throttle: " + throttle);
+        
         throttle *= .6; // quickly zero throttle
         
         if (onGround || inWater)
@@ -158,82 +132,20 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         }
     }
     
-    
-    private void handleCollisions()
-    {
-        /*
-        detectCollisionsAndBounce:
-        {
-            List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(0.2, 0.2 0.2));
-            if (list != null && list.size() > 0)
-            {
-                for (int j1 = 0; j1 < list.size(); j1++)
-                {
-                    Entity entity = (Entity) list.get(j1);
-                    if (entity != riddenByEntity && entity.canBePushed())
-                    {
-                        entity.applyEntityCollision(this);
-                    }
-                }
-            }
-        }
-        */
-        
-        // crash, take damage and slow down
-        if (isCollidedHorizontally || isCollidedVertically)
-        {
-	        double velSq = motionX * motionX + motionY * motionY + motionZ * motionZ;
-            
-	        //if (velSq > .03 && timeSinceCollided  < 0f)
-	        if (velSq > .005 && timeSinceCollided  < 0f)
-	        {
-	            log("crash velSq: " + velSq);
-                
-                timeSinceCollided = 1f; // sec delay before another collision possible
-	            
-                takeDamage((float) velSq * 100f); // crash damage based on velocity
-                
-	            motionX *= .7;
-	            motionY *= .7;
-	            motionZ *= .7;
-	        }
-            //isCollidedHorizontally = false;
-            //isCollidedVertically = false;
-        }
-
-    }
-    
-    private void takeDamage(float damage)
-    {
-        damage += damage;
-                
-        if (damage > MAX_HEALTH && !worldObj.isRemote) // helicopter destroyed!
-        {
-            // show message if not player helicopter
-            if (riddenByEntity != null)
-            {
-                riddenByEntity.mountEntity(this);
-            }
-            
-            boolean flaming = true;
-            worldObj.newExplosion(this, posX, posY, posZ, 2.3f, flaming);
-            
-	        dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0); // will it be destroy or launched if placed after explosion?
-
-            setEntityDead();
-        }
-    }
-    
     @Override
     public boolean attackEntityFrom(DamageSource damageSource, int i)
     {
-        log("attackEntityFrom called");
+        log("attackEntityFrom called with damageSource: " + damageSource);
 
         if (timeSinceAttacked > 0f || isDead) return false;
         
-        if (damageSource == null) return false; // when is this the case?
+        if (damageSource == null)
+        {
+            return false; // when is this the case?
+        }
         
         Entity attackingEntity = damageSource.getEntity();
+        log("attackEntityFrom attacked by entity " + attackingEntity);
       
         if (attackingEntity == null) return false; // when is this the case?
         if (attackingEntity.equals(this)) return false; // ignore damage from self
@@ -384,18 +296,11 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
 
     private void pilotExit()
     {
-        log("pilotExit()");
-
         log("pilotExit called for pilot " + riddenByEntity + " " + getPilotId());
         
         if (riddenByEntity == null) return;
         
         EntityPlayerMP pilot = (EntityPlayerMP) riddenByEntity;
-        
-        //model.visible = true; // hard to find otherwise!
-        
-        // clear pitch speed to prevent judder
-        rotationPitchSpeed = 0f;
         
         Packet packet = new Packet39AttachEntity(riddenByEntity, null);
         List players = ModLoader.getMinecraftServerInstance().configManager.playerEntities;
@@ -404,13 +309,11 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
             ((EntityPlayerMP) player).playerNetServerHandler.sendPacket(packet);
         }
 
-        log("pilotExit() calling mountEntity on player " + riddenByEntity);
         riddenByEntity.mountEntity(this); // riddenByEntity is now null
         
         // place pilot to left of helicopter
         // (use fwd XZ perp to exit left: x = z, z = -x)
         double exitDist = 1.9;
-        //pilot.setPosition(posX + fwd.z * exitDist, posY + pilot.getYOffset(), posZ - fwd.x * exitDist);
         pilot.playerNetServerHandler.teleportTo(posX + fwd.z * exitDist, posY + pilot.getYOffset(), posZ - fwd.x * exitDist, rotationYaw, 0f);
 
     }
@@ -436,7 +339,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         float offsetZ = (side.z * leftRight) + (fwd.z * 1.9f) + (up.z * -.5f);
                     
         float yaw = rotationYaw;
-        float pitch = rotationPitch;
+        float pitch = rotationPitch + 10f;
                 
         ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
         newRocket.owner = riddenByEntity;

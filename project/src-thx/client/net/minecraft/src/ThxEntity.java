@@ -23,10 +23,13 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
     {
 		super.onUpdate();
 		
+		applyUpdatePacketFromServer();
+		/*
 		if (net.minecraft.src.IClientDriven.class.isAssignableFrom(this.getClass()))
 		{
 			applyUpdatePacketFromServer();
 		}
+		*/
 
         if (!worldObj.isRemote) // can only pause in single-player mode
         {
