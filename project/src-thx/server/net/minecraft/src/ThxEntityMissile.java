@@ -1,6 +1,6 @@
 package net.minecraft.src;
 
-public class ThxEntityMissile extends ThxEntity
+public class ThxEntityMissile extends ThxEntity implements ISpawnable
 {
 	static int instanceCount = 0;
 

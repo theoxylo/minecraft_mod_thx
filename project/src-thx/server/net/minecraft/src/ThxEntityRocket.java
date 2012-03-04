@@ -3,8 +3,18 @@ package net.minecraft.src;
 import java.util.List;
 import java.util.Random;
 
-public class ThxEntityRocket  extends ThxEntity
+public class ThxEntityRocket  extends ThxEntity implements ISpawnable
 {
+    private int xTile;
+    private int yTile;
+    private int zTile;
+    private int inTile;
+    private boolean inGround;
+    private int ticksInGround;
+    
+    boolean enteredWater;
+    boolean launched;
+    
 	public ThxEntityRocket(World world)
     {
         super(world);
@@ -19,13 +29,20 @@ public class ThxEntityRocket  extends ThxEntity
         NET_PACKET_TYPE = 76;
     }
 
+	/* only needed if using Packet23VehicleSpawn instead of ISpawnable
+    public ThxEntityRocket(World world, double x, double y, double z)
+    {
+        this(world);
+        setPositionAndRotation(x, y, z, 0f, 0f);
+    }
+    */
+
     public ThxEntityRocket(Entity entity, double x, double y, double z, double dx, double dy, double dz, float yaw, float pitch)
     {
         this(entity.worldObj);
         
         owner = entity;
         
-        field_20050_h = 0;
         setPositionAndRotation(x, y, z, yaw, pitch);
         
         float acceleration = .7f;
@@ -59,7 +76,6 @@ public class ThxEntityRocket  extends ThxEntity
         //float f3 = MathHelper.sqrt_double(d * d + d2 * d2);
         //prevRotationYaw = rotationYaw = (float)((Math.atan2(d, d2) * 180D) / 3.1415927410125732D);
         //prevRotationPitch = rotationPitch = (float)((Math.atan2(d1, f3) * 180D) / 3.1415927410125732D);
-        field_20050_h = 0;
     }
 
     public void setVelocity(double d, double d1, double d2)
@@ -102,15 +118,18 @@ public class ThxEntityRocket  extends ThxEntity
                 motionX *= rand.nextFloat() * 0.2F;
                 motionY *= rand.nextFloat() * 0.2F;
                 motionZ *= rand.nextFloat() * 0.2F;
-                field_20050_h = 0;
+                ticksInGround = 0;
             } 
             else
             {
-                field_20050_h++;
-                if(field_20050_h == 1200)
+                ticksInGround++;
+                log("ticksInGround: " + ticksInGround);
+                
+                if(ticksInGround == 1200)
                 {
+                    log("rocket stuck in ground, removing");
                     setEntityDead();
-		            log("field_20050_h: " + field_20050_h);
+                    worldObj.playSoundAtEntity(this, "random.explode", 1f, 1f);
                 }
                 return;
             }
@@ -183,20 +202,24 @@ public class ThxEntityRocket  extends ThxEntity
 
     public void writeEntityToNBT(NBTTagCompound nbttagcompound)
     {
+        /*
         nbttagcompound.setShort("xTile", (short)xTile);
         nbttagcompound.setShort("yTile", (short)yTile);
         nbttagcompound.setShort("zTile", (short)zTile);
         nbttagcompound.setByte("inTile", (byte)inTile);
         nbttagcompound.setByte("inGround", (byte)(inGround ? 1 : 0));
+        */
     }
 
     public void readEntityFromNBT(NBTTagCompound nbttagcompound)
     {
+        /*
         xTile = nbttagcompound.getShort("xTile");
         yTile = nbttagcompound.getShort("yTile");
         zTile = nbttagcompound.getShort("zTile");
         inTile = nbttagcompound.getByte("inTile") & 0xff;
         inGround = nbttagcompound.getByte("inGround") == 1;
+        */
     }
 
     public float getShadowSize()
@@ -204,15 +227,5 @@ public class ThxEntityRocket  extends ThxEntity
         return 0.0F;
     }
 
-    private int xTile;
-    private int yTile;
-    private int zTile;
-    private int inTile;
-    private boolean inGround;
-    public Entity owner;
-    private int field_20050_h;
-    
-    boolean enteredWater;
-    boolean launched;
 }
 

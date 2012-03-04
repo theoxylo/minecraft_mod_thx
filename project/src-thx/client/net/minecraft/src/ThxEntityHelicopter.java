@@ -6,10 +6,8 @@ import net.minecraft.client.Minecraft;
 
 import org.lwjgl.input.Keyboard;
 
-public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
+public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISpawnable
 {    
-    public static final int netId = 75;
-    
     // controls and options
     // set from mod_thx.properties
     static int KEY_ASCEND = Keyboard.getKeyIndex(ThxConfig.getProperty("key_ascend"));
@@ -134,8 +132,6 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         
         // decrement cooldown timers
         smokeDelay   -= deltaTime;
-        timeSinceAttacked -= deltaTime;
-        timeSinceCollided -= deltaTime;
         missileDelay -= deltaTime;
         rocketDelay  -= deltaTime;
         
@@ -229,49 +225,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         {
             createMapDelay = 10f; // the delay in seconds
                 
-            int mapSize = 960; // full size region is 1024, but we want a little bit of overlap
-                
-            int mapIdxX = (int)posX / mapSize;
-            if (posX < 0d) mapIdxX -= 1;
-            else mapIdxX += 1;
-                
-            int mapIdxZ = (int)posZ / mapSize;
-            if (posZ < 0d) mapIdxZ -= 1;
-            else mapIdxZ += 1;
-                
-            // create 4 digit number with first 2 digits indicating
-            // x and last 2 z in region units
-            // (only works within 49 * mapSize of origin)
-            int mapIdx = ((mapIdxX + 50) * 100) + mapIdxZ + 50;
-            //System.out.println("Map idx: " + mapIdx);
-                
-            ItemStack mapStack = new ItemStack(Item.map.shiftedIndex, 1, mapIdx);
-                
-            String mapIdxString = "map_" + mapIdx;
-                
-            // this code was adapted from MapItem.onCreate to initialize the map location
-            MapData mapdata = (MapData)worldObj.loadItemData(MapData.class, mapIdxString);
-            if(mapdata == null)
-            {
-                mapdata = new MapData(mapIdxString);
-                worldObj.setItemData(mapIdxString, mapdata);
-
-                int mapX = mapIdxX * mapSize;
-                if (mapX < 0) mapX += mapSize / 2;
-                else mapX -= mapSize / 2;
-                mapdata.xCenter = mapX;
-                
-                int mapZ = mapIdxZ * mapSize;
-                if (mapZ < 0) mapZ += mapSize / 2;
-                else mapZ -= mapSize / 2;
-                mapdata.zCenter = mapZ;                
-                
-                mapdata.scale = 3;
-                mapdata.dimension = (byte)worldObj.worldProvider.worldType;
-                mapdata.markDirty();
-            }
-
-            entityDropItem(mapStack, .5f);
+            createMap();
         }
             
         hudModeToggleDelay -= deltaTime;
@@ -654,7 +608,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         motionZ = velocity.z;
             
         //if (altitudeLock) motionY = 0f;
-        if (altitudeLock) motionY *= .5f;
+        if (altitudeLock) motionY *= .8f;
         
         moveEntity(motionX, motionY, motionZ);
         
@@ -806,55 +760,31 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
     @Override
     public boolean attackEntityFrom(DamageSource damageSource, int i)
     {
-        log("attackEntityFrom called");
+        if (!super.attackEntityFrom(damageSource, i)) return false; // no hit
 
-        if (timeSinceAttacked > 0f || isDead) return false;
-        
-        if (damageSource == null) return false; // when is this the case?
-        
-        Entity attackingEntity = damageSource.getEntity();
-        if (attackingEntity == null)
-        {
-            log("attackingEntity is null");
-            return false; // when is this the case?
-        }
-        if (attackingEntity.equals(this))
-        {
-            return false; // ignore damage from self
-        }
-        
-        if (attackingEntity.equals(riddenByEntity))
-        {
-            //riddenByEntity.mountEntity(this);
-            pilotExit();
-            setEntityDead();
-            if (!worldObj.isRemote) dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0);
-            return false; // ignore damage from pilot
-        }
-
-        log("attacked by entity: " + attackingEntity);
-        
         // take damage sound
         worldObj.playSoundAtEntity(this, "random.bowhit", 1f, 1f);
+
+        Entity attackingEntity = damageSource.getEntity();
         
         // activate AI for empty helicopter hit by another helicopter
         if (riddenByEntity == null && attackingEntity instanceof ThxEntityHelicopter)
         {
             if (targetHelicopter == null)
             {
-	            targetHelicopter = (ThxEntityHelicopter) attackingEntity;
-	            
-	            log("attacked by other helicopter " + targetHelicopter);
-                    
-	            // friendly at first
+                targetHelicopter = (ThxEntityHelicopter) attackingEntity;
+
+                log("attacked by other helicopter " + targetHelicopter);
+
+                // friendly at first
                 isTargetHelicopterFriendly = true;
-                    
-	            worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f);
+
+                worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f);
             }
             else if (attackingEntity == targetHelicopter && isTargetHelicopterFriendly)
             {
                 isTargetHelicopterFriendly = false;
-                
+
                 missileDelay = 10f; // initial missile delay
                 rocketDelay  =  5f; // initial rocket delay
             }
@@ -871,92 +801,9 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
     }
 
     @Override
-    public boolean canBeCollidedWith()
-    {
-        // log("canBeCollidedWith called");
-        return !isDead;
-    }
-
-    @Override
-    public boolean canBePushed()
-    {
-        return true;
-    }
-
-    @Override
-    protected boolean canTriggerWalking()
-    {
-        return false;
-    }
-
-    @Override
-    protected void entityInit()
-    {
-        log("EntityThxHelicopter entityInit called");
-        
-        // reload properties to pick up any changes
-        //ThxConfig.loadProperties();
-
-    }
-
-    @Override
-    public AxisAlignedBB getBoundingBox()
-    {
-        return boundingBox;
-    }
-
-    @Override
-    public AxisAlignedBB getCollisionBox(Entity entity)
-    {
-        return entity.boundingBox;
-    }
-
-    @Override
-    public double getMountedYOffset()
-    {
-        return -.25;
-    }
-
-    @Override
     public boolean interact(EntityPlayer player)
     {
-        log("interact called with player " + player.entityId);
-        
-        if (player.equals(riddenByEntity))
-        {
-            if (onGround || isCollidedVertically)
-            {
-                log("Landed " + this);
-            }
-            else 
-            {
-                log("Exited without landing, entering local drone mode");
-                
-                //enable_drone_mode = true; // fly helicopter remotely
-                //player.ridingEntity = null; // allow normal character movement
-            }
-            pilotExit();
-            return true;
-        }
-        
-        if (riddenByEntity != null)
-        {
-            // already ridden by some other entity
-            return false;
-        }
-        
-        if (player.ridingEntity != null) 
-        {
-            // player is already riding some other entity
-            return false;
-        }
-        
-        // new pilot boarding
-        if (!worldObj.isRemote)
-        {
-	        log("interact() calling mountEntity on player " + player.entityId);
-	        player.mountEntity(this);
-        }
+        if (!super.interact(player)) return false;
         
         altitudeLock = false;
         
@@ -1037,13 +884,12 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         return 0.0;
     }
     
-    private void pilotExit()
+    @Override
+    protected void pilotExit()
     {
-        Entity pilot = getPilot();
+        super.pilotExit();
         
-        log("pilotExit called for pilot " + pilot + " " + getPilotId());
-
-        if (pilot == null) return;
+        if (riddenByEntity == null) return;
         
         model.visible = true; // hard to find otherwise!
         
@@ -1056,6 +902,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
             return;
         }
         
+        Entity pilot = riddenByEntity;
         if (!worldObj.isRemote)
         {
             log("pilotExit() calling mountEntity on player " + pilot);
@@ -1068,35 +915,26 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         pilot.setPosition(posX + fwd.z * exitDist, posY + pilot.yOffset, posZ - fwd.x * exitDist);
     }
     
-    private void fireRocket()
+    void fireRocket()
     {
         if (rocketDelay > 0f) return;
         if (rocketReload > 0f) return;
         
-        rocketCount++;
         rocketDelay = ROCKET_DELAY;
                 
         if (worldObj.isRemote)
         {
             // queue fire command for server
             fire1 = 1;
+	        rocketCount++;
         }
         else
         {
-            float leftRightAmount = .6f;
-            float leftRight = (rocketCount % 2 == 0) ? leftRightAmount  : -leftRightAmount;
-                
-	        // starting position of rocket relative to helicopter, out in front quite a bit to avoid collision
-            float offsetX = (side.x * leftRight) + (fwd.x * 1.9f) + (up.x * -.5f);
-            float offsetY = (side.y * leftRight) + (fwd.y * 1.9f) + (up.y * -.5f);
-            float offsetZ = (side.z * leftRight) + (fwd.z * 1.9f) + (up.z * -.5f);
-                        
-            float yaw = rotationYaw;
-            float pitch = rotationPitch + 10f;
-                
-            ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
-            newRocket.owner = riddenByEntity;
-            worldObj.spawnEntityInWorld(newRocket);
+	        // aim with cursor if pilot
+	        //float yaw = riddenByEntity != null ? riddenByEntity.rotationYaw : rotationYaw;
+	        //float pitch = riddenByEntity != null ? riddenByEntity.rotationPitch : rotationPitch;
+        
+            super.fireRocket();
         }
         
         if (rocketCount == FULL_ROCKET_COUNT)
@@ -1108,7 +946,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
         }
     }
     
-    private void fireMissile()
+    void fireMissile()
     {
         if (missileDelay > 0f) return;
         missileDelay = MISSILE_DELAY;
@@ -1122,20 +960,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven
             return;
         }
         
-        float offX = (fwd.x * 1.9f) + (up.x * -.5f);
-        float offY = (fwd.y * 1.9f) + (up.y * -.5f);
-        float offZ = (fwd.z * 1.9f) + (up.z * -.5f);
-
-        // aim with cursor if pilot
-        float yaw = riddenByEntity != null ? riddenByEntity.rotationYaw : rotationYaw;
-        float pitch = riddenByEntity != null ? riddenByEntity.rotationPitch : rotationPitch;
-                
-        ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
-        worldObj.spawnEntityInWorld(newMissile);
-    }
-    
-    public String toString()
-    {
-        return getClass().getSimpleName() + " " + entityId;
+        super.fireMissile();
     }
 }
+

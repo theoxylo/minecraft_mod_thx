@@ -2,7 +2,7 @@ package net.minecraft.src;
 
 import net.minecraft.client.Minecraft;
 
-public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
+public abstract class ThxEntity extends ThxEntityBase
 {
     Minecraft minecraft;
     Packet230ModLoader latestUpdatePacket;
@@ -24,12 +24,6 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
 		super.onUpdate();
 		
 		applyUpdatePacketFromServer();
-		/*
-		if (net.minecraft.src.IClientDriven.class.isAssignableFrom(this.getClass()))
-		{
-			applyUpdatePacketFromServer();
-		}
-		*/
 
         if (!worldObj.isRemote) // can only pause in single-player mode
         {
@@ -124,6 +118,10 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
         // ignore fire controls, only used by server to spawn projectiles
         //fire1 = packet.dataInt[2];
         //fire2 = packet.dataInt[3];
+        
+        int ownerId = packet.dataInt[4];
+        if (ownerId > 0) owner = (ThxEntityBase) ((WorldClient) worldObj).getEntityByID(ownerId);
+        log("owner " + owner);
 
         serverPosX = MathHelper.floor_float(packet.dataFloat[0] * 32f);
         serverPosY = MathHelper.floor_float(packet.dataFloat[1] * 32f);
@@ -163,42 +161,5 @@ public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
     public boolean isInRangeToRenderDist(double d)
     {
         return d < 128.0 * 128.0;
-    }
-
-    // DEBUGGING OVERRIDES
-    // DEBUGGING OVERRIDES
-    // DEBUGGING OVERRIDES
-    
-    /* called by NetClientHandler for Packet28EntityVelocity */
-    @Override
-    public void setVelocity(double x, double y, double z)
-    {
-        log("setVelocity (Packet28?)");
-        super.setVelocity(x, y, z);
-        getDataWatcher();
-    }
-    
-    /* called by NetClientHandler for Packet40EntityMetadata */
-    @Override
-    public DataWatcher getDataWatcher()
-    {
-        log("getDataWatcher (Packet40?)");
-        return super.getDataWatcher();
-    }
-    
-    /* called by NetClientHandler for Packet30/31/32/33Entity and Packet34EntityTeleport */
-    @Override
-    public void setPositionAndRotation2(double d, double d1, double d2, float f, float f1, int i)
-    {
-        log("setPositionAndRotation2 (Packet30/31/32/33Entity and Packet34EntityTeleport?)");
-        super.setPositionAndRotation2(d, d1, d2, f, f1, i);
-    }
-    
-    /* called by NetClientHandler for Packet38EntityStatus */
-    @Override
-    public void handleHealthUpdate(byte b)
-    {
-        log("handleHealthUpdate (Packet38EntityStatus?)");
-        super.handleHealthUpdate(b);
     }
 }

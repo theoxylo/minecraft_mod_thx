@@ -107,6 +107,6 @@ public class ThxConfig
     
     static void log(String s)
     {
-        System.out.println("mod_thx_server: " + s);
+        mod_Thx.log(s);
     }
 }

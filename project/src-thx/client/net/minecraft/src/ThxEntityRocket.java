@@ -3,8 +3,18 @@ package net.minecraft.src;
 import java.util.List;
 import java.util.Random;
 
-public class ThxEntityRocket  extends ThxEntity
+public class ThxEntityRocket  extends ThxEntity implements ISpawnable
 {
+    private int xTile;
+    private int yTile;
+    private int zTile;
+    private int inTile;
+    private boolean inGround;
+    private int ticksInGround;
+    
+    boolean enteredWater;
+    boolean launched;
+    
     final float exhaustDelay = .01f;
     float exhaustTimer = 0f;
     
@@ -26,13 +36,20 @@ public class ThxEntityRocket  extends ThxEntity
         model.rotationRollSpeed = 90f; // units?
     }
 
+	/* only needed if using Packet23VehicleSpawn instead of ISpawnable
+    public ThxEntityRocket(World world, double x, double y, double z)
+    {
+        this(world);
+        setPositionAndRotation(x, y, z, 0f, 0f);
+    }
+    */
+    
     public ThxEntityRocket(Entity entity, double x, double y, double z, double dx, double dy, double dz, float yaw, float pitch)
     {
         this(entity.worldObj);
         
         owner = entity;
         
-        field_20050_h = 0;
         setPositionAndRotation(x, y, z, yaw, pitch);
         
         float acceleration = .7f;
@@ -65,7 +82,6 @@ public class ThxEntityRocket  extends ThxEntity
         //float f3 = MathHelper.sqrt_double(d * d + d2 * d2);
         //prevRotationYaw = rotationYaw = (float)((Math.atan2(d, d2) * 180D) / 3.1415927410125732D);
         //prevRotationPitch = rotationPitch = (float)((Math.atan2(d1, f3) * 180D) / 3.1415927410125732D);
-        field_20050_h = 0;
     }
 
     public void setVelocity(double d, double d1, double d2)
@@ -123,17 +139,18 @@ public class ThxEntityRocket  extends ThxEntity
                 motionX *= rand.nextFloat() * 0.2F;
                 motionY *= rand.nextFloat() * 0.2F;
                 motionZ *= rand.nextFloat() * 0.2F;
-                field_20050_h = 0;
+                ticksInGround = 0;
             } 
             else
             {
-                field_20050_h++;
-                if(field_20050_h == 1200)
+                ticksInGround++;
+	            log("ticksInGround: " + ticksInGround);
+	            
+                if(ticksInGround == 1200)
                 {
+                    log("rocket stuck in ground, removing");
                     setEntityDead();
-                    log("?????????????? rocket is dead");
 		            worldObj.playSoundAtEntity(this, "random.explode", 1f, 1f);
-		            log("field_20050_h: " + field_20050_h);
                 }
                 return;
             }
@@ -178,13 +195,19 @@ public class ThxEntityRocket  extends ThxEntity
         }
         if(movingobjectposition != null)
         {
-            log("rocket hit an entity");
-
             // we hit an entity!
             if(movingobjectposition.entityHit != null && !worldObj.isRemote)
             {
-                int attackStrength = 8;
-                movingobjectposition.entityHit.attackEntityFrom(new EntityDamageSource("player", owner), attackStrength);
+	            log("rocket hit entity " + movingobjectposition.entityHit);
+                if (owner.equals(movingobjectposition.entityHit.riddenByEntity) || owner.equals(movingobjectposition.entityHit)) 
+                {
+                    log("ignoring hit from own rocket");
+                }
+                else
+                {
+	                int attackStrength = 8;
+	                movingobjectposition.entityHit.attackEntityFrom(new EntityDamageSource("player", owner), attackStrength);
+                }
             }
             
             // for hit markers
@@ -253,16 +276,5 @@ public class ThxEntityRocket  extends ThxEntity
         inTile = nbttagcompound.getByte("inTile") & 0xff;
         inGround = nbttagcompound.getByte("inGround") == 1;
     }
-
-    private int xTile;
-    private int yTile;
-    private int zTile;
-    private int inTile;
-    private boolean inGround;
-    public Entity owner;
-    private int field_20050_h;
-    
-    boolean enteredWater;
-    boolean launched;
 }
 

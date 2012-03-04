@@ -4,10 +4,6 @@ public class mod_Thx extends BaseModMp
 {
     public static mod_Thx instance;
 
-    /*
-     * coming soon! static Class classMissile = net.minecraft.src.ThxEntityMissile.class; static Class classRocket = net.minecraft.src.ThxEntityRocket.class;
-     */
-
     public mod_Thx()
     {
         log("mod_Thx() called");
@@ -43,7 +39,8 @@ public class mod_Thx extends BaseModMp
         }
         rocket:
         {
-            ModLoaderMp.RegisterEntityTrackerEntry(ThxEntityRocket.class, 76);
+            boolean hasOwner = true;
+            ModLoaderMp.RegisterEntityTrackerEntry(ThxEntityRocket.class, hasOwner, 76);
             ModLoaderMp.RegisterEntityTracker(ThxEntityRocket.class, distance, frequency);
             
             int entityId = ModLoader.getUniqueEntityId();
@@ -119,6 +116,6 @@ public class mod_Thx extends BaseModMp
 
     public static void log(String s)
     {
-        System.out.println("mod_thx_server: " + s);
+        if (ThxConfig.ENABLE_LOGGING) System.out.println("mod_thx_server: " + s);
     }
 }

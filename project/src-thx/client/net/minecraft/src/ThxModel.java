@@ -27,8 +27,6 @@ public abstract class ThxModel extends ModelBase
     
     RenderManager renderManager;
     
-    //StringBuilder log = new StringBuilder();
-    
     int updateCount;
     
 
@@ -43,27 +41,18 @@ public abstract class ThxModel extends ModelBase
         
 	    deltaTime = ((float)(time - prevTime)) / 1000000000f; // divide by a billion to convert to sec
 	    
-	    if (paused) deltaTime = 0f;
-	    
-        //log.append(toString() + ":\ttime " + time);
-	    //log.append("\trotationYaw before " + rotationYaw);
-	    //log.append("\tdeltaTime " + deltaTime);
-	    
 	    // this happens when we haven't rendered in awhile (e.g. out of view)
-	    // -- was causing rotor to spin backward  sometimes. This fix 
-	    // causes a different issue: the rotor only spins down when in view
-        if (deltaTime > .1f)
-        {
-            //log.append("\t* fixing lag deltaTime of " + deltaTime + " to .03");
-            
-            deltaTime = .03f; // default to ~30 fps
-        }
+        if (deltaTime > .03f) deltaTime = .03f; // default to ~30 fps
 	    
-        
-        if (entityPrevTime > prevTime)
+        if (paused)
+        {
+            // do nothing
+        }
+        else if (entityPrevTime > prevTime)
         {
             // if the entity was updated more recently than the model
-            // sync the rotation yaw value and use adjusted delta for turn
+            // use adjusted delta (leave deltaTime alone so subclass models can update
+            // parts that may be independent of entity, e.g. helicopter rotor)
             float adjustedDeltaTime = ((float)(time - entityPrevTime)) / 1000000000f; // divide by a billion to convert to sec
             rotationYaw += rotationYawSpeed * adjustedDeltaTime;
             rotationPitch += rotationPitchSpeed * adjustedDeltaTime;
@@ -77,7 +66,7 @@ public abstract class ThxModel extends ModelBase
         }
 	    prevTime = time;
         
-        GL11.glRotatef(-90f - rotationYaw, 0.0f, 1.0f, 0.0f);
+        GL11.glRotatef(-90f - rotationYaw, 0.0f, 1.0f, 0.0f); // why -90 adjustment?
         
         GL11.glRotatef(-rotationPitch, 0.0f, 0.0f, 1.0f);
         GL11.glRotatef(-rotationRoll, 1.0f, 0.0f, 0.0f);

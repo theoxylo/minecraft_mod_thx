@@ -7,11 +7,6 @@ public class mod_Thx extends BaseModMp
     public mod_Thx()
     {
         log("mod_Thx() called");
-
-        /*
-         * ModLoaderMp.RegisterNetClientHandlerEntity(classMissile, 73); 
-         * ModLoaderMp.RegisterNetClientHandlerEntity(classRocket, 74);
-         */
         instance = this; // for easy access by static methods and to instance methods
     }
 
@@ -114,6 +109,6 @@ public class mod_Thx extends BaseModMp
 
     public static void log(String s)
     {
-        System.out.println("mod_thx_client: " + s);
+        if (ThxConfig.ENABLE_LOGGING) System.out.println("mod_thx_client: " + s);
     }
 }

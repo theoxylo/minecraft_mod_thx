@@ -40,10 +40,14 @@ public abstract class ThxEntityBase extends Entity
     int fire1;
     int fire2;
 
-    float MAX_HEALTH = 100;
+    Entity owner;
+    
+    int rocketCount;
+    
+    float MAX_HEALTH = 200f;
 
-    float MAX_ACCEL    = 0.40f;
-    float GRAVITY      = 0.40f;
+    float MAX_ACCEL    = 0.20f;
+    float GRAVITY      = 0.201f;
     float MAX_VELOCITY = 0.30f;
     float FRICTION = 0.98f;
 
@@ -110,6 +114,10 @@ public abstract class ThxEntityBase extends Entity
         prevRotationRoll = rotationRoll;
         
         inWater = isInWater();
+        
+        // decrement cooldown timers
+        timeSinceAttacked -= deltaTime;
+        timeSinceCollided -= deltaTime;
     }
     
     public int getPilotId()
@@ -204,12 +212,6 @@ public abstract class ThxEntityBase extends Entity
     
     /* abstract methods from Entity base class */
     @Override
-    protected void entityInit()
-    {
-        log("entityInit called");
-    }
-
-    @Override
     protected void readEntityFromNBT(NBTTagCompound nbttagcompound)
     {
         //log("readEntityFromNBT called");
@@ -229,7 +231,7 @@ public abstract class ThxEntityBase extends Entity
 
     void log(String s)
     {
-        System.out.println(String.format("[%4d] ", ticksExisted) + this + ": " + s);
+        mod_Thx.log(String.format("[%5d] ", ticksExisted) + this + ": " + s);
     }
     
     void plog(String s) // periodic log
@@ -249,11 +251,12 @@ public abstract class ThxEntityBase extends Entity
 
         packet.dataString = new String[] { "thx update packet for tick " + ticksExisted };
 
-        packet.dataInt = new int[4];
+        packet.dataInt = new int[5];
         packet.dataInt[0] = entityId;
         packet.dataInt[1] = riddenByEntity != null ? riddenByEntity.entityId : 0;
         packet.dataInt[2] = fire1;
         packet.dataInt[3] = fire2;
+        packet.dataInt[4] = owner != null ? owner.entityId : 0;
         
         // clear fire flags after use
         fire1 = 0;
@@ -287,19 +290,27 @@ public abstract class ThxEntityBase extends Entity
         detectCollisionsAndBounce:
         {
             List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(0.2, 0.2, 0.2));
-            if (list != null && list.size() > 0)
+            for (int j1 = 0; list != null && j1 < list.size(); j1++)
             {
-                for (int j1 = 0; j1 < list.size(); j1++)
-                {
-                    Entity entity = (Entity) list.get(j1);
-                    if (entity != riddenByEntity && entity.canBePushed())
-                    {
-                        log("collided with entity " + entity.entityId);
-                        entity.applyEntityCollision(this);
+                Entity entity = (Entity) list.get(j1);
+                if (entity.equals(riddenByEntity)) continue;
+                if (!entity.canBeCollidedWith()) continue;
                         
-                        isCollidedWithEntity = true;
+                if (entity instanceof ThxEntityBase)
+                {
+                    Entity otherOwner = ((ThxEntityBase) entity).owner;
+                    if (equals(otherOwner)) 
+                    {
+                        log("ignoring collision with own thx child");
+                        continue;
                     }
+                    else log("hit by other thx entity with owner " + otherOwner);
                 }
+                    
+                log("collided with entity " + entity.entityId);
+                entity.applyEntityCollision(this);
+                        
+                isCollidedWithEntity = true;
             }
         }
         
@@ -347,25 +358,227 @@ public abstract class ThxEntityBase extends Entity
         return false;
     }
     
+    @Override
+    public boolean interact(EntityPlayer player)
+    {
+        log("interact called with player " + player.entityId);
+        
+        if (player.equals(riddenByEntity))
+        {
+            if (onGround || isCollidedVertically)
+            {
+                log("Landed and exited");
+            }
+            else 
+            {
+                log("Exited without landing");
+            }
+            pilotExit();
+            return true;
+        }
+        
+        if (player.ridingEntity != null) 
+        {
+            // player is already riding some other entity
+            return false;
+        }
+        
+        if (riddenByEntity != null)
+        {
+            // already ridden by some other entity, allow takeover if close
+            if (getDistanceSqToEntity(player) < 2.0)
+            {
+                log("current pilot was ejected");
+                pilotExit();
+            }
+            else
+            {
+	            return false;
+            }
+        }
+        
+        // new pilot boarding
+        if (!worldObj.isRemote)
+        {
+	        log("interact() calling mountEntity on player " + player.entityId);
+	        player.mountEntity(this);
+        }
+        
+        player.rotationYaw = rotationYaw;
+        
+        log("interact() added pilot: " + player);
+        return true;
+    }
+
     void takeDamage(float amount)
     {
         damage += amount;
                 
         if (damage > MAX_HEALTH && !worldObj.isRemote) // helicopter destroyed!
         {
-            // show message if not player helicopter
-            if (riddenByEntity != null)
-            {
-                riddenByEntity.mountEntity(this);
-            }
+            if (riddenByEntity != null) riddenByEntity.mountEntity(this);
             
             boolean flaming = true;
             worldObj.newExplosion(this, posX, posY, posZ, 2.3f, flaming);
             
-	        //dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0);
-
             setEntityDead();
         }
     }
     
+    @Override
+    public boolean attackEntityFrom(DamageSource damageSource, int i)
+    {
+        log("attackEntityFrom called with damageSource: " + damageSource);
+
+        if (timeSinceAttacked > 0f || isDead || damageSource == null) return false;
+
+        Entity attackingEntity = damageSource.getEntity();
+        if (attackingEntity == null) return false; // when is this the case?
+        if (attackingEntity.equals(this)) return false; // ignore damage from self
+        if (attackingEntity.equals(riddenByEntity))
+        {
+            //riddenByEntity.mountEntity(this);
+            pilotExit();
+            setEntityDead();
+            if (this instanceof ThxEntityHelicopter && !worldObj.isRemote)
+            {
+                // could add a dropItem() method for subclasses instead of instanceof
+                dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0);
+            }
+            return false; // ignore damage from pilot
+        }
+        log("attacked by entity: " + attackingEntity);
+        return true; // hit landed
+    }
+    
+    protected void pilotExit()
+    {
+        log("pilotExit called for pilot " + riddenByEntity + " " + getPilotId());
+    }
+    
+    @Override
+    public boolean canBeCollidedWith()
+    {
+        return !isDead;
+    }
+
+    @Override
+    public boolean canBePushed()
+    {
+        return true;
+    }
+
+    @Override
+    protected boolean canTriggerWalking()
+    {
+        return false;
+    }
+
+    @Override
+    protected void entityInit()
+    {
+        log(this + " entityInit called");
+    }
+
+    @Override
+    public AxisAlignedBB getBoundingBox()
+    {
+        return boundingBox;
+    }
+
+    @Override
+    public AxisAlignedBB getCollisionBox(Entity entity)
+    {
+        return entity.boundingBox;
+    }
+
+    @Override
+    public double getMountedYOffset()
+    {
+        return -.25;
+    }
+    
+    void fireRocket()
+    {
+        rocketCount++;
+                
+        float leftRightAmount = .6f;
+        float leftRight = (rocketCount % 2 == 0) ? leftRightAmount  : -leftRightAmount;
+                
+        // starting position of rocket relative to helicopter, out in front quite a bit to avoid collision
+        float offsetX = (side.x * leftRight) + (fwd.x * 1.9f) + (up.x * -.5f);
+        float offsetY = (side.y * leftRight) + (fwd.y * 1.9f) + (up.y * -.5f);
+        float offsetZ = (side.z * leftRight) + (fwd.z * 1.9f) + (up.z * -.5f);
+                    
+        float yaw = rotationYaw;
+        float pitch = rotationPitch + 10f;
+                
+        ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
+        newRocket.owner = this;
+        worldObj.spawnEntityInWorld(newRocket);
+    }
+    
+    void fireMissile()
+    {
+        float offX = (fwd.x * 1.9f) + (up.x * -.5f);
+        float offY = (fwd.y * 1.9f) + (up.y * -.5f);
+        float offZ = (fwd.z * 1.9f) + (up.z * -.5f);
+
+        // aim with cursor if pilot
+        float yaw = riddenByEntity != null ? riddenByEntity.rotationYaw : rotationYaw;
+        float pitch = riddenByEntity != null ? riddenByEntity.rotationPitch : rotationPitch;
+                
+        ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
+        newMissile.owner = this;
+        worldObj.spawnEntityInWorld(newMissile);
+    }
+
+    void createMap()
+    {
+        if (worldObj.isRemote) return;
+        
+        int mapSize = 960; // full size region is 1024, but we want a little bit of overlap
+                
+        int mapIdxX = (int)posX / mapSize;
+        if (posX < 0d) mapIdxX -= 1;
+        else mapIdxX += 1;
+                
+        int mapIdxZ = (int)posZ / mapSize;
+        if (posZ < 0d) mapIdxZ -= 1;
+        else mapIdxZ += 1;
+                
+        // create 4 digit number with first 2 digits indicating
+        // x and last 2 z in region units
+        // (only works within 49 * mapSize of origin)
+        int mapIdx = ((mapIdxX + 50) * 100) + mapIdxZ + 50;
+        //System.out.println("Map idx: " + mapIdx);
+                
+        ItemStack mapStack = new ItemStack(Item.map.shiftedIndex, 1, mapIdx);
+                
+        String mapIdxString = "map_" + mapIdx;
+                
+        // this code was adapted from MapItem.onCreate to initialize the map location
+        MapData mapdata = (MapData)worldObj.loadItemData(MapData.class, mapIdxString);
+        if(mapdata == null)
+        {
+            mapdata = new MapData(mapIdxString);
+            worldObj.setItemData(mapIdxString, mapdata);
+
+            int mapX = mapIdxX * mapSize;
+            if (mapX < 0) mapX += mapSize / 2;
+            else mapX -= mapSize / 2;
+            mapdata.xCenter = mapX;
+                
+            int mapZ = mapIdxZ * mapSize;
+            if (mapZ < 0) mapZ += mapSize / 2;
+            else mapZ -= mapSize / 2;
+            mapdata.zCenter = mapZ;                
+                
+            mapdata.scale = 3;
+            mapdata.dimension = (byte)worldObj.worldProvider.worldType;
+            mapdata.markDirty();
+        }
+
+        entityDropItem(mapStack, .5f);
+    }
 }

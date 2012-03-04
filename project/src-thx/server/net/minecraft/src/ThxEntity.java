@@ -2,7 +2,7 @@ package net.minecraft.src;
 
 //import net.minecraft.client.Minecraft;
 
-public abstract class ThxEntity extends ThxEntityBase implements ISpawnable
+public abstract class ThxEntity extends ThxEntityBase
 {
     Packet230ModLoader latestUpdatePacket;
     
