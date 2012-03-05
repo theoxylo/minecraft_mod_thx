@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src-modloader-thx_client"/>
+	<classpathentry kind="src" path="src-thx_common"/>
+	<classpathentry kind="src" path="src-thx_client"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="C:/Dropbox/minecraft/workspace_git_mod_thx/project/lib/lwjgl.jar"/>
+	<classpathentry kind="lib" path="C:/Dropbox/minecraft/workspace_git_mod_thx/project/lib/lwjgl_util.jar"/>
+	<classpathentry kind="lib" path="C:/Dropbox/minecraft/workspace_git_mod_thx/project/lib/minecraft-dev11.jar" sourcepath="C:/Dropbox/minecraft/workspace_git_mod_thx/project/lib/minecraft-dev11-src.jar"/>
+	<classpathentry kind="output" path="temp"/>
+</classpath>

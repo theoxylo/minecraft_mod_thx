@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>xmc_thx_mod_client</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.eclipse.jdt.core.javabuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.eclipse.jdt.core.javanature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>src-modloader-thx_client</name>
+			<type>2</type>
+			<locationURI>THX_HOME/src-modloader-thx/client</locationURI>
+		</link>
+		<link>
+			<name>src-thx_client</name>
+			<type>2</type>
+			<locationURI>THX_HOME/src-thx/client</locationURI>
+		</link>
+		<link>
+			<name>src-thx_common</name>
+			<type>2</type>
+			<locationURI>THX_HOME/src-thx/common</locationURI>
+		</link>
+	</linkedResources>
+	<variableList>
+		<variable>
+			<name>THX_HOME</name>
+			<value>file:/C:/Dropbox/minecraft/workspace_git_mod_thx/project</value>
+		</variable>
+	</variableList>
+</projectDescription>
