@@ -83,7 +83,7 @@ public class mod_Thx extends BaseModMp
     public String getVersion()
     {
         //log("getVersion called");
-        return "Minecraft THX Helicopter Mod - mod_thx-mc110_v016";
+        return "Minecraft THX Helicopter Mod - mod_thx-mc123_v016";
     }
 
     @Override
