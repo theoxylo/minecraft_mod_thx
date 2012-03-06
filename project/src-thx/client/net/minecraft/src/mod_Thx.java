@@ -17,7 +17,7 @@ public class mod_Thx extends BaseModMp
 
         ThxConfig.loadProperties();
 
-        ModLoader.SetInGameHook(this, true, true);
+        ModLoader.setInGameHook(this, true, true);
 
         // register entity classes
         helicopter:
@@ -26,7 +26,7 @@ public class mod_Thx extends BaseModMp
             
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Helicopter with entity id " + entityId);
-            ModLoader.RegisterEntityID(ThxEntityHelicopter.class, "thxHelicopter", entityId);
+            ModLoader.registerEntityID(ThxEntityHelicopter.class, "thxHelicopter", entityId);
         }
         rocket:
         {
@@ -34,7 +34,7 @@ public class mod_Thx extends BaseModMp
             
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Rocket with entity id " + entityId);
-            ModLoader.RegisterEntityID(ThxEntityRocket.class, "thxRocket", entityId);
+            ModLoader.registerEntityID(ThxEntityRocket.class, "thxRocket", entityId);
         }
         missile:
         {
@@ -42,7 +42,7 @@ public class mod_Thx extends BaseModMp
             
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Missile with entity id " + entityId);
-            ModLoader.RegisterEntityID(ThxEntityMissile.class, "thxMissile", entityId);
+            ModLoader.registerEntityID(ThxEntityMissile.class, "thxMissile", entityId);
         }
 
         helicopterItem:
@@ -60,19 +60,19 @@ public class mod_Thx extends BaseModMp
                 item.setIconIndex(ModLoader.addOverride("/gui/items.png", "/thx/helicopter_icon.png"));
             }
             item.setItemName("thxHelicopter");
-            ModLoader.AddName(item, "THX Helicopter Prototype");
+            ModLoader.addName(item, "THX Helicopter Prototype");
 
             log("Adding recipe for helicopter");
             ItemStack itemStack = new ItemStack(item, 1, 1);
             Object[] recipe = new Object[] { " X ", "X X", "XXX", Character.valueOf('X'), Block.planks };
-            ModLoader.AddRecipe(itemStack, recipe);
+            ModLoader.addRecipe(itemStack, recipe);
         }
 
         log("Done loading " + getVersion());
     }
 
     @Override
-    public void AddRenderer(java.util.Map map)
+    public void addRenderer(java.util.Map map)
     {
         map.put(ThxEntityHelicopter.class, new ThxRender());
         map.put(ThxEntityRocket.class, new ThxRender());
