@@ -120,8 +120,8 @@ public abstract class ThxEntity extends ThxEntityBase
         //fire2 = packet.dataInt[3];
         
         int ownerId = packet.dataInt[4];
-        if (ownerId > 0) owner = (ThxEntityBase) ((WorldClient) worldObj).getEntityByID(ownerId);
-        log("owner " + owner);
+        if (ownerId > 0) owner = ((WorldClient) worldObj).getEntityByID(ownerId);
+        log("Entity owner: " + owner);
 
         serverPosX = MathHelper.floor_float(packet.dataFloat[0] * 32f);
         serverPosY = MathHelper.floor_float(packet.dataFloat[1] * 32f);

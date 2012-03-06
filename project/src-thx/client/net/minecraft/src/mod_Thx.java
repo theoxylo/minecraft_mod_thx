@@ -89,11 +89,13 @@ public class mod_Thx extends BaseModMp
     @Override
     public void HandlePacket(Packet230ModLoader packet)
     {
-        //log("Received packet type " + packet.packetType + ": " + packet);
-        
         int entityId = packet.dataInt[0];
-        Entity entity = ((WorldClient) ModLoader.getMinecraftInstance().theWorld).getEntityByID(entityId);
-        ((ThxEntity) entity).handleUpdatePacketFromServer(packet);
+        if (entityId < 1) log("Received non-entity packet type " + packet.packetType + ": " + packet);
+        else
+        {
+	        Entity entity = ((WorldClient) ModLoader.getMinecraftInstance().theWorld).getEntityByID(entityId);
+	        if (entity != null) ((ThxEntity) entity).handleUpdatePacketFromServer(packet);
+        }
     }
 
     int getNextItemId()
