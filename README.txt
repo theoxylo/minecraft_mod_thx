@@ -1,15 +1,15 @@
-Minecraft THX Helicopter Mod, v016, 20120216
+Minecraft THX Helicopter Mod, v016 for mc123, 20120306
 
 
 
 INTRODUCTION
 ------------
-This version is v016, for use with Minecraft and ModLoader 1.1, both single and multi-player
+This version is v016, for use with Minecraft and ModLoader 1.2.3, both single and multi-player.
 
 You can download the compiled binary zip file from GitHub:
 
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_m1.1_v016-bin.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_mc123_v016.zip
 
 
 Keep in mind that this is an early release of a mod still under construction. Even though no corruption issues have been reported, please back-up your worlds before using (always a good idea). 
@@ -24,17 +24,16 @@ Please visit the forum thread to discuss, report issues, leave feedback, etc:
 
 INSTALLATION
 ------------
-
-Install Risugami's ModLoader 1.1 and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
-
-    http://www.minecraftforum.net/index.php?showtopic=75440
-
-Then proceed below for the type of installation desired.
+There are 3 types of installation: single player, multiplayer client, and multiplayer server. Please see below for details:
 
 
 
     SINGLE PLAYER INSTALLATION
     --------------------------
+
+    Install Risugami's ModLoader 1.2.3 and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
+
+        http://www.minecraftforum.net/index.php?showtopic=75440
 
     Copy the mod SSP zip file to your '.minecraft/mods' directory and start Minecraft normally.
 
@@ -45,11 +44,15 @@ Then proceed below for the type of installation desired.
     MULTIPLAYER CLIENT INSTALLATION
     -------------------------------
 
-    Install Flan's ModLoaderMp 1.1 v2 client and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
+    Install Risugami's ModLoader 1.2.3 and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
 
-        http://www.minecraftforum.net/index.php?showtopic=182918
+        http://www.minecraftforum.net/index.php?showtopic=75440
 
-    Then copy the client thx mod class files from the above download.
+    Install SDK's ModLoaderMp 1.2.3v1 client and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
+
+        http://www.minecraftforum.net/index.php?showtopic=86765
+
+    Then copy the client THX mod class files from the above download.
 
 
 
@@ -57,11 +60,11 @@ Then proceed below for the type of installation desired.
     MULTIPLAYER SERVER INSTALLATION
     -------------------------------
 
-    Install Flan's ModLoaderMp 1.1 v2.1 server and test. This involves adding the class files to your minecraft_server.jar file and NOT deleting META-INF. Please visit the official topic for detailed instructions and support:
+    Install SDK's ModLoaderMp 1.2.3v1 server and test. This involves adding the class files to your minecraft_server.jar file and NOT deleting META-INF. Please visit the official topic for detailed instructions and support:
 
-        http://www.minecraftforum.net/index.php?showtopic=182918
+        http://www.minecraftforum.net/index.php?showtopic=86765
 
-    Then copy the server thx mod class files from the above download. The THX mod will replace some of the ModLoaderMp files, but comapatibility with existing mods should be preserved.
+    Then copy the server THX mod class files from the above download. The THX mod will replace some of the ModLoaderMp files, but comapatibility with existing mods should be preserved.
 
 
 

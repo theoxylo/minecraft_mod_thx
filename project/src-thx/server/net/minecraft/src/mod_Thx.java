@@ -18,7 +18,7 @@ public class mod_Thx extends BaseModMp
 
         ThxConfig.loadProperties();
 
-        ModLoader.SetInGameHook(this, true, true);
+        ModLoader.setInGameHook(this, true, true);
 
         log("enabling flight on server");
         ModLoader.getMinecraftServerInstance().allowFlight = true;
@@ -30,31 +30,31 @@ public class mod_Thx extends BaseModMp
         // register entity classes
         helicopter:
         {
-            ModLoaderMp.RegisterEntityTrackerEntry(ThxEntityHelicopter.class, 75);
-            ModLoaderMp.RegisterEntityTracker(ThxEntityHelicopter.class, distance, frequency);
+            ModLoaderMp.registerEntityTrackerEntry(ThxEntityHelicopter.class, 75);
+            ModLoaderMp.registerEntityTracker(ThxEntityHelicopter.class, distance, frequency);
 
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Helicopter with entity id " + entityId);
-            ModLoader.RegisterEntityID(ThxEntityHelicopter.class, "thxHelicopter", entityId);
+            ModLoader.registerEntityID(ThxEntityHelicopter.class, "thxHelicopter", entityId);
         }
         rocket:
         {
             boolean hasOwner = true;
-            ModLoaderMp.RegisterEntityTrackerEntry(ThxEntityRocket.class, hasOwner, 76);
-            ModLoaderMp.RegisterEntityTracker(ThxEntityRocket.class, distance, frequency);
+            ModLoaderMp.registerEntityTrackerEntry(ThxEntityRocket.class, hasOwner, 76);
+            ModLoaderMp.registerEntityTracker(ThxEntityRocket.class, distance, frequency);
             
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Rocket with entity id " + entityId);
-            ModLoader.RegisterEntityID(ThxEntityMissile.class, "thxRocket", entityId);
+            ModLoader.registerEntityID(ThxEntityMissile.class, "thxRocket", entityId);
         }
         missile:
         {
-            ModLoaderMp.RegisterEntityTrackerEntry(ThxEntityMissile.class, 77);
-            ModLoaderMp.RegisterEntityTracker(ThxEntityMissile.class, distance, frequency);
+            ModLoaderMp.registerEntityTrackerEntry(ThxEntityMissile.class, 77);
+            ModLoaderMp.registerEntityTracker(ThxEntityMissile.class, distance, frequency);
             
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Missile with entity id " + entityId);
-            ModLoader.RegisterEntityID(ThxEntityMissile.class, "thxMissile", entityId);
+            ModLoader.registerEntityID(ThxEntityMissile.class, "thxMissile", entityId);
         }
 
         helicopterItem:
@@ -77,7 +77,7 @@ public class mod_Thx extends BaseModMp
             log("Adding recipe for helicopter");
             ItemStack itemStack = new ItemStack(item, 1, 1);
             Object[] recipe = new Object[] { " X ", "X X", "XXX", Character.valueOf('X'), Block.planks };
-            ModLoader.AddRecipe(itemStack, recipe);
+            ModLoader.addRecipe(itemStack, recipe);
         }
 
         log("Done loading " + getVersion());
@@ -91,7 +91,7 @@ public class mod_Thx extends BaseModMp
     }
 
     @Override
-    public void HandlePacket(Packet230ModLoader packet, EntityPlayerMP player)
+    public void handlePacket(Packet230ModLoader packet, EntityPlayerMP player)
     {
         // log("Received packet type " + packet.packetType + " from player " + player);
         // log("player.ridingEntity: " + player.ridingEntity); // TODO: coming up null

@@ -22,7 +22,7 @@ public class mod_Thx extends BaseModMp
         // register entity classes
         helicopter:
         {
-            ModLoaderMp.RegisterNetClientHandlerEntity(ThxEntityHelicopter.class, 75);
+            ModLoaderMp.registerNetClientHandlerEntity(ThxEntityHelicopter.class, 75);
             
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Helicopter with entity id " + entityId);
@@ -30,7 +30,7 @@ public class mod_Thx extends BaseModMp
         }
         rocket:
         {
-            ModLoaderMp.RegisterNetClientHandlerEntity(ThxEntityRocket.class, 76);
+            ModLoaderMp.registerNetClientHandlerEntity(ThxEntityRocket.class, 76);
             
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Rocket with entity id " + entityId);
@@ -38,7 +38,7 @@ public class mod_Thx extends BaseModMp
         }
         missile:
         {
-            ModLoaderMp.RegisterNetClientHandlerEntity(ThxEntityMissile.class, 77);
+            ModLoaderMp.registerNetClientHandlerEntity(ThxEntityMissile.class, 77);
             
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Missile with entity id " + entityId);
@@ -87,7 +87,7 @@ public class mod_Thx extends BaseModMp
     }
 
     @Override
-    public void HandlePacket(Packet230ModLoader packet)
+    public void handlePacket(Packet230ModLoader packet)
     {
         int entityId = packet.dataInt[0];
         if (entityId < 1) log("Received non-entity packet type " + packet.packetType + ": " + packet);

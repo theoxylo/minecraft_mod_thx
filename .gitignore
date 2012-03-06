@@ -1,2 +1,3 @@
-project/temp/
+project_client/temp/
+project_server/temp/
 .metadata/

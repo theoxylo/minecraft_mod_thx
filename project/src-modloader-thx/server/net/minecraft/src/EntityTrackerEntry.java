@@ -330,7 +330,7 @@ public class EntityTrackerEntry
             System.out.println("Fetching addPacket for removed entity");
         }
 
-        EntityTrackerEntry2 entitytrackerentry2 = ModLoaderMp.HandleEntityTrackerEntries(trackedEntity);
+        EntityTrackerEntry2 entitytrackerentry2 = ModLoaderMp.handleEntityTrackerEntries(trackedEntity);
 
         if (entitytrackerentry2 != null)
         {
@@ -363,7 +363,7 @@ public class EntityTrackerEntry
                 if ((net.minecraft.src.Entity.class).isAssignableFrom(field.getType()))
                 {
                     Entity entity1 = (Entity)field.get(trackedEntity);
-                    return new Packet23VehicleSpawn(trackedEntity, entitytrackerentry2.entityId, entity1 != null ? entity1.entityId : trackedEntity.entityId);
+                    return new Packet23VehicleSpawn(trackedEntity, entitytrackerentry2.entityId, entity1 == null ? trackedEntity.entityId : entity1.entityId);
                 }
                 else
                 {
@@ -376,7 +376,7 @@ public class EntityTrackerEntry
             catch (Exception exception)
             {
                 ModLoader.getLogger().throwing("EntityTrackerEntry", "getSpawnPacket", exception);
-                ModLoader.ThrowException(String.format("Error sending spawn packet for entity of type %s.", new Object[]
+                ModLoader.throwException(String.format("Error sending spawn packet for entity of type %s.", new Object[]
                         {
                             trackedEntity.getClass()
                         }), exception);

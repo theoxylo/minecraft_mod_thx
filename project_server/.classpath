@@ -4,6 +4,6 @@
 	<classpathentry kind="src" path="src-thx_common"/>
 	<classpathentry kind="src" path="src-thx_server"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/Dropbox/minecraft/reference_jars/00_mc_123/ML_MP/minecraft_server-dev123-lib.jar" sourcepath="C:/Dropbox/minecraft/reference_jars/00_mc_123/ML_MP/minecraft_server-dev123-src.zip"/>
+	<classpathentry kind="lib" path="C:/Dropbox/minecraft/reference_jars/00_mc_123/ML_MP_SDK/minecraft_server-dev123-lib.jar" sourcepath="C:/Dropbox/minecraft/reference_jars/00_mc_123/ML_MP_SDK/minecraft_server-dev123-src.zip"/>
 	<classpathentry kind="output" path="temp"/>
 </classpath>
