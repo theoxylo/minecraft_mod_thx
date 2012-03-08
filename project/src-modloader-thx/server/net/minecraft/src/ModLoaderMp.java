@@ -10,7 +10,7 @@ import net.minecraft.server.MinecraftServer;
 public class ModLoaderMp
 {
     public static final String NAME = "ModLoaderMP";
-    public static final String VERSION = "1.2.3v1";
+    public static final String VERSION = "1.2.3v3";
     private static boolean hasInit = false;
     private static Map entityTrackerMap = new HashMap();
     private static Map entityTrackerEntryMap = new HashMap();
@@ -339,7 +339,7 @@ public class ModLoaderMp
             return;
         }
 
-        log("ModLoaderMP 1.2.3v1 Initialized");
+        log("ModLoaderMP 1.2.3v3 Initialized");
     }
 
     private static void sendPacketTo(EntityPlayerMP entityplayermp, Packet230ModLoader packet230modloader)

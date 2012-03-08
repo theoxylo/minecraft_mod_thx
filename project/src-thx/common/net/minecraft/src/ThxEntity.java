@@ -386,4 +386,40 @@ public abstract class ThxEntity extends Entity
     {
         return d < 128.0 * 128.0;
     }
+
+    public String packetToString(Packet230ModLoader p)
+    {
+        StringBuffer s = new StringBuffer();
+        s.append("Packet230 {");
+        s.append("type: ").append(p.packetType).append(", ");
+        s.append("modId: ").append(p.modId).append(", ");
+
+        for (int i = 0; p.dataInt != null && i < p.dataInt.length; i++)
+        {
+            s.append("dataInt[" + i + "]: ");
+            s.append(p.dataInt[i]);
+            s.append(", ");
+        }
+        for (int i = 0; p.dataFloat != null && i < p.dataFloat.length; i++)
+        {
+            s.append("dataFloat[" + i + "]: ");
+            s.append(p.dataFloat[i]);
+            s.append(", ");
+        }
+        for (int i = 0; p.dataDouble != null && i < p.dataDouble.length; i++) 
+        {
+            s.append("dataDouble[" + i + "]: "); 
+            s.append(p.dataDouble[i]); 
+            s.append(", "); 
+        }
+        for (int i = 0; p.dataString != null && i < p.dataString.length; i++)
+        {
+            s.append("dataString[" + i + "]: ");
+            s.append(p.dataString[i]);
+            s.append(", ");
+        }
+        s.append("}");
+
+        return s.toString();
+    }
 }

@@ -9,7 +9,7 @@ import net.minecraft.client.Minecraft;
 public class ModLoaderMp
 {
     public static final String NAME = "ModLoaderMP";
-    public static final String VERSION = "1.2.3v1";
+    public static final String VERSION = "1.2.3v3";
     private static boolean hasInit = false;
     private static boolean packet230Received = false;
     private static Map netClientHandlerEntityMap = new HashMap();
@@ -43,8 +43,6 @@ public class ModLoaderMp
 
         if (packet230modloader.modId == "ModLoaderMP".hashCode())
         {
-            log("Received 'ModLoaderMP' packet: " + packet230modloader);
-
             switch (packet230modloader.packetType)
             {
                 case 0:
@@ -58,8 +56,6 @@ public class ModLoaderMp
         }
         else if (packet230modloader.modId == "Spawn".hashCode())
         {
-            //log("Received 'Spawn' hash packet: " + packet230modloader);
-
             NetClientHandlerEntity netclienthandlerentity = handleNetClientHandlerEntities(packet230modloader.packetType);
 
             if (netclienthandlerentity != null && (net.minecraft.src.ISpawnable.class).isAssignableFrom(netclienthandlerentity.entityClass))
@@ -109,7 +105,7 @@ public class ModLoaderMp
                 modsById.put(new Integer(packet230modloader.modId), basemodmp);
 
                 basemodmp.handlePacket(packet230modloader);
-                return;
+                break;
             }
         }
     }
@@ -303,7 +299,7 @@ public class ModLoaderMp
             ModLoader.throwException("An impossible error has occurred!", securityexception);
         }
 
-        log("ModLoaderMP 1.2.3v1 Initialized");
+        log("ModLoaderMP 1.2.3v3 Initialized");
     }
 
     private static void handleModCheck(Packet230ModLoader packet230modloader)

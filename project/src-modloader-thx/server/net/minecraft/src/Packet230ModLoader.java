@@ -11,16 +11,16 @@ public class Packet230ModLoader extends Packet
     public int packetType;
     public int dataInt[];
     public float dataFloat[];
-    public String dataString[];
     public double dataDouble[];
+    public String dataString[];
     private static Map playerMap = new HashMap();
 
     public Packet230ModLoader()
     {
         dataInt = new int[0];
         dataFloat = new float[0];
-        dataString = new String[0];
         dataDouble = new double[0];
+        dataString = new String[0];
     }
 
     /**
@@ -34,7 +34,10 @@ public class Packet230ModLoader extends Packet
 
         if (i > 65535)
         {
-            throw new IOException(String.format("Integer data size of %d is higher than the max (%d).", new Object[] { Integer.valueOf(i), Integer.valueOf(65535) }));
+            throw new IOException(String.format("Integer data size of %d is higher than the max (%d).", new Object[]
+                    {
+                        Integer.valueOf(i), Integer.valueOf(65535)
+                    }));
         }
 
         dataInt = new int[i];
@@ -48,7 +51,10 @@ public class Packet230ModLoader extends Packet
 
         if (k > 65535)
         {
-            throw new IOException(String.format("Float data size of %d is higher than the max (%d).", new Object[] { Integer.valueOf(k), Integer.valueOf(65535) }));
+            throw new IOException(String.format("Float data size of %d is higher than the max (%d).", new Object[]
+                    {
+                        Integer.valueOf(k), Integer.valueOf(65535)
+                    }));
         }
 
         dataFloat = new float[k];
@@ -62,7 +68,10 @@ public class Packet230ModLoader extends Packet
 
         if (i1 > 65535)
         {
-            throw new IOException(String.format("Double data size of %d is higher than the max (%d).", new Object[] { Integer.valueOf(i1), Integer.valueOf(65535) }));
+            throw new IOException(String.format("Double data size of %d is higher than the max (%d).", new Object[]
+                    {
+                        Integer.valueOf(i1), Integer.valueOf(65535)
+                    }));
         }
 
         dataDouble = new double[i1];
@@ -76,7 +85,10 @@ public class Packet230ModLoader extends Packet
 
         if (k1 > 65535)
         {
-            throw new IOException(String.format("String data size of %d is higher than the max (%d).", new Object[] { Integer.valueOf(k1), Integer.valueOf(65535) }));
+            throw new IOException(String.format("String data size of %d is higher than the max (%d).", new Object[]
+                    {
+                        Integer.valueOf(k1), Integer.valueOf(65535)
+                    }));
         }
 
         dataString = new String[k1];
@@ -87,14 +99,15 @@ public class Packet230ModLoader extends Packet
 
             if (i2 > 65535)
             {
-                throw new IOException(String.format("String length of %d is higher than the max (%d).", new Object[] { Integer.valueOf(i2), Integer.valueOf(65535) }));
+                throw new IOException(String.format("String length of %d is higher than the max (%d).", new Object[]
+                        {
+                            Integer.valueOf(i2), Integer.valueOf(65535)
+                        }));
             }
 
             byte abyte0[] = new byte[i2];
 
-            for (int j2 = 0; j2 < i2; j2 += datainputstream.read(abyte0, j2, i2 - j2))
-            {
-            }
+            for (int j2 = 0; j2 < i2; j2 += datainputstream.read(abyte0, j2, i2 - j2)) { }
 
             dataString[l1] = new String(abyte0);
         }
@@ -107,22 +120,34 @@ public class Packet230ModLoader extends Packet
     {
         if (dataInt != null && dataInt.length > 65535)
         {
-            throw new IOException(String.format("Integer data size of %d is higher than the max (%d).", new Object[] { Integer.valueOf(dataInt.length), Integer.valueOf(65535) }));
+            throw new IOException(String.format("Integer data size of %d is higher than the max (%d).", new Object[]
+                    {
+                        Integer.valueOf(dataInt.length), Integer.valueOf(65535)
+                    }));
         }
 
         if (dataFloat != null && dataFloat.length > 65535)
         {
-            throw new IOException(String.format("Float data size of %d is higher than the max (%d).", new Object[] { Integer.valueOf(dataFloat.length), Integer.valueOf(65535) }));
+            throw new IOException(String.format("Float data size of %d is higher than the max (%d).", new Object[]
+                    {
+                        Integer.valueOf(dataFloat.length), Integer.valueOf(65535)
+                    }));
         }
 
         if (dataDouble != null && dataDouble.length > 65535)
         {
-            throw new IOException(String.format("Double data size of %d is higher than the max (%d).", new Object[] { Integer.valueOf(dataDouble.length), Integer.valueOf(65535) }));
+            throw new IOException(String.format("Double data size of %d is higher than the max (%d).", new Object[]
+                    {
+                        Integer.valueOf(dataDouble.length), Integer.valueOf(65535)
+                    }));
         }
 
         if (dataString != null && dataString.length > 65535)
         {
-            throw new IOException(String.format("String data size of %d is higher than the max (%d).", new Object[] { Integer.valueOf(dataString.length), Integer.valueOf(65535) }));
+            throw new IOException(String.format("String data size of %d is higher than the max (%d).", new Object[]
+                    {
+                        Integer.valueOf(dataString.length), Integer.valueOf(65535)
+                    }));
         }
 
         dataoutputstream.writeInt(modId);
@@ -155,6 +180,7 @@ public class Packet230ModLoader extends Packet
                 dataoutputstream.writeFloat(dataFloat[j]);
             }
         }
+
         if (dataDouble == null)
         {
             dataoutputstream.writeInt(0);
@@ -177,15 +203,18 @@ public class Packet230ModLoader extends Packet
         {
             dataoutputstream.writeInt(dataString.length);
 
-            for (int k = 0; k < dataString.length; k++)
+            for (int l = 0; l < dataString.length; l++)
             {
-                if (dataString[k].length() > 65535)
+                if (dataString[l].length() > 65535)
                 {
-                    throw new IOException(String.format("String length of %d is higher than the max (%d).", new Object[] { Integer.valueOf(dataString[k].length()), Integer.valueOf(65535) }));
+                    throw new IOException(String.format("String length of %d is higher than the max (%d).", new Object[]
+                            {
+                                Integer.valueOf(dataString[l].length()), Integer.valueOf(65535)
+                            }));
                 }
 
-                dataoutputstream.writeInt(dataString[k].length());
-                dataoutputstream.writeBytes(dataString[k]);
+                dataoutputstream.writeInt(dataString[l].length());
+                dataoutputstream.writeBytes(dataString[l]);
             }
         }
     }
@@ -199,13 +228,13 @@ public class Packet230ModLoader extends Packet
 
         if (playerMap.containsKey(nethandler))
         {
-            entityplayermp = (EntityPlayerMP) playerMap.get(nethandler);
+            entityplayermp = (EntityPlayerMP)playerMap.get(nethandler);
         }
         else if (nethandler instanceof NetServerHandler)
         {
             try
             {
-                entityplayermp = (EntityPlayerMP) ModLoader.getPrivateValue(net.minecraft.src.NetServerHandler.class, nethandler, 4);
+                entityplayermp = (EntityPlayerMP)ModLoader.getPrivateValue(net.minecraft.src.NetServerHandler.class, nethandler, 4);
 
                 if (entityplayermp != null)
                 {
@@ -247,42 +276,5 @@ public class Packet230ModLoader extends Packet
         }
 
         return i;
-    }
-
-    public String toString()
-    {
-        StringBuffer s = new StringBuffer();
-        s.append(getClass().getSimpleName()).append(" {");
-        s.append("type: ").append(packetType).append(", ");
-        s.append("modId: ").append(modId).append(", ");
-        s.append("getPacketId(): ").append(getPacketId()).append(", ");
-
-        for (int i = 0; dataInt != null && i < dataInt.length; i++)
-        {
-            s.append("dataInt[" + i + "]: ");
-            s.append(dataInt[i]);
-            s.append(", ");
-        }
-        for (int i = 0; dataFloat != null && i < dataFloat.length; i++)
-        {
-            s.append("dataFloat[" + i + "]: ");
-            s.append(dataFloat[i]);
-            s.append(", ");
-        }
-        for (int i = 0; dataDouble != null && i < dataDouble.length; i++) 
-        {
-            s.append("dataDouble[" + i + "]: "); 
-            s.append(dataDouble[i]); 
-            s.append(", "); 
-        }
-        for (int i = 0; dataString != null && i < dataString.length; i++)
-        {
-            s.append("dataString[" + i + "]: ");
-            s.append(dataString[i]);
-            s.append(", ");
-        }
-        s.append("}");
-
-        return s.toString();
     }
 }
