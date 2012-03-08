@@ -9,6 +9,8 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
     {
         super(world);
         
+	    helper = new ThxEntityHelperServer(this);
+	    
         setSize(1.8f, 2f);
         yOffset = .6f;
         NET_PACKET_TYPE = 75;
@@ -45,6 +47,11 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
         }
 
         super.onUpdate(); // ThxEntity.onUpdate will apply latest client packet if there is one
+
+        helper.applyUpdatePacketFromClient();    
+
+        updateRotation();
+        updateVectors();
         
         if (riddenByEntity != null)
         {
@@ -182,4 +189,9 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
 	    }
     }
     
+    /* from ISpawnable interface */
+    public Packet230ModLoader getSpawnPacket()
+    {
+        return helper.getSpawnPacket();
+    }
 }

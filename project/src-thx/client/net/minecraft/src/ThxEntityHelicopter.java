@@ -8,6 +8,8 @@ import org.lwjgl.input.Keyboard;
 
 public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISpawnable
 {    
+    Minecraft minecraft;
+    
     // controls and options
     // set from mod_thx.properties
     static int KEY_ASCEND = Keyboard.getKeyIndex(ThxConfig.getProperty("key_ascend"));
@@ -78,10 +80,11 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
     public ThxEntityHelicopter(World world)
     {
         super(world);
+        
+        helper = new ThxEntityHelperClient(this, new ThxModelHelicopter());
 
-        model = new ThxModelHelicopter();
-        //model = new ThxModelHelicopterAlt();
-
+	    minecraft = ModLoader.getMinecraftInstance();
+	    
         setSize(1.8f, 2f);
 
         yOffset = .6f;
@@ -110,6 +113,11 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
     public void onUpdate()
     {
         super.onUpdate();
+		
+		helper.applyUpdatePacketFromServer();
+
+        updateRotation();
+        updateVectors();
         
         // for auto-heal: 
         if (damage > 0f) damage -= deltaTime; // heal rate: 1 pt / sec
@@ -146,12 +154,9 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
             worldObj.playSoundAtEntity(this, "random.click",  .4f, .7f); // volume, pitch
         }
         
-        
-        Minecraft minecraft = ModLoader.getMinecraftInstance();
-        
         // adjust model rotor speed to match old throttle
         float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
-        ((ThxModelHelicopter) model).rotorSpeed = power / 2f + .7f;
+        ((ThxModelHelicopter) helper.model).rotorSpeed = power / 2f + .7f;
         
         if (worldObj.isRemote && riddenByEntity != null && !minecraft.thePlayer.equals(riddenByEntity))
         {
@@ -172,7 +177,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
         {
             // unattended helicopter
             
-	        ((ThxModelHelicopter) model).rotorSpeed = 0f;
+	        ((ThxModelHelicopter) helper.model).rotorSpeed = 0f;
 	        
             onUpdateVacant(); // effective for single player only. for smp, handled by server
         }
@@ -182,8 +187,8 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
             
         if (minecraft.thePlayer.equals(riddenByEntity))
         {
-            sendUpdatePacketToServer();
-            //if (ticksExisted % UPDATE_RATE == 0) sendUpdatePacketToServer();
+            //if (ticksExisted % UPDATE_RATE == 0)
+            helper.sendUpdatePacketToServer(getUpdatePacket());
         }
     }
     
@@ -257,19 +262,20 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
                 lookPitchZeroLevel = 0f;
 
                 // show status message
-                minecraft.ingameGUI.addChatMessage("Look-Pitch:  ON, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
+                helper.addChatMessage("Look-Pitch:  ON, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
             }
             else
             {
                 // turn off cockpit
                 lookPitch = false;
-                minecraft.ingameGUI.addChatMessage("Look-Pitch: OFF, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
+                helper.addChatMessage("Look-Pitch: OFF, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
             }
         }
         else if (Keyboard.isKeyDown(KEY_HUD_MODE) && hudModeToggleDelay < 0f && pilot != null)
         {
             hudModeToggleDelay = .5f;
                 
+            ThxModel model = (ThxModel) helper.model;
             if (model.visible)
             {
                 // change to 1st-person and hide model
@@ -279,6 +285,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
             else
             {
                 model.visible = true;
+	            helper.addChatMessage("Cam 1, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
             }
         }
         else if (minecraft.gameSettings.thirdPersonView == 2) // must hold look back key, not a toggle, so cancel here
@@ -287,7 +294,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
         }
             
         // view could be switched by player using F5
-        if (minecraft.gameSettings.thirdPersonView != 0) model.visible = true;
+        if (minecraft.gameSettings.thirdPersonView != 0) ((ThxModel) helper.model).visible = true;
 
         exitDelay -= deltaTime;
         if (Keyboard.isKeyDown(KEY_EXIT) && exitDelay < 0f && pilot != null)
@@ -619,8 +626,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
     {
         if (super.handleCollisions())
         {
-	        Minecraft minecraft = ModLoader.getMinecraftInstance();
-	        minecraft.ingameGUI.addChatMessage("PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
+	        helper.addChatMessage(this + " - Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
 	        return true;
         }
         return false;
@@ -718,7 +724,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
     {
         throttle *= .6; // quickly zero throttle
         
-        model.visible = true;
+        ((ThxModel) helper.model).visible = true;
 
         if (onGround) // very slow on ground
         {
@@ -791,8 +797,8 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
         }
                
         takeDamage((float) i * 3f);
-        minecraft.ingameGUI.addChatMessage("PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
-        
+        helper.addChatMessage(this + " - Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
+
         timeSinceAttacked = .5f; // sec delay before this entity can be attacked again
         
         setBeenAttacked();
@@ -891,7 +897,7 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
         
         if (riddenByEntity == null) return;
         
-        model.visible = true; // hard to find otherwise!
+        ((ThxModel) helper.model).visible = true; // hard to find otherwise!
         
         // clear pitch speed to prevent judder
         rotationPitchSpeed = 0f;
@@ -961,6 +967,12 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
         }
         
         super.fireMissile();
+    }
+    
+    /* from ISpawnable interface */
+    public void spawn(Packet230ModLoader packet)
+    {
+        helper.spawn(packet);
     }
 }
 

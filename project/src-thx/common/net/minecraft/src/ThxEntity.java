@@ -2,7 +2,7 @@ package net.minecraft.src;
 
 import java.util.List;
 
-public abstract class ThxEntityBase extends Entity
+public abstract class ThxEntity extends Entity
 {
     boolean plog = true; // enable periodic logging for rapidly repeating events
 
@@ -35,6 +35,9 @@ public abstract class ThxEntityBase extends Entity
     Vector3 side;
     Vector3 up;
     
+    ThxEntityHelper helper;
+    Packet230ModLoader latestUpdatePacket;
+
     int NET_PACKET_TYPE;
     float damage;
     int fire1;
@@ -75,7 +78,7 @@ public abstract class ThxEntityBase extends Entity
     float timeSinceAttacked;
     float timeSinceCollided;
     
-    public ThxEntityBase(World world)
+    public ThxEntity(World world)
     {
         super(world);
 
@@ -296,10 +299,10 @@ public abstract class ThxEntityBase extends Entity
                 if (entity.equals(riddenByEntity)) continue;
                 if (!entity.canBeCollidedWith()) continue;
                         
-                if (entity instanceof ThxEntityBase)
+                if (entity instanceof ThxEntity)
                 {
-                    Entity otherOwner = ((ThxEntityBase) entity).owner;
-                    if (equals(otherOwner)) 
+                    Entity otherOwner = ((ThxEntity) entity).owner;
+                    if (otherOwner != null && (equals(otherOwner.ridingEntity) || equals(otherOwner))) 
                     {
                         log("ignoring collision with own thx child");
                         continue;
@@ -514,7 +517,7 @@ public abstract class ThxEntityBase extends Entity
         float pitch = rotationPitch + 10f;
                 
         ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
-        newRocket.owner = this;
+        newRocket.owner = riddenByEntity != null ? riddenByEntity : this;
         worldObj.spawnEntityInWorld(newRocket);
     }
     
@@ -529,7 +532,7 @@ public abstract class ThxEntityBase extends Entity
         float pitch = riddenByEntity != null ? riddenByEntity.rotationPitch : rotationPitch;
                 
         ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
-        newMissile.owner = this;
+        newMissile.owner = riddenByEntity != null ? riddenByEntity : this;
         worldObj.spawnEntityInWorld(newMissile);
     }
 
@@ -580,5 +583,10 @@ public abstract class ThxEntityBase extends Entity
         }
 
         entityDropItem(mapStack, .5f);
+    }
+    
+    public boolean isInRangeToRenderDist(double d)
+    {
+        return d < 128.0 * 128.0;
     }
 }

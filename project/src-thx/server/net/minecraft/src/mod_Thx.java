@@ -96,10 +96,10 @@ public class mod_Thx extends BaseModMp
         // log("Received packet type " + packet.packetType + " from player " + player);
         // log("player.ridingEntity: " + player.ridingEntity); // TODO: coming up null
 
-        if (player.ridingEntity instanceof ThxEntity)
+        if (player.ridingEntity instanceof IClientDriven)
         {
             // log("Packet is for helicopter update");
-            ((ThxEntity) player.ridingEntity).handleUpdatePacketFromClient(packet);
+            ((ThxEntity) player.ridingEntity).latestUpdatePacket = packet;
         }
     }
 

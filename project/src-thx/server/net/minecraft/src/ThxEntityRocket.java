@@ -18,6 +18,9 @@ public class ThxEntityRocket  extends ThxEntity implements ISpawnable
 	public ThxEntityRocket(World world)
     {
         super(world);
+        
+	    helper = new ThxEntityHelperServer(this);
+	    
         xTile = -1;
         yTile = -1;
         zTile = -1;
@@ -37,11 +40,11 @@ public class ThxEntityRocket  extends ThxEntity implements ISpawnable
     }
     */
 
-    public ThxEntityRocket(Entity entity, double x, double y, double z, double dx, double dy, double dz, float yaw, float pitch)
+    public ThxEntityRocket(Entity owner, double x, double y, double z, double dx, double dy, double dz, float yaw, float pitch)
     {
-        this(entity.worldObj);
+        this(owner.worldObj);
         
-        owner = entity;
+        this.owner = owner;
         
         setPositionAndRotation(x, y, z, yaw, pitch);
         
@@ -103,6 +106,11 @@ public class ThxEntityRocket  extends ThxEntity implements ISpawnable
         }
 	        
         super.onUpdate();
+
+        helper.applyUpdatePacketFromClient();    
+
+        updateRotation();
+        updateVectors();
         
         if(inGround)
         {
@@ -227,5 +235,10 @@ public class ThxEntityRocket  extends ThxEntity implements ISpawnable
         return 0.0F;
     }
 
+    /* from ISpawnable interface */
+    public Packet230ModLoader getSpawnPacket()
+    {
+        return helper.getSpawnPacket();
+    }
 }
 

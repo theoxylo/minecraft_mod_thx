@@ -21,6 +21,16 @@ public class ThxEntityRocket  extends ThxEntity implements ISpawnable
 	public ThxEntityRocket(World world)
     {
         super(world);
+        
+        ThxModel model = new ThxModelMissile();
+        overrideMissileModel:
+        {
+	        model.renderTexture = "/thx/rocket.png";
+	        model.rotationRollSpeed = 90f; // units?
+        }
+        
+        helper = new ThxEntityHelperClient(this, model);
+        
         xTile = -1;
         yTile = -1;
         zTile = -1;
@@ -30,10 +40,6 @@ public class ThxEntityRocket  extends ThxEntity implements ISpawnable
         setSize(0.5f, 0.5f);
         
         NET_PACKET_TYPE = 76;
-        
-        model = new ThxModelMissile();
-        model.renderTexture = "/thx/rocket.png";
-        model.rotationRollSpeed = 90f; // units?
     }
 
 	/* only needed if using Packet23VehicleSpawn instead of ISpawnable
@@ -44,11 +50,11 @@ public class ThxEntityRocket  extends ThxEntity implements ISpawnable
     }
     */
     
-    public ThxEntityRocket(Entity entity, double x, double y, double z, double dx, double dy, double dz, float yaw, float pitch)
+    public ThxEntityRocket(Entity owner, double x, double y, double z, double dx, double dy, double dz, float yaw, float pitch)
     {
-        this(entity.worldObj);
+        this(owner.worldObj);
         
-        owner = entity;
+        this.owner = owner;
         
         setPositionAndRotation(x, y, z, yaw, pitch);
         
@@ -110,6 +116,11 @@ public class ThxEntityRocket  extends ThxEntity implements ISpawnable
         }
 	        
         super.onUpdate();
+		
+		helper.applyUpdatePacketFromServer();
+
+        updateRotation();
+        updateVectors();
         
         
         if (!launched)
@@ -212,7 +223,8 @@ public class ThxEntityRocket  extends ThxEntity implements ISpawnable
             
             // for hit markers
             //worldObj.spawnParticle("flame", posX, posY, posZ, 0.0D, 0.0D, 0.0D);
-            worldObj.playSoundAtEntity(this, "random.explode", .3f, 1f);
+            worldObj.playSoundAtEntity(this, "random.explode", .7f, .5f + (float) Math.random() * .2f);
+            //worldObj.playSoundAtEntity(this, "random.explode", .3f, 1f);
 
 	        // kick up some debris if we hit a block, but only works for top surface
 	        int i = MathHelper.floor_double(posX);
@@ -275,6 +287,12 @@ public class ThxEntityRocket  extends ThxEntity implements ISpawnable
         zTile = nbttagcompound.getShort("zTile");
         inTile = nbttagcompound.getByte("inTile") & 0xff;
         inGround = nbttagcompound.getByte("inGround") == 1;
+    }
+    
+    /* from ISpawnable interface */
+    public void spawn(Packet230ModLoader packet)
+    {
+        helper.spawn(packet);
     }
 }
 

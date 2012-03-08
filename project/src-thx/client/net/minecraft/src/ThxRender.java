@@ -22,41 +22,43 @@ public class ThxRender extends Render
             return;
         }
         
+        ThxModel model = (ThxModel) entity.helper.model;
+        
         GL11.glPushMatrix();
         
         // following translation is relative to player position
         GL11.glTranslatef((float)x, (float)y, (float)z);
         
         
-        entity.model.paused = entity.paused;
+        model.paused = entity.helper.isPaused();
         
-        if (entity.prevTime > entity.model.entityPrevTime)
+        if (entity.prevTime > model.entityPrevTime)
         {
             // entity was updated (usually at ~20 fps)
-            entity.model.entityPrevTime = entity.prevTime;
+            model.entityPrevTime = entity.prevTime;
 	        
-	        entity.model.rotationYaw = entity.rotationYaw;
-	        entity.model.rotationYawSpeed = entity.rotationYawSpeed;
+	        model.rotationYaw = entity.rotationYaw;
+	        model.rotationYawSpeed = entity.rotationYawSpeed;
 	        
-	        entity.model.rotationPitch = entity.rotationPitch;
-	        entity.model.rotationPitchSpeed = entity.rotationPitchSpeed;
+	        model.rotationPitch = entity.rotationPitch;
+	        model.rotationPitchSpeed = entity.rotationPitchSpeed;
 	        
-	        entity.model.rotationRoll  = entity.rotationRoll;
-	        entity.model.rotationRollSpeed  = entity.rotationRollSpeed;
+	        model.rotationRoll  = entity.rotationRoll;
+	        model.rotationRollSpeed  = entity.rotationRollSpeed;
         }
-        else if (entity.model.prevTime - entity.prevTime > 100000000) // .1 sec
+        else if (model.prevTime - entity.prevTime > 100000000) // .1 sec
         {
             // entity is not updating, game may be paused
-	        entity.model.rotationYawSpeed = 0f;
-	        entity.model.rotationPitchSpeed = 0f;
-	        entity.model.rotationRollSpeed = 0f;
+	        model.rotationYawSpeed = 0f;
+	        model.rotationPitchSpeed = 0f;
+	        model.rotationRollSpeed = 0f;
         }
         
         
-        int texture = renderManager.renderEngine.getTexture(entity.model.renderTexture);
+        int texture = renderManager.renderEngine.getTexture(model.renderTexture);
         renderManager.renderEngine.bindTexture(texture);
 
-        entity.model.render();
+        model.render();
         
         GL11.glPopMatrix();
     }

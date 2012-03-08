@@ -6,7 +6,7 @@ public class ThxEntityMissile extends ThxEntity implements ISpawnable
 
     final float MISSILE_ACCEL = .6f;
     final float MAX_VELOCITY  = .90f;
-    final float GRAVITY       = .002f;
+    //final float GRAVITY       = .002f;
     
     final int maxAge = 6000;
     final float exhaustTimer = .04f;
@@ -19,6 +19,8 @@ public class ThxEntityMissile extends ThxEntity implements ISpawnable
     public ThxEntityMissile(World world)
     {
         super(world);
+        
+	    helper = new ThxEntityHelperServer(this);
         
         //model = new ThxModelMissile();
 
@@ -68,6 +70,11 @@ public class ThxEntityMissile extends ThxEntity implements ISpawnable
         }
 	        
         super.onUpdate();
+
+        helper.applyUpdatePacketFromClient();    
+
+        updateRotation();
+        updateVectors();
         
         exhaustTime += deltaTime;
         if (exhaustTime > exhaustTimer)
@@ -127,5 +134,11 @@ public class ThxEntityMissile extends ThxEntity implements ISpawnable
         //float f1 = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
         //prevRotationYaw = rotationYaw = (float)((Math.atan2(motionX, motionZ) * 180D) / 3.1415927410125732D);
         //prevRotationPitch = rotationPitch = (float)((Math.atan2(motionY, f1) * 180D) / 3.1415927410125732D);
+    }
+    
+    /* from ISpawnable interface */
+    public Packet230ModLoader getSpawnPacket()
+    {
+        return helper.getSpawnPacket();
     }
 }
