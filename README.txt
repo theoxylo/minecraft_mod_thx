@@ -1,20 +1,22 @@
-Minecraft THX Helicopter Mod, v016 for mc123, 20120306, mod_thx-mc123_v016
+Minecraft THX Helicopter Mod, v016 for mc123, 20120308, mod_thx-mc123_v016
 
 
 
 INTRODUCTION
 ------------
-This version is v016, for use with Minecraft and ModLoader 1.2.3, both single and multi-player.
+This version is v016, for use with Minecraft and ModLoader 1.2.3, with ModLoaderMP 1.2.3v3.
 
-You can download the compiled binary zip file from GitHub:
+You can download the compiled binary zip files from GitHub:
 
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_mc123_v016.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_mc123_v016_client.zip
+
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_mc123_v016_server.zip
 
 
 Keep in mind that this is an early release of a mod still under construction. Even though no corruption issues have been reported, please back-up your worlds before using (always a good idea). 
 
-Make sure that Minecraft and ModLoader are working properly before installing this mod -- see log ouput in .minecraft/ModLoader.txt
+Make sure that Minecraft, ModLoader, and ModLoaderMP are working properly before installing this mod -- see log ouput in .minecraft/ModLoader.txt
 
 Please visit the forum thread to discuss, report issues, leave feedback, etc:
 
@@ -31,40 +33,38 @@ There are 3 types of installation: single player, multiplayer client, and multip
     SINGLE PLAYER INSTALLATION
     --------------------------
 
+    Please use the client installation steps below.
+
+
+
+    CLIENT INSTALLATION
+    -------------------
+
     Install Risugami's ModLoader 1.2.3 and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
 
         http://www.minecraftforum.net/index.php?showtopic=75440
 
-    Copy the mod SSP zip file to your '.minecraft/mods' directory and start Minecraft normally.
+    Install SDK's ModLoaderMp 1.2.3v3 client and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
+
+        http://www.minecraftforum.net/index.php?showtopic=86765
+
+    Then add the client THX mod files from the above download to your minecraft.jar.
 
     After running at least once, check out the options in file '.minecraft/mods/mod_thx.options' for controls and other settings (see below for annotated listing).
 
 
 
-    MULTIPLAYER CLIENT INSTALLATION
-    -------------------------------
 
-    Install Risugami's ModLoader 1.2.3 and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
-
-        http://www.minecraftforum.net/index.php?showtopic=75440
-
-    Install SDK's ModLoaderMp 1.2.3v1 client and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
-
-        http://www.minecraftforum.net/index.php?showtopic=86765
-
-    Then copy the client THX mod class files from the above download.
-
-
-
-
-    MULTIPLAYER SERVER INSTALLATION
-    -------------------------------
+    SERVER INSTALLATION
+    -------------------
 
     Install SDK's ModLoaderMp 1.2.3v1 server and test. This involves adding the class files to your minecraft_server.jar file and NOT deleting META-INF. Please visit the official topic for detailed instructions and support:
 
         http://www.minecraftforum.net/index.php?showtopic=86765
 
-    Then copy the server THX mod class files from the above download. The THX mod will replace some of the ModLoaderMp files, but comapatibility with existing mods should be preserved.
+    Then add the server THX mod files from the above download to your minecraft_server.jar.
+
+    After running at least once, check out the options in file '.minecraft/mod_thx_server.options' for controls and other settings (see below for annotated listing).
 
 
 
@@ -127,18 +127,19 @@ Official YouTube playlist:
 
 ISSUES
 ------
-item not used in spawn zone still spawns helicopter
-descend, throttle not working
-lock altitude not working
-collision with own rockets
-rocket reload not triggered
-missile nose-dive (bomb?)
+* collision with own rockets
+* rocket reload not triggered
 
 
 
 CHANGELOG
 ---------
-v016: still for use with Minecraft and ModLoader 1.1.0
+v016: now for use with Minecraft and ModLoader 1.2.3, with ModLoaderMP 1.2.3v3
+v016: added manual rocket reload
+v016: added smoke and flame to indicate damge
+v016: added revert to item as alt exit (pilot attack/left click)
+v016: added rocket model and skin, please customize
+v016: added new skin with wireframe and enlarged HUD, please customize
 
 v015: now for use with Minecraft and ModLoader 1.1.0
 
