@@ -8,10 +8,18 @@ This version is v016, for use with Minecraft and ModLoader 1.2.3, with ModLoader
 
 You can download the compiled binary zip files from GitHub:
 
-
     https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_mc123_v016_client.zip
 
     https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_mc123_v016_server.zip
+
+
+And you can download the exact ModLoader and ModLoaderMP files you need from their respective download links (not affiliated with this mod):
+
+    ModLoader client 1.2.3    : http://adf.ly/1849S
+
+    ModLoaderMP Client 1.2.3v3: http://adf.ly/65ifV
+
+    ModLoaderMP Server 1.2.3v3: http://adf.ly/65ijE
 
 
 Keep in mind that this is an early release of a mod still under construction. Even though no corruption issues have been reported, please back-up your worlds before using (always a good idea). 
@@ -26,14 +34,26 @@ Please visit the forum thread to discuss, report issues, leave feedback, etc:
 
 INSTALLATION
 ------------
-There are 3 types of installation: single player, multiplayer client, and multiplayer server. Please see below for details:
+There are 3 types of installation: single player, multiplayer client, and multiplayer server. Please see below for details.
+
+NOTE: if using other mods for client or server, please add the THX files to your minecraft.jar last (install the other mods first).
 
 
 
     SINGLE PLAYER INSTALLATION
     --------------------------
 
-    Please use the client installation steps below.
+    Install Risugami's ModLoader 1.2.3 and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
+
+        http://www.minecraftforum.net/index.php?showtopic=75440
+
+    Install SDK's ModLoaderMp 1.2.3v3 client and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
+
+        http://www.minecraftforum.net/index.php?showtopic=86765
+
+    Then copy the client THX zip file from the above client download to your .minecraft/mods folder.
+
+    After running at least once, check out the options in file '.minecraft/mods/mod_thx.options' for controls and other settings (see below for annotated listing).
 
 
 
@@ -48,7 +68,7 @@ There are 3 types of installation: single player, multiplayer client, and multip
 
         http://www.minecraftforum.net/index.php?showtopic=86765
 
-    Then add the client THX mod files from the above download to your minecraft.jar.
+    Then add the client THX mod files from the above client download to your minecraft.jar (this gives slightly better performance than just placing the zip file in mods).
 
     After running at least once, check out the options in file '.minecraft/mods/mod_thx.options' for controls and other settings (see below for annotated listing).
 
@@ -62,7 +82,7 @@ There are 3 types of installation: single player, multiplayer client, and multip
 
         http://www.minecraftforum.net/index.php?showtopic=86765
 
-    Then add the server THX mod files from the above download to your minecraft_server.jar.
+    Then add the server THX mod files from the above server download to your minecraft_server.jar.
 
     After running at least once, check out the options in file '.minecraft/mod_thx_server.options' for controls and other settings (see below for annotated listing).
 
