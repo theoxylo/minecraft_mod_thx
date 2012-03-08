@@ -58,7 +58,7 @@ public class ModLoaderMp
         }
         else if (packet230modloader.modId == "Spawn".hashCode())
         {
-            log("Received 'Spawn' hash packet: " + packet230modloader);
+            //log("Received 'Spawn' hash packet: " + packet230modloader);
 
             NetClientHandlerEntity netclienthandlerentity = handleNetClientHandlerEntities(packet230modloader.packetType);
 

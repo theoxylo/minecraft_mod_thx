@@ -72,7 +72,7 @@ public class ThxConfig
         // add any missing properties using default values
         writeFile = ensureDefault(props, "enable_logging", "false") || writeFile;
         writeFile = ensureDefault(props, "key_ascend", Keyboard.getKeyName(Keyboard.KEY_SPACE)) || writeFile;
-        writeFile = ensureDefault(props, "key_descend", Keyboard.getKeyName(Keyboard.KEY_LSHIFT)) || writeFile;
+        writeFile = ensureDefault(props, "key_descend", Keyboard.getKeyName(Keyboard.KEY_X)) || writeFile;
         writeFile = ensureDefault(props, "key_forward", Keyboard.getKeyName(Keyboard.KEY_W)) || writeFile;
         writeFile = ensureDefault(props, "key_back", Keyboard.getKeyName(Keyboard.KEY_S)) || writeFile;
         writeFile = ensureDefault(props, "key_left", Keyboard.getKeyName(Keyboard.KEY_A)) || writeFile;

@@ -1,4 +1,4 @@
-Minecraft THX Helicopter Mod, v016 for mc123, 20120306
+Minecraft THX Helicopter Mod, v016 for mc123, 20120306, mod_thx-mc123_v016
 
 
 
@@ -122,6 +122,17 @@ VIDEOS
 Official YouTube playlist:
 
     http://www.youtube.com/playlist?list=PLC95BDA16181F6120
+
+
+
+ISSUES
+------
+item not used in spawn zone still spawns helicopter
+descend, throttle not working
+lock altitude not working
+collision with own rockets
+rocket reload not triggered
+missile nose-dive (bomb?)
 
 
 

@@ -6,7 +6,7 @@ import net.minecraft.client.Minecraft;
 
 import org.lwjgl.input.Keyboard;
 
-public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISpawnable
+public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements IClientDriven, ISpawnable
 {    
     Minecraft minecraft;
     
@@ -182,9 +182,14 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
             onUpdateVacant(); // effective for single player only. for smp, handled by server
         }
         
-        
-        updateMotion();
+        // convert pitch, roll, and throttle into thrust and call moveEntity
+        updateMotion(altitudeLock);
             
+        if (handleCollisions())
+        {
+	        helper.addChatMessage(this + " - Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
+        }
+        
         if (minecraft.thePlayer.equals(riddenByEntity))
         {
             //if (ticksExisted % UPDATE_RATE == 0)
@@ -555,83 +560,6 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
         }
     }
     
-    private void updateMotion()
-    {
-        // now calculate thrust and velocity based on yaw, pitch, roll, throttle
-        ascendDescendLift:
-        {
-            // as pitch increases, lift decreases by fall-off function
-            thrust.y = MathHelper.cos(pitchRad) * MathHelper.cos(rollRad);
-        }
-
-        forwardBack:
-        {
-            // as pitch increases, forward-back motion increases
-            // but sin function was too touchy so using 1-cos
-            float accel = 1f - MathHelper.cos(pitchRad);
-            if (pitchRad > 0f) accel *= -1f;
-            
-            thrust.x = -fwd.x * accel;
-            thrust.z = -fwd.z * accel;
-        }
-
-        strafeLeftRight:
-        {
-            // float strafe = -MathHelper.sin(roll);
-            float strafe = 1f - MathHelper.cos(rollRad);
-            if (rollRad > 0f) strafe *= -1f;
-
-            // use perp of yaw and scale by roll
-            thrust.x -= fwd.z * strafe;
-            thrust.z += fwd.x * strafe;
-        }
-
-        // start with current velocity
-        velocity.set((float)motionX, (float)motionY, (float)motionZ);
-
-        // friction, very little!
-        velocity.scale(FRICTION);
-
-        // scale thrust by current throttle and delta time
-        //thrust.normalize().scale(MAX_ACCEL * (1f + throttle) * deltaTime / .05f);
-        thrust.normalize().scale(MAX_ACCEL * (1f + throttle) * deltaTime / .05f);
-
-        // apply the thrust
-        Vector3.add(velocity, thrust, velocity);
-
-        // gravity is always straight down
-        //if (!inWater && !onGround) velocity.y -= GRAVITY * deltaTime / .05f;
-        velocity.y -= GRAVITY * deltaTime / .05f;
-
-        // limit max velocity
-        if (velocity.lengthSquared() > MAX_VELOCITY * MAX_VELOCITY)
-        {
-            velocity.scale(MAX_VELOCITY / velocity.length());
-        }
-
-        // apply velocity changes
-        motionX = velocity.x;
-        motionY = velocity.y;
-        motionZ = velocity.z;
-            
-        //if (altitudeLock) motionY = 0f;
-        if (altitudeLock) motionY *= .8f;
-        
-        moveEntity(motionX, motionY, motionZ);
-        
-        handleCollisions();
-    }
-    
-    boolean handleCollisions()
-    {
-        if (super.handleCollisions())
-        {
-	        helper.addChatMessage(this + " - Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
-	        return true;
-        }
-        return false;
-    }
-    
     private void onUpdateDrone()
     {
         if (targetHelicopter == null) return;
@@ -839,50 +767,15 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
     @Override
     public void updateRiderPosition()
     {
-        if (enable_drone_mode) return;
-        
-        Entity pilot = getPilot();
-        if (pilot == null) return;
-
-        // this will tell the default impl in Entity.updateRidden()
-        // that no adjustment need be made to the pilot's yaw or pitch
-        // as a direct result of riding this helicopter entity.
-        // rather, we let the player rotate the pilot and the helicopter follows
-        prevRotationYaw = rotationYaw;
-        prevRotationPitch = rotationPitch;
-
-        
-        // for fixed pilot position while piloting drone
-        /*
-        if (enable_drone_mode) 
+        if (!enable_drone_mode)
         {
-            if (pilot.onGround)
-            {
-                pilot.setPosition(dronePilotPosX, dronePilotPosY, dronePilotPosZ);
-            }
-            else
-            {
-                // update recorded pilot position
-                dronePilotPosX = pilot.posX;
-                dronePilotPosY = pilot.posY;
-                dronePilotPosZ = pilot.posZ;
-            }
+	        super.updateRiderPosition();
             return;
         }
-        */
-        
-        double posAdjust = 0.0;
-        /*
-        if (!worldObj.isRemote && ModLoader.getMinecraftInstance().gameSettings.thirdPersonView == 0)
+        else
         {
-            // for now, only when in 1st-person mode to improve cockpit view
-            //posAdjust = -.1 + .02f * rotationPitch;
-            // for TESTING:
-            posAdjust = -.1 + .07f * rotationPitch;
+            riddenByEntity.setPosition(dronePilotPosX, dronePilotPosY, dronePilotPosZ);
         }
-        */
-
-        pilot.setPosition(posX + fwd.x * posAdjust, posY + pilot.getYOffset() + getMountedYOffset(), posZ + fwd.z * posAdjust);
     }
     
     double getPilotPositionAdjustment()

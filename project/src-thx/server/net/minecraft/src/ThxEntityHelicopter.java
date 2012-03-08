@@ -3,7 +3,7 @@ package net.minecraft.src;
 import java.util.List;
 
 
-public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISpawnable
+public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements IClientDriven, ISpawnable
 {
     public ThxEntityHelicopter(World world)
     {
@@ -29,7 +29,8 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
     public void onUpdate()
     {
         // adjust position height to avoid collisions
-        List list = worldObj.getCollidingBoundingBoxes(this, boundingBox.contract(0.03125D, 0.0D, 0.03125D));
+        /*
+        List list = worldObj.getCollidingBoundingBoxes(this, boundingBox.contract(0.03125, 0.0, 0.03125));
         if (list.size() > 0)
         {
             double d3 = 0.0D;
@@ -45,22 +46,17 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
             posY += d3 - boundingBox.minY;
             setPosition(posX, posY, posZ);
         }
-
-        super.onUpdate(); // ThxEntity.onUpdate will apply latest client packet if there is one
+        */
 
         helper.applyUpdatePacketFromClient();    
-
-        updateRotation();
-        updateVectors();
+        
+        super.onUpdate();
         
         if (riddenByEntity != null)
         {
             // entity updates will come from client for player pilot
             
             if (riddenByEntity.isDead) riddenByEntity.mountEntity(this);
-            
-	        moveEntity(motionX, motionY, motionZ);
-	        handleCollisions();
 	        
 	        // fire weapons and clear flags
             if (fire1 > 0)
@@ -73,16 +69,17 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
                 fire2 = 0;
                 fireMissile();
             }
-	        
-            return;
         }
-        
-        // for auto-heal unattended, otherwise damage set by pilot client
-        if (damage > 0f) damage -= deltaTime; // heal rate: 1 pt / sec
-
-        onUpdateVacant();
+        else
+        {
+	        // for auto-heal unattended, otherwise damage set by pilot client
+	        if (damage > 0f) damage -= deltaTime; // heal rate: 1 pt / sec
+	
+	        onUpdateVacant();
+        }
             
         moveEntity(motionX, motionY, motionZ);
+        
         handleCollisions();
     }
     
@@ -126,34 +123,9 @@ public class ThxEntityHelicopter extends ThxEntity implements IClientDriven, ISp
 
         timeSinceAttacked = .5f; // sec delay before this entity can be attacked again
 
-        setBeenAttacked(); // this will cause Entity.velocityChanged to be true, so additional Packet28
+        //setBeenAttacked(); // this will cause Entity.velocityChanged to be true, so additional Packet28 to jump on hit
 
         return true; // the hit landed
-    }
-
-    @Override
-    public void updateRiderPosition()
-    {
-        if (riddenByEntity == null) return;
-
-        // this will tell the default impl in Entity.updateRidden()
-        // that no adjustment need be made to the pilot's yaw or pitch
-        // as a direct result of riding this helicopter entity.
-        // rather, we let the player rotate the pilot and the helicopter follows
-        prevRotationYaw = rotationYaw;
-        prevRotationPitch = rotationPitch;
-        
-        // use fwd XZ components to adjust front/back position of pilot based on helicopter pitch
-        // when in 1st-person mode to improve view
-        double posAdjust = 0; //-.1 + .02f * rotationPitch;
-
-        //if (ModLoader.getMinecraftInstance().gameSettings.thirdPersonView != 0) posAdjust = 0.0;
-
-        // to force camera to follow helicopter exactly, but stutters:
-        //pilot.setPositionAndRotation(posX + fwd.x * posAdjust, posY + pilot.getYOffset() + getMountedYOffset(), posZ + fwd.z * posAdjust, rotationYaw, rotationPitch);
-        //pilot.setLocationAndAngles(posX + fwd.x * posAdjust, posY -.7f, posZ + fwd.z * posAdjust, rotationYaw, rotationPitch);
-        
-        riddenByEntity.setPosition(posX + fwd.x * posAdjust, posY + riddenByEntity.getYOffset() + getMountedYOffset(), posZ + fwd.z * posAdjust);
     }
 
     @Override

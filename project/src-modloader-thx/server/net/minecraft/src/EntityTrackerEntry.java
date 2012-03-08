@@ -266,7 +266,7 @@ public class EntityTrackerEntry
 
                 if (trackedEntity instanceof IClientDriven)
                 {
-                    System.out.println("ETE-THX: Adding player " + par1EntityPlayerMP.entityId + " to trackedPlayers list for trackedEntity " + trackedEntity.entityId);
+                    //System.out.println("ETE-THX: Adding player " + par1EntityPlayerMP.entityId + " to trackedPlayers list for trackedEntity " + trackedEntity.entityId);
                     return;
                 }
                                                                                     
