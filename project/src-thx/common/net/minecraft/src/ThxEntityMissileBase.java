@@ -24,8 +24,6 @@ public abstract class ThxEntityMissileBase extends ThxEntity
     {
         super(world);
         
-        System.out.println("C1 ThxEntityMissileBase called");
-        
         helper = createHelper();
         
         setSize(0.25f, 0.25f);
@@ -39,8 +37,6 @@ public abstract class ThxEntityMissileBase extends ThxEntity
     {
         this(world);
         
-        System.out.println("C2 ThxEntityMissileBase called");
-
         setPositionAndRotation(x, y, z, yaw, pitch);
         
         updateRotation();
@@ -104,10 +100,15 @@ public abstract class ThxEntityMissileBase extends ThxEntity
         // set yaw and pitch to match movement
         setHeading:
         {
+	        //float f = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
+	        //prevRotationYaw = rotationYaw = (float)((Math.atan2(motionX, motionZ) * 180D) / 3.1415927410125732D);
+	        //prevRotationPitch = rotationPitch = (float)((Math.atan2(motionY, f) * 180D) / 3.1415927410125732D);
+            
 	        float f = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
-	        prevRotationYaw = rotationYaw = (float)((Math.atan2(motionX, motionZ) * 180D) / 3.1415927410125732D);
-	        prevRotationPitch = rotationPitch = (float)((Math.atan2(motionY, f) * 180D) / 3.1415927410125732D);
+	        rotationYaw = (float)(((Math.atan2(motionX, motionZ) * 180.0) + 90.0) / 3.1415927410125732D);
+	        rotationPitch = (float)((Math.atan2(motionY, f) * 180.0) / 3.1415927410125732D);
         }
+
         
         float dx = (float)(posX - prevPosX);
         float dy = (float)(posY - prevPosY);
@@ -124,13 +125,5 @@ public abstract class ThxEntityMissileBase extends ThxEntity
             worldObj.newExplosion(this, posX, posY, posZ, power, flaming);
             setEntityDead();
         }
-
-        // gradual constant pitch down until 20 deg
-        //if (rotationPitch < 20f) rotationPitch += .4f;
-        
-        // following is not working, off by 90 deg?
-        float f1 = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
-        //prevRotationYaw = rotationYaw = (float)((Math.atan2(motionX, motionZ) * 180D) / 3.1415927410125732D);
-        prevRotationPitch = rotationPitch = (float)((Math.atan2(motionY, f1) * 180D) / 3.1415927410125732D);
     }
 }

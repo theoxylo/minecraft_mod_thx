@@ -85,8 +85,6 @@ public abstract class ThxEntityRocketBase extends ThxEntity
         /*
         if(prevRotationPitch == 0.0F && prevRotationYaw == 0.0F)
         {
-            // if only receiving motion updates, this would be needed to set yaw and pitch,
-            // but should get direct yaw/pitch updates
             float f = MathHelper.sqrt_double(d * d + d2 * d2);
             prevRotationYaw = rotationYaw = (float)((Math.atan2(d, d2) * 180D) / 3.1415927410125732D);
             prevRotationPitch = rotationPitch = (float)((Math.atan2(d1, f) * 180D) / 3.1415927410125732D);
@@ -97,7 +95,8 @@ public abstract class ThxEntityRocketBase extends ThxEntity
     @Override
     public boolean canBeCollidedWith()
     {
-        return !isDead;
+        //return !isDead;
+        return false;
     }
  
     public void onUpdate()

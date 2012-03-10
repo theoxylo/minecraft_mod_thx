@@ -217,6 +217,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
             
         //if (altitudeLock) motionY = 0f;
         if (altitudeLock) motionY *= .7f;
+        if (motionY < .000001) motionY = .0;
         
         moveEntity(motionX, motionY, motionZ);
     }

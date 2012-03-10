@@ -147,8 +147,12 @@ Official YouTube playlist:
 
 ISSUES
 ------
-* collision with own rockets
-* rocket reload not triggered
+* client: smp "lag-up" on helicopter position
+* client: rocket reload not triggered
+* client: collision with own rockets, now only rarely
+* client: pause accumulation bugs
+* client: altitude lock not absolute - fixed
+
 
 
 
