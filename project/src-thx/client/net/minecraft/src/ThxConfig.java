@@ -13,6 +13,8 @@ import net.minecraft.client.Minecraft;
 public class ThxConfig
 {
     static boolean ENABLE_LOGGING;
+    static boolean LOG_INCOMING_PACKETS;
+    
     static String filename = Minecraft.getMinecraftDir() + "/mods/mod_thx.options";
     static Properties props;
     
@@ -71,6 +73,8 @@ public class ThxConfig
         
         // add any missing properties using default values
         writeFile = ensureDefault(props, "enable_logging", "false") || writeFile;
+        writeFile = ensureDefault(props, "enable_logging_p230_inbound", "false") || writeFile;
+        
         writeFile = ensureDefault(props, "key_ascend", Keyboard.getKeyName(Keyboard.KEY_SPACE)) || writeFile;
         writeFile = ensureDefault(props, "key_descend", Keyboard.getKeyName(Keyboard.KEY_X)) || writeFile;
         writeFile = ensureDefault(props, "key_forward", Keyboard.getKeyName(Keyboard.KEY_W)) || writeFile;
@@ -111,6 +115,7 @@ public class ThxConfig
         }
         
         ENABLE_LOGGING = getBoolProperty("enable_logging");
+        LOG_INCOMING_PACKETS = getBoolProperty("enable_logging_p230_inbound");
         
         //logKeyMap();
     }

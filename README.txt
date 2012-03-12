@@ -1,16 +1,16 @@
-Minecraft THX Helicopter Mod, v016 for mc123, 20120308, mod_thx-mc123_v016
+Minecraft THX Helicopter Mod, v016 for mc123, 20120311, mod_thx-mc123_v016_bp1
 
 
 
 INTRODUCTION
 ------------
-This version is v016 BETA, for use with Minecraft and ModLoader 1.2.3, with ModLoaderMP 1.2.3v3 for both single- and multi-player.
+This version is v016 BETA 2, for use with Minecraft and ModLoader 1.2.3, with ModLoaderMP 1.2.3v3 for both single- and multi-player.
 
 You can download the compiled binary zip files from GitHub:
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_mc123_v016_client-BETA.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_mc123_v016_client-BETA-p1.zip
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_mc123_v016_server-BETA.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_mc123_v016_server-BETA-p1.zip
 
 
 And you can download the exact ModLoader and ModLoaderMP files you need from their respective download links (not affiliated with this mod):
@@ -34,57 +34,45 @@ Please visit the forum thread to discuss, report issues, leave feedback, etc:
 
 INSTALLATION
 ------------
-There are 3 types of installation: single player, multiplayer client, and multiplayer server. Please see below for details.
-
-NOTE: if using other mods for client or server, please add the THX files to your minecraft.jar last (install the other mods first).
+There are 2 types of installation: single player and smp client, and multiplayer smp server. Please see below for details.
 
 
 
-    SINGLE PLAYER INSTALLATION
-    --------------------------
+    SINGLE PLAYER and SMP CLIENT
+    ----------------------------
 
-    Install Risugami's ModLoader 1.2.3 and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
+    1. Install Risugami's ModLoader 1.2.3 and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
 
         http://www.minecraftforum.net/index.php?showtopic=75440
 
-    Install SDK's ModLoaderMp 1.2.3v3 client and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
+
+    2. Install SDK's ModLoaderMp 1.2.3v3 client and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
 
         http://www.minecraftforum.net/index.php?showtopic=86765
 
-    Then copy the client THX zip file from the above client download to your .minecraft/mods folder.
 
-    After running at least once, check out the options in file '.minecraft/mods/mod_thx.options' for controls and other settings (see below for annotated listing).
-
+    3. Then copy the client THX zip file from the above client download to your .minecraft/mods folder.
 
 
-    CLIENT INSTALLATION
-    -------------------
-
-    Install Risugami's ModLoader 1.2.3 and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
-
-        http://www.minecraftforum.net/index.php?showtopic=75440
-
-    Install SDK's ModLoaderMp 1.2.3v3 client and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
-
-        http://www.minecraftforum.net/index.php?showtopic=86765
-
-    Then add the client THX mod files from the above client download to your minecraft.jar (this gives slightly better performance than just placing the zip file in mods).
-
-    After running at least once, check out the options in file '.minecraft/mods/mod_thx.options' for controls and other settings (see below for annotated listing).
-
+    4. After running at least once, check out the options in file '.minecraft/mods/mod_thx.options' for controls and other settings (see below for annotated listing).
 
 
 
     SERVER INSTALLATION
     -------------------
 
-    Install SDK's ModLoaderMp 1.2.3v1 server and test. This involves adding the class files to your minecraft_server.jar file and NOT deleting META-INF. Please visit the official topic for detailed instructions and support:
+    1. Install SDK's ModLoaderMp 1.2.3v1 server and test. This involves adding the class files to your minecraft_server.jar file and NOT deleting META-INF. Please visit the official topic for detailed instructions and support:
 
         http://www.minecraftforum.net/index.php?showtopic=86765
+        
 
-    Then add the server THX mod files from the above server download to your minecraft_server.jar.
+    2. Then add the server THX mod files from the above server download to your minecraft_server.jar.
 
-    After running at least once, check out the options in file '.minecraft/mod_thx_server.options' for controls and other settings (see below for annotated listing).
+
+    3. After running at least once, check out the options in file '.minecraft/mod_thx_server.options' for controls and other settings (see below for annotated listing).
+    
+
+    NOTE: if using other mods on the server, please add the THX files to your minecraft_server.jar file last (install the other mods first).
 
 
 
@@ -147,11 +135,9 @@ Official YouTube playlist:
 
 ISSUES
 ------
-* client: smp "lag-up" on helicopter position
-* client: rocket reload not triggered
-* client: collision with own rockets, now only rarely
-* client: pause accumulation bugs
-* client: altitude lock not absolute - fixed
+* client: smp "lag-up" on helicopter position?
+* client: pause accumulation bugs on rotations
+* client: rotor still spinning while paused
 
 
 

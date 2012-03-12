@@ -28,8 +28,8 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
     @Override
     public void onUpdate()
     {
-        // adjust position height to avoid collisions
         /*
+        // adjust position height to avoid collisions
         List list = worldObj.getCollidingBoundingBoxes(this, boundingBox.contract(0.03125, 0.0, 0.03125));
         if (list.size() > 0)
         {
@@ -68,6 +68,16 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
             {
                 fire2 = 0;
                 fireMissile();
+            }
+            if (cmd_exit > 0)
+            {
+                cmd_exit = 0;
+                pilotExit();
+            }
+            if (cmd_create_map > 0)
+            {
+                cmd_create_map = 0;
+                createMap();
             }
         }
         else

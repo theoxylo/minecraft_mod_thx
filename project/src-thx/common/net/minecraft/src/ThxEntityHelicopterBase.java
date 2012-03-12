@@ -6,7 +6,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
 {
     int rocketCount;
     
-    float MAX_HEALTH = 200f;
+    float MAX_HEALTH = 160f;
 
     float MAX_ACCEL    = 0.2000f;
     //float GRAVITY      = 0.201f;
@@ -22,13 +22,40 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
     float ROLL_SPEED_DEG = 40f;
     float ROLL_RETURN = 0.92f;
 
-    float THROTTLE_MIN = -.05f;
-    float THROTTLE_MAX = .08f;
+    float THROTTLE_MIN = -.06f;
+    float THROTTLE_MAX = .09f;
     float THROTTLE_INC = .004f;
 
     // amount of vehicle motion to transfer upon projectile launch
     float MOMENTUM = .2f;
 
+    float smokeDelay;
+    
+    boolean altitudeLock;
+    float altitudeLockToggleDelay;
+    
+    float hudModeToggleDelay;
+    
+    float lookPitchToggleDelay;
+    boolean lookPitch = false;
+    float lookPitchZeroLevel;
+    
+    float createMapDelay;
+    
+    int prevViewMode = 2;
+    
+    float missileDelay;
+    final float MISSILE_DELAY = 6f;
+
+    float rocketDelay;
+    //final float ROCKET_DELAY = .12f;
+    final float ROCKET_DELAY = .20f;
+    final int FULL_ROCKET_COUNT = 12;
+    float rocketReload;
+    final float ROCKET_RELOAD_DELAY = 3f;
+    
+    float autoLevelDelay;
+    float exitDelay;
     
     public ThxEntityHelicopterBase(World world)
     {
@@ -67,12 +94,12 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
         float leftRight = (rocketCount % 2 == 0) ? leftRightAmount  : -leftRightAmount;
                 
         // starting position of rocket relative to helicopter, out in front quite a bit to avoid collision
-        float offsetX = (side.x * leftRight) + (fwd.x * 1.9f) + (up.x * -.5f);
-        float offsetY = (side.y * leftRight) + (fwd.y * 1.9f) + (up.y * -.5f);
-        float offsetZ = (side.z * leftRight) + (fwd.z * 1.9f) + (up.z * -.5f);
+        float offsetX = (side.x * leftRight) + (fwd.x * 2.5f) + (up.x * -.5f);
+        float offsetY = (side.y * leftRight) + (fwd.y * 2.5f) + (up.y * -.5f);
+        float offsetZ = (side.z * leftRight) + (fwd.z * 2.5f) + (up.z * -.5f);
                     
         float yaw = rotationYaw;
-        float pitch = rotationPitch + 8f;
+        float pitch = rotationPitch + 5f;
                 
         ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
         newRocket.owner = riddenByEntity != null ? riddenByEntity : this;
@@ -83,15 +110,15 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
     {
         log("firing missile");
         
-        float offX = (fwd.x * 1.9f) + (up.x * -.5f);
-        float offY = (fwd.y * 1.9f) + (up.y * -.5f);
-        float offZ = (fwd.z * 1.9f) + (up.z * -.5f);
+        float offX = (fwd.x * 2.5f) + (up.x * -.5f);
+        float offY = (fwd.y * 2.5f) + (up.y * -.5f);
+        float offZ = (fwd.z * 2.5f) + (up.z * -.5f);
 
         // aim with cursor if pilot
         //float yaw = riddenByEntity != null ? riddenByEntity.rotationYaw : rotationYaw;
         //float pitch = riddenByEntity != null ? riddenByEntity.rotationPitch : rotationPitch;
         float yaw = rotationYaw;
-        float pitch = rotationPitch + 8f;
+        float pitch = rotationPitch + 5f;
                 
         ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
         newMissile.owner = riddenByEntity != null ? riddenByEntity : this;
@@ -174,6 +201,9 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
             
             thrust.x = -fwd.x * accel;
             thrust.z = -fwd.z * accel;
+            
+            // also adjust y in addition to ascend/descend to simulate diving
+            thrust.y += -fwd.y * accel * .3f;
         }
 
         strafeLeftRight:
@@ -215,9 +245,11 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
         motionY = velocity.y;
         motionZ = velocity.z;
             
-        //if (altitudeLock) motionY = 0f;
-        if (altitudeLock) motionY *= .7f;
-        if (motionY < .000001) motionY = .0;
+        if (altitudeLock)
+        {
+            motionY *= .6;
+            if (motionY < .000001) motionY = .0;
+        }
         
         moveEntity(motionX, motionY, motionZ);
     }

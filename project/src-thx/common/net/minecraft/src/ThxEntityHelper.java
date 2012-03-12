@@ -41,8 +41,7 @@ public class ThxEntityHelper
     
     Packet230ModLoader getSpawnPacket()
     {
-        // TODO Auto-generated method stub
-        return null;
+        throw new RuntimeException("not implemented");
     }
     
     // COMMON methods

@@ -83,12 +83,14 @@ public class mod_Thx extends BaseModMp
     public String getVersion()
     {
         //log("getVersion called");
-        return "Minecraft THX Helicopter Mod - mod_thx-mc123_v016";
+        return "Minecraft THX Helicopter Mod - mod_thx-mc123_v016_bp1";
     }
 
     @Override
     public void handlePacket(Packet230ModLoader packet)
     {
+        if (ThxConfig.LOG_INCOMING_PACKETS) log("received incoming server packet: " + packetToString(packet));
+        
         int entityId = packet.dataInt[0];
         if (entityId < 1) log("Received non-entity packet type " + packet.packetType + ": " + packet);
         else
@@ -112,5 +114,41 @@ public class mod_Thx extends BaseModMp
     public static void log(String s)
     {
         if (ThxConfig.ENABLE_LOGGING) System.out.println("mod_thx_client: " + s);
+    }
+
+    public String packetToString(Packet230ModLoader p)
+    {
+        StringBuffer s = new StringBuffer();
+        s.append("Packet230 {");
+        s.append("type: ").append(p.packetType).append(", ");
+        s.append("modId: ").append(p.modId).append(", ");
+
+        for (int i = 0; p.dataInt != null && i < p.dataInt.length; i++)
+        {
+            s.append("dataInt[" + i + "]: ");
+            s.append(p.dataInt[i]);
+            s.append(", ");
+        }
+        for (int i = 0; p.dataFloat != null && i < p.dataFloat.length; i++)
+        {
+            s.append("dataFloat[" + i + "]: ");
+            s.append(p.dataFloat[i]);
+            s.append(", ");
+        }
+        for (int i = 0; p.dataDouble != null && i < p.dataDouble.length; i++) 
+        {
+            s.append("dataDouble[" + i + "]: "); 
+            s.append(p.dataDouble[i]); 
+            s.append(", "); 
+        }
+        for (int i = 0; p.dataString != null && i < p.dataString.length; i++)
+        {
+            s.append("dataString[" + i + "]: ");
+            s.append(p.dataString[i]);
+            s.append(", ");
+        }
+        s.append("}");
+
+        return s.toString();
     }
 }

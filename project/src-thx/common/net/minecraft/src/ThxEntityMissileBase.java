@@ -4,7 +4,7 @@ public abstract class ThxEntityMissileBase extends ThxEntity
 {
     final float MAX_ACCEL    = 0.60f;
     //final float MAX_VELOCITY = 0.60f;
-    final float MAX_VELOCITY = 0.30f;
+    final float MAX_VELOCITY = 0.50f;
     final float GRAVITY      = 0.005f;
 
     final int MAX_AGE_TICKS = 600; // there are 20 ticks in a second
@@ -104,9 +104,9 @@ public abstract class ThxEntityMissileBase extends ThxEntity
 	        //prevRotationYaw = rotationYaw = (float)((Math.atan2(motionX, motionZ) * 180D) / 3.1415927410125732D);
 	        //prevRotationPitch = rotationPitch = (float)((Math.atan2(motionY, f) * 180D) / 3.1415927410125732D);
             
-	        float f = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
-	        rotationYaw = (float)(((Math.atan2(motionX, motionZ) * 180.0) + 90.0) / 3.1415927410125732D);
-	        rotationPitch = (float)((Math.atan2(motionY, f) * 180.0) / 3.1415927410125732D);
+	        //float f = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
+	        //rotationYaw = (float)(((Math.atan2(motionX, motionZ) * 180.0) + 90.0) / 3.1415927410125732D);
+	        //rotationPitch = (float)((Math.atan2(motionY, f) * 180.0) / 3.1415927410125732D);
         }
 
         

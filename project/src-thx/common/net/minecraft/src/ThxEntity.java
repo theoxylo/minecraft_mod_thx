@@ -38,11 +38,15 @@ public abstract class ThxEntity extends Entity
     ThxEntityHelper helper;
     Packet230ModLoader latestUpdatePacket;
     int NET_PACKET_TYPE;
+    
     int fire1;
     int fire2;
+    int cmd_exit;
+    int cmd_create_map;
+    
     float damage;
     float throttle;
-
+    
     Entity owner;
     
     // total update count
@@ -224,17 +228,21 @@ public abstract class ThxEntity extends Entity
 
         packet.dataString = new String[] { "thx update packet for tick " + ticksExisted };
 
-        packet.dataInt = new int[5];
+        packet.dataInt = new int[7];
         packet.dataInt[0] = entityId;
         packet.dataInt[1] = riddenByEntity != null ? riddenByEntity.entityId : 0;
         packet.dataInt[2] = fire1;
         packet.dataInt[3] = fire2;
         packet.dataInt[4] = owner != null ? owner.entityId : 0;
+        packet.dataInt[5] = cmd_exit;
+        packet.dataInt[6] = cmd_create_map;
         
-        // clear fire flags after use
+        // clear cmd flags after setting them in packet
         fire1 = 0;
         fire2 = 0;
-
+        cmd_exit = 0;
+		cmd_create_map = 0;
+		
         packet.dataFloat = new float[11];
         packet.dataFloat[0] = (float) posX;
         packet.dataFloat[1] = (float) posY;
@@ -387,39 +395,4 @@ public abstract class ThxEntity extends Entity
         return d < 128.0 * 128.0;
     }
 
-    public String packetToString(Packet230ModLoader p)
-    {
-        StringBuffer s = new StringBuffer();
-        s.append("Packet230 {");
-        s.append("type: ").append(p.packetType).append(", ");
-        s.append("modId: ").append(p.modId).append(", ");
-
-        for (int i = 0; p.dataInt != null && i < p.dataInt.length; i++)
-        {
-            s.append("dataInt[" + i + "]: ");
-            s.append(p.dataInt[i]);
-            s.append(", ");
-        }
-        for (int i = 0; p.dataFloat != null && i < p.dataFloat.length; i++)
-        {
-            s.append("dataFloat[" + i + "]: ");
-            s.append(p.dataFloat[i]);
-            s.append(", ");
-        }
-        for (int i = 0; p.dataDouble != null && i < p.dataDouble.length; i++) 
-        {
-            s.append("dataDouble[" + i + "]: "); 
-            s.append(p.dataDouble[i]); 
-            s.append(", "); 
-        }
-        for (int i = 0; p.dataString != null && i < p.dataString.length; i++)
-        {
-            s.append("dataString[" + i + "]: ");
-            s.append(p.dataString[i]);
-            s.append(", ");
-        }
-        s.append("}");
-
-        return s.toString();
-    }
 }

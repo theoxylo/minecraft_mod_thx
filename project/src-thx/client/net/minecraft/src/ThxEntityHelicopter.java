@@ -1,7 +1,5 @@
 package net.minecraft.src;
 
-import java.util.List;
-
 import net.minecraft.client.Minecraft;
 
 import org.lwjgl.input.Keyboard;
@@ -40,33 +38,6 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
     boolean enable_drone_mode = ENABLE_DRONE_MODE;
     
     
-    float smokeDelay;
-    
-    boolean altitudeLock;
-    float altitudeLockToggleDelay;
-    
-    float hudModeToggleDelay;
-    
-    float lookPitchToggleDelay;
-    boolean lookPitch = false;
-    float lookPitchZeroLevel;
-    
-    float createMapDelay;
-    
-    int prevViewMode = 2;
-    
-    float missileDelay;
-    final float MISSILE_DELAY = 3f;
-
-    float rocketDelay;
-    final float ROCKET_DELAY = .12f;
-    int rocketCount;
-    final int FULL_ROCKET_COUNT = 12;
-    float rocketReload;
-    final float ROCKET_RELOAD_DELAY = 2f;
-    
-    float autoLevelDelay;
-    float exitDelay;
 
     double dronePilotPosX;
     double dronePilotPosY;
@@ -156,7 +127,7 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
         
         // adjust model rotor speed to match old throttle
         float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
-        ((ThxModelHelicopter) helper.model).rotorSpeed = power / 2f + .7f;
+        ((ThxModelHelicopter) helper.model).rotorSpeed = power / 2f + .75f;
         
         if (worldObj.isRemote && riddenByEntity != null && !minecraft.thePlayer.equals(riddenByEntity))
         {
@@ -235,7 +206,14 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
         {
             createMapDelay = 10f; // the delay in seconds
                 
-            createMap();
+            if (worldObj.isRemote)
+            {
+                cmd_create_map = 1;
+            }
+            else
+            {
+	            createMap();
+            }
         }
             
         hudModeToggleDelay -= deltaTime;
@@ -305,7 +283,15 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
         if (Keyboard.isKeyDown(KEY_EXIT) && exitDelay < 0f && pilot != null)
         {
             exitDelay = 1f; // seconds before player can exit
-            pilotExit();
+            
+            if (worldObj.isRemote)
+            {
+                cmd_exit = 1;
+            }
+            else
+            {
+	            pilotExit();
+            }
         }
 
         altitudeLockToggleDelay -= deltaTime;

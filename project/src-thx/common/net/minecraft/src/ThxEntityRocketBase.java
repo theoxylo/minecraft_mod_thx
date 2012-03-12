@@ -9,8 +9,6 @@ public abstract class ThxEntityRocketBase extends ThxEntity
     private int yTile;
     private int zTile;
     private int inTile;
-    private boolean inGround;
-    private int ticksInGround;
     
     boolean enteredWater;
     boolean launched;
@@ -30,9 +28,7 @@ public abstract class ThxEntityRocketBase extends ThxEntity
         yTile = -1;
         zTile = -1;
         inTile = 0;
-        inGround = false;
-        //setSize(0.25F, 0.25F);
-        setSize(0.5f, 0.5f);
+        setSize(0.25F, 0.25F);
         
         NET_PACKET_TYPE = 76;
     }
@@ -95,8 +91,8 @@ public abstract class ThxEntityRocketBase extends ThxEntity
     @Override
     public boolean canBeCollidedWith()
     {
-        //return !isDead;
-        return false;
+        return !isDead;
+        //return false;
     }
  
     public void onUpdate()
@@ -121,37 +117,6 @@ public abstract class ThxEntityRocketBase extends ThxEntity
             exhaustTimer = exhaustDelay;
             worldObj.spawnParticle("smoke", posX, posY, posZ, 0.0, 0.0, 0.0);
         }
-        
-        if(inGround)
-        {
-            // stuck in block like an arrow after spawn from save file,
-            // will expires soon
-            
-            log("inGround: " + inGround);
-            
-            int i = worldObj.getBlockId(xTile, yTile, zTile);
-            if(i != inTile)
-            {
-                inGround = false;
-                motionX *= rand.nextFloat() * 0.2F;
-                motionY *= rand.nextFloat() * 0.2F;
-                motionZ *= rand.nextFloat() * 0.2F;
-                ticksInGround = 0;
-            } 
-            else
-            {
-                ticksInGround++;
-	            log("ticksInGround: " + ticksInGround);
-	            
-                if(ticksInGround == 1200)
-                {
-                    log("rocket stuck in ground, removing");
-                    setEntityDead();
-		            worldObj.playSoundAtEntity(this, "random.explode", 1f, 1f);
-                }
-                return;
-            }
-        } 
         
         Vec3D vec3d = Vec3D.createVector(posX, posY, posZ);
         Vec3D vec3d1 = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
@@ -202,7 +167,7 @@ public abstract class ThxEntityRocketBase extends ThxEntity
                 }
                 else
                 {
-	                int attackStrength = 8;
+	                int attackStrength = 6;
 	                movingobjectposition.entityHit.attackEntityFrom(new EntityDamageSource("player", owner), attackStrength);
                 }
             }
@@ -263,7 +228,6 @@ public abstract class ThxEntityRocketBase extends ThxEntity
         nbttagcompound.setShort("yTile", (short)yTile);
         nbttagcompound.setShort("zTile", (short)zTile);
         nbttagcompound.setByte("inTile", (byte)inTile);
-        nbttagcompound.setByte("inGround", (byte)(inGround ? 1 : 0));
     }
 
     public void readEntityFromNBT(NBTTagCompound nbttagcompound)
@@ -272,7 +236,6 @@ public abstract class ThxEntityRocketBase extends ThxEntity
         yTile = nbttagcompound.getShort("yTile");
         zTile = nbttagcompound.getShort("zTile");
         inTile = nbttagcompound.getByte("inTile") & 0xff;
-        inGround = nbttagcompound.getByte("inGround") == 1;
     }
 }
 

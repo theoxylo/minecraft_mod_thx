@@ -36,6 +36,9 @@ public class ThxEntityHelperServer extends ThxEntityHelper
         entity.fire2 = packet.dataInt[3];
         if (entity.fire1 > 0 || entity.fire2 > 0) log("entity is firing: " + entity.fire1 + ", " + entity.fire2);
         
+        entity.cmd_exit = packet.dataInt[5];
+        entity.cmd_create_map = packet.dataInt[6];
+        
         entity.setPositionAndRotation(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2], packet.dataFloat[3], packet.dataFloat[4]);
         
         entity.rotationRoll = packet.dataFloat[5] % 360f;
