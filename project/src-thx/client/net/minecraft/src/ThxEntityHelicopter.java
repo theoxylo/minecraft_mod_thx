@@ -37,6 +37,8 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
         
     boolean enable_drone_mode = ENABLE_DRONE_MODE;
     
+    int prevViewMode; // = 2; // 2 is looking back
+    
     
 
     double dronePilotPosX;
@@ -219,13 +221,17 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
         hudModeToggleDelay -= deltaTime;
         lookPitchToggleDelay -= deltaTime;
             
-        if (Keyboard.isKeyDown(KEY_LOOK_BACK)) // look back while key is held
+        if (Keyboard.isKeyDown(KEY_LOOK_BACK)) // look back while key is HELD (not toggle), switch to 3rd-person REVERSE view
         {
+            //view modes: 0 = 1st-person, 1 = 3rd-person chase, 2 = looking back in third person (RE style)
+            
             // remember current view mode and switch to reverse (only if not already)
             if (minecraft.gameSettings.thirdPersonView != 2)
             {
+                log("prevViewMode: " + prevViewMode);
                 prevViewMode = minecraft.gameSettings.thirdPersonView; 
-                minecraft.gameSettings.thirdPersonView = 2; // switch to 3rd-person REVERSE view
+                
+                minecraft.gameSettings.thirdPersonView = 2;
             }
         }
         else if (prevViewMode != 2 && minecraft.gameSettings.thirdPersonView == 2) // return to original view after look back key released
@@ -678,15 +684,16 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
     }
     
     @Override
-    public boolean attackEntityFrom(DamageSource damageSource, int i)
+    public boolean attackEntityFrom(DamageSource damageSource, int damageAmount)
     {
-        if (!super.attackEntityFrom(damageSource, i)) return false; // no hit
+        if (!super.attackEntityFrom(damageSource, damageAmount)) return false; // no hit
+        
+        Entity attackingEntity = damageSource.getEntity();
+        log("Attacked by entity " + attackingEntity + " with amount " + damageAmount);
 
         // take damage sound
         worldObj.playSoundAtEntity(this, "random.bowhit", 1f, 1f);
 
-        Entity attackingEntity = damageSource.getEntity();
-        
         // activate AI for empty helicopter hit by another helicopter
         if (riddenByEntity == null && attackingEntity instanceof ThxEntityHelicopter)
         {
@@ -710,7 +717,7 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
             }
         }
                
-        takeDamage((float) i * 3f);
+        takeDamage((float) damageAmount * 3f);
         helper.addChatMessage(this + " - Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
 
         timeSinceAttacked = .5f; // sec delay before this entity can be attacked again
@@ -836,11 +843,9 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
         if (missileDelay > 0f) return;
         missileDelay = MISSILE_DELAY;
                 
-        // queue fire command for next server packet
-        //fire2 = 1;
-        
         if (worldObj.isRemote)
         {
+	        // queue fire command for next server packet
             fire2 = 1;
             return;
         }
@@ -852,6 +857,29 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
     public void spawn(Packet230ModLoader packet)
     {
         helper.spawn(packet);
+    }
+    
+    void attackedByPilot()
+    {
+        fireMissile();
+        /* 
+        exit_helicopter_and_convert_back_to_item:
+        {
+            //riddenByEntity.mountEntity(this);
+            pilotExit();
+            setEntityDead();
+            if (this instanceof ThxEntityHelicopter && !worldObj.isRemote)
+            {
+                // could add a dropItem() method for subclasses instead of instanceof
+                dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0);
+            }
+        }
+        */
+    }
+    
+    void interactByPilot()
+    {
+        fireRocket();
     }
 }
 

@@ -27,13 +27,14 @@ public abstract class ThxEntity extends Entity
     float rotationPitchSpeed;
     float rotationRollSpeed;
 
-    Vector3 pos;
-    Vector3 vel;
-    Vector3 ypr;
-
-    Vector3 fwd;
-    Vector3 side;
-    Vector3 up;
+    Vector3 pos = new Vector3(); // position
+    Vector3 vel = new Vector3(); // velocity
+    Vector3 ypr = new Vector3(); // yaw, pitch, roll
+    
+    // vectors relative to entity orientation
+    Vector3 fwd  = new Vector3(); // straight ahead
+    Vector3 side = new Vector3(); // left side perp
+    Vector3 up   = new Vector3(); // up
     
     ThxEntityHelper helper;
     Packet230ModLoader latestUpdatePacket;
@@ -53,22 +54,16 @@ public abstract class ThxEntity extends Entity
     float timeSinceAttacked;
     float timeSinceCollided;
     
+    boolean isMpClient;
+    
     public ThxEntity(World world)
     {
         super(world);
 
-        log(world.isRemote ? "Created new MP entity" : "Created new SP entity");
+        isMpClient = world.isRemote;
+        log(isMpClient ? "Created new MP client entity" : "Created new SP/MP master entity");
 
         preventEntitySpawning = true;
-
-        // vectors relative to entity orientation
-        fwd = new Vector3();
-        side = new Vector3();
-        up = new Vector3();
-
-        pos = new Vector3();
-        vel = new Vector3();
-        ypr = new Vector3();
 
         prevTime = System.nanoTime();
     }
@@ -164,6 +159,7 @@ public abstract class ThxEntity extends Entity
         ypr.z = rotationRoll;
     }
 
+    /*
     public Vector3 getForward()
     {
         float f3 = MathHelper.sin(-rotationYaw * 0.01745329F - 3.141593F);
@@ -172,6 +168,7 @@ public abstract class ThxEntity extends Entity
         float f7 = MathHelper.sin(-rotationPitch * 0.01745329F);
         return new Vector3(f3 * f5, f7, f1 * f5);
     }
+    */
 
     @Override
     public void setEntityDead()
@@ -258,6 +255,11 @@ public abstract class ThxEntity extends Entity
         
         return packet;
     }
+
+    /* subclasses can react to player pilot right click, e.g. helicopter fires missile */
+    void interactByPilot()
+    {
+    }
     
     @Override
     public boolean interact(EntityPlayer player)
@@ -266,16 +268,7 @@ public abstract class ThxEntity extends Entity
         
         if (player.equals(riddenByEntity))
         {
-            if (onGround || isCollidedVertically)
-            {
-                log("Landed and exited");
-            }
-            else 
-            {
-                log("Exited without landing");
-            }
-            //pilotExit();
-            //return true;
+            interactByPilot();
             return false;
         }
         
@@ -329,29 +322,27 @@ public abstract class ThxEntity extends Entity
     }
     
     @Override
-    public boolean attackEntityFrom(DamageSource damageSource, int i)
+    public boolean attackEntityFrom(DamageSource damageSource, int damageAmount)
     {
-        log("attackEntityFrom called with damageSource: " + damageSource);
+        log("attackEntityFrom called with damageSource: " + damageSource + " with amount " + damageAmount);
 
         if (timeSinceAttacked > 0f || isDead || damageSource == null) return false;
 
         Entity attackingEntity = damageSource.getEntity();
         if (attackingEntity == null) return false; // when is this the case?
-        if (attackingEntity.equals(this)) return false; // ignore damage from self
+        if (attackingEntity.equals(this)) return false; // ignore damage from self?
         if (attackingEntity.equals(riddenByEntity))
         {
-            //riddenByEntity.mountEntity(this);
-            pilotExit();
-            setEntityDead();
-            if (this instanceof ThxEntityHelicopter && !worldObj.isRemote)
-            {
-                // could add a dropItem() method for subclasses instead of instanceof
-                dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0);
-            }
-            return false; // ignore damage from pilot
+            attackedByPilot();
+            return false; // ignore attach by pilot (player left click)
         }
         log("attacked by entity: " + attackingEntity);
         return true; // hit landed
+    }
+    
+    /* subclasses can react to player left click, e.g. helicopter fires rocket */
+    void attackedByPilot()
+    {
     }
     
     @Override

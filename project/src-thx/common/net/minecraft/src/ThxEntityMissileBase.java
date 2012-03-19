@@ -3,18 +3,18 @@ package net.minecraft.src;
 public abstract class ThxEntityMissileBase extends ThxEntity
 {
     final float MAX_ACCEL    = 0.60f;
-    //final float MAX_VELOCITY = 0.60f;
     final float MAX_VELOCITY = 0.50f;
     final float GRAVITY      = 0.005f;
 
-    final int MAX_AGE_TICKS = 600; // there are 20 ticks in a second
+    final int MAX_AGE_TICKS = 100; //600; // there are 20 ticks in a second
     
     final float EXHAUST_DELAY = .04f;
     
     float exhaustTimer = 0f;
     
     boolean launched;
-    Vector3 thrust;
+    
+    Vector3 thrust = new Vector3();
     
     public ThxEntityHelicopter targetHelicopter;
 
@@ -27,8 +27,6 @@ public abstract class ThxEntityMissileBase extends ThxEntity
         helper = createHelper();
         
         setSize(0.25f, 0.25f);
-
-	    thrust = new Vector3();
 
         NET_PACKET_TYPE = 77;
     }
@@ -54,24 +52,18 @@ public abstract class ThxEntityMissileBase extends ThxEntity
         motionZ = thrust.z;
     }
 
+    /*
+    // client can override to play launch sound, other effects
+    void onLaunch()
+    {
+        log("onLaunch()");
+    }
+    */
+    
     @Override
     public void onUpdate()
     {
         super.onUpdate();
-        
-        if (!launched)
-        {
-            launched = true;
-	        worldObj.playSoundAtEntity(this, "mob.ghast.fireball", 1f, 1f);
-        }
-
-        exhaustTimer -= deltaTime;
-        if (exhaustTimer < 0f)
-        {
-            exhaustTimer = EXHAUST_DELAY;
-            worldObj.spawnParticle("largesmoke", posX, posY, posZ, 0.0, 0.0, 0.0);
-        }
-        worldObj.spawnParticle("smoke", posX, posY, posZ, 0.0, 0.0, 0.0);
         
         // guide missile to target helicopter
         Vector3 toTarget = new Vector3();
@@ -120,10 +112,27 @@ public abstract class ThxEntityMissileBase extends ThxEntity
         Vector3 courseChange = Vector3.subtract(dPos, motion, null);
         if (courseChange.lengthSquared() > .001 || ticksExisted > MAX_AGE_TICKS)
         {
-            float power = 2f;
-            boolean flaming = false;
-            worldObj.newExplosion(this, posX, posY, posZ, power, flaming);
-            setEntityDead();
+            float yaw = rotationYaw;
+            float pitch = rotationPitch + 5f;
+                    
+            /*
+            EntityChicken newChicken = new EntityChicken(worldObj);
+            newChicken.setPositionAndRotation(posX, posY, posZ, yaw, pitch);
+            worldObj.spawnEntityInWorld(newChicken);
+	        setEntityDead(); // otherwise, creates many many chickens!
+            return;
+            */
+        
+            /*
+	        float power = 2f;
+	        boolean flaming = false;
+	        worldObj.newExplosion(this, posX, posY, posZ, power, flaming);
+	        */
+            
+	        float power = .9f;
+	        boolean flaming = true;
+	        worldObj.newExplosion(this, posX, posY, posZ, power, flaming);
+	        setEntityDead(); // call on both client and server?
         }
     }
 }

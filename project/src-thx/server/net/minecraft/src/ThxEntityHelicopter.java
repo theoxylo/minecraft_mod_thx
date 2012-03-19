@@ -28,26 +28,6 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
     @Override
     public void onUpdate()
     {
-        /*
-        // adjust position height to avoid collisions
-        List list = worldObj.getCollidingBoundingBoxes(this, boundingBox.contract(0.03125, 0.0, 0.03125));
-        if (list.size() > 0)
-        {
-            double d3 = 0.0D;
-            for (int j = 0; j < list.size(); j++)
-            {
-                AxisAlignedBB axisalignedbb = (AxisAlignedBB)list.get(j);
-                if (axisalignedbb.maxY > d3)
-                {
-                    d3 = axisalignedbb.maxY;
-                }
-            }
-
-            posY += d3 - boundingBox.minY;
-            setPosition(posX, posY, posZ);
-        }
-        */
-
         helper.applyUpdatePacketFromClient();    
         
         super.onUpdate();
@@ -95,6 +75,24 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
     
     protected void onUpdateVacant()
     {
+        // adjust position height to avoid collisions
+        List list = worldObj.getCollidingBoundingBoxes(this, boundingBox.contract(0.03125, 0.0, 0.03125));
+        if (list.size() > 0)
+        {
+            double d3 = 0.0D;
+            for (int j = 0; j < list.size(); j++)
+            {
+                AxisAlignedBB axisalignedbb = (AxisAlignedBB)list.get(j);
+                if (axisalignedbb.maxY > d3)
+                {
+                    d3 = axisalignedbb.maxY;
+                }
+            }
+
+            posY += d3 - boundingBox.minY;
+            setPosition(posX, posY, posZ);
+        }
+
         if (throttle > .001) log("throttle: " + throttle);
         
         throttle *= .6; // quickly zero throttle
@@ -163,14 +161,6 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
 
     }
  
-    static class Keyboard // no-op replacement for client-side org.lwjgl.input.Keyboard
-    {
-	    public static boolean isKeyDown(int key)
-	    {
-	        return false;
-	    }
-    }
-    
     /* from ISpawnable interface */
     public Packet230ModLoader getSpawnPacket()
     {

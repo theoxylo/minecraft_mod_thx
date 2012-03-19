@@ -9,7 +9,6 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
     float MAX_HEALTH = 160f;
 
     float MAX_ACCEL    = 0.2000f;
-    //float GRAVITY      = 0.201f;
     float GRAVITY      = 0.2005f;
     float MAX_VELOCITY = 0.30f;
     float FRICTION = 0.98f;
@@ -42,14 +41,12 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
     
     float createMapDelay;
     
-    int prevViewMode = 2;
-    
     float missileDelay;
     final float MISSILE_DELAY = 6f;
 
     float rocketDelay;
     //final float ROCKET_DELAY = .12f;
-    final float ROCKET_DELAY = .20f;
+    final float ROCKET_DELAY = .001f; // now controlled by interact rate //.20f;
     final int FULL_ROCKET_COUNT = 12;
     float rocketReload;
     final float ROCKET_RELOAD_DELAY = 3f;
@@ -57,6 +54,9 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
     float autoLevelDelay;
     float exitDelay;
     
+    Vector3 thrust = new Vector3();
+    Vector3 velocity = new Vector3();
+	    
     public ThxEntityHelicopterBase(World world)
     {
         super(world);
@@ -178,10 +178,6 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
     void updateMotion(boolean altitudeLock)
     {
         // now calculate thrust and velocity based on yaw, pitch, roll, throttle
-        
-	    // Vectors for repeated calculations
-	    Vector3 thrust = new Vector3();
-	    Vector3 velocity = new Vector3();
     
         ascendDescendLift:
         {
@@ -352,4 +348,28 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
         
         riddenByEntity.setPosition(posX, posY + riddenByEntity.getYOffset() + getMountedYOffset(), posZ);
     }
+    
+    /*
+    void attackedByPilot()
+    {
+        exit_helicopter_and_convert_back_to_item:
+        {
+            //riddenByEntity.mountEntity(this);
+            pilotExit();
+            setEntityDead();
+            if (!worldObj.isRemote)
+            {
+                dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0);
+            }
+        }
+    }
+    */
+    
+    /*
+    void interactByPilot()
+    {
+        fireMissile();
+    }
+    */
 }
+
