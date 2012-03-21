@@ -41,7 +41,7 @@ public class mod_Thx extends BaseModMp
         {
             boolean hasOwner = true;
             ModLoaderMp.registerEntityTrackerEntry(ThxEntityRocket.class, hasOwner, 76);
-            ModLoaderMp.registerEntityTracker(ThxEntityRocket.class, distance, frequency);
+            ModLoaderMp.registerEntityTracker(ThxEntityRocket.class, distance, /*frequency*/ 4);
             
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Rocket with entity id " + entityId);
@@ -50,7 +50,7 @@ public class mod_Thx extends BaseModMp
         missile:
         {
             ModLoaderMp.registerEntityTrackerEntry(ThxEntityMissile.class, 77);
-            ModLoaderMp.registerEntityTracker(ThxEntityMissile.class, distance, frequency);
+            ModLoaderMp.registerEntityTracker(ThxEntityMissile.class, distance, /*frequency*/ 4);
             
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Missile with entity id " + entityId);
@@ -98,7 +98,7 @@ public class mod_Thx extends BaseModMp
 
         if (player.ridingEntity instanceof IClientDriven)
         {
-            // log("Packet is for helicopter update");
+            // TODO: try calling applyUpdatePacket(packet);
             ((ThxEntity) player.ridingEntity).latestUpdatePacket = packet;
         }
     }

@@ -8,118 +8,51 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
     public ThxEntityHelicopter(World world)
     {
         super(world);
-        
 	    helper = new ThxEntityHelperServer(this);
-	    
-        setSize(1.8f, 2f);
-        yOffset = .6f;
-        NET_PACKET_TYPE = 75;
-        log("C1 - ThxEntityHelicopter() with world: " + world.getWorldInfo());
     }
 
     public ThxEntityHelicopter(World world, double x, double y, double z, float yaw)
     {
         this(world);
-        
         setPositionAndRotation(x, y + yOffset, z, yaw, 0f);
-        log("C2 - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ + ", yaw: " + yaw);
     }
 
     @Override
-    public void onUpdate()
+    public void onUpdatePilot()
     {
-        helper.applyUpdatePacketFromClient();    
+        if (riddenByEntity == null) return;
         
-        super.onUpdate();
+        if (riddenByEntity.isDead) riddenByEntity.mountEntity(this);
         
-        if (riddenByEntity != null)
+        if (cmd_reload > 0)
         {
-            // entity updates will come from client for player pilot
-            
-            if (riddenByEntity.isDead) riddenByEntity.mountEntity(this);
-	        
-	        // fire weapons and clear flags
-            if (fire1 > 0)
-            {
-                fire1 = 0;
-                fireRocket();
-            }
-            if (fire2 > 0)
-            {
-                fire2 = 0;
-                fireMissile();
-            }
-            if (cmd_exit > 0)
-            {
-                cmd_exit = 0;
-                pilotExit();
-            }
-            if (cmd_create_map > 0)
-            {
-                cmd_create_map = 0;
-                createMap();
-            }
+            cmd_reload = 0;
+            reload();
         }
-        else
-        {
-	        // for auto-heal unattended, otherwise damage set by pilot client
-	        if (damage > 0f) damage -= deltaTime; // heal rate: 1 pt / sec
-	
-	        onUpdateVacant();
-        }
-            
-        moveEntity(motionX, motionY, motionZ);
         
-        handleCollisions();
+        if (cmd_create_item > 0)
+        {
+            cmd_create_item = 0;
+            //convertToItem();
+        }
+        
+        if (cmd_exit > 0)
+        {
+            cmd_exit = 0;
+            pilotExit();
+        }
+        
+        if (cmd_create_map > 0)
+        {
+            cmd_create_map = 0;
+            createMap();
+        }
     }
     
-    protected void onUpdateVacant()
+    @Override
+    void updateMotion(boolean flag)
     {
-        // adjust position height to avoid collisions
-        List list = worldObj.getCollidingBoundingBoxes(this, boundingBox.contract(0.03125, 0.0, 0.03125));
-        if (list.size() > 0)
-        {
-            double d3 = 0.0D;
-            for (int j = 0; j < list.size(); j++)
-            {
-                AxisAlignedBB axisalignedbb = (AxisAlignedBB)list.get(j);
-                if (axisalignedbb.maxY > d3)
-                {
-                    d3 = axisalignedbb.maxY;
-                }
-            }
-
-            posY += d3 - boundingBox.minY;
-            setPosition(posX, posY, posZ);
-        }
-
-        if (throttle > .001) log("throttle: " + throttle);
-        
-        throttle *= .6; // quickly zero throttle
-        
-        if (onGround || inWater)
-        {
-            if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
-            if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
-                
-            // tend to stay put on ground
-            motionY = 0.;
-            motionX *= .7;
-            motionZ *= .7;
-                
-            rotationYawSpeed = 0f;
-        }
-        else
-        {
-            // settle back to ground naturally if pilot bails
-                
-            rotationPitch *= PITCH_RETURN;
-            rotationRoll *= ROLL_RETURN;
-                
-            motionX *= FRICTION;
-            motionY -= GRAVITY * .16f * deltaTime / .05f;
-            motionZ *= FRICTION;
-        }
+        moveEntity(motionX, motionY, motionZ);
     }
     
     @Override
@@ -165,5 +98,23 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
     public Packet230ModLoader getSpawnPacket()
     {
         return helper.getSpawnPacket();
+    }
+    
+    @Override
+    public void updateRiderPosition()
+    {
+        if (riddenByEntity == null) return;
+        
+        super.updateRiderPosition();
+        
+        /* broken! causes fixed pilot until teleport when exit, interesting rotation acceleration on view makes it hard to play even as rc drone
+        if (getDistanceSqToEntity(riddenByEntity) > 4)
+        {
+            System.out.println("Teleporting pilot to helicopter location");
+            
+	        EntityPlayerMP pilot = (EntityPlayerMP) riddenByEntity;
+	        pilot.playerNetServerHandler.teleportTo(posX, posY + riddenByEntity.getYOffset() + getMountedYOffset(), posZ, rotationYaw, 0f);
+        }
+        */
     }
 }

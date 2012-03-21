@@ -95,10 +95,8 @@ public class ThxConfig
         writeFile = ensureDefault(props, "key_lock_alt", Keyboard.getKeyName(Keyboard.KEY_P)) || writeFile;
         writeFile = ensureDefault(props, "rotor_speed_percent", "70") || writeFile;
         writeFile = ensureDefault(props, "enable_look_yaw", "true") || writeFile;
-        writeFile = ensureDefault(props, "enable_drone_mode", "false") || writeFile;
         writeFile = ensureDefault(props, "enable_rotor", "true") || writeFile;
         writeFile = ensureDefault(props, "enable_auto_level", "true") || writeFile;
-        //writeFile = ensureDefault(props, "enable_look_down_trans", "true") || writeFile;
         writeFile = ensureDefault(props, "enable_auto_throttle_zero", "true") || writeFile;
         
         log("Loaded properties: " + props);

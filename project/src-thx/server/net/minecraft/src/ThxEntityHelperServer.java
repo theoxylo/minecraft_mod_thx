@@ -22,22 +22,18 @@ public class ThxEntityHelperServer extends ThxEntityHelper
         return packet;
     }
         
-    void applyUpdatePacketFromClient()
+    void applyUpdatePacket(Packet230ModLoader packet)
     {
-        //plog("applyUpdatePacketFromClient: " + latestUpdatePacket);
+        if (packet == null) return;
         
-        if (entity.latestUpdatePacket == null) return;
-        
-        Packet230ModLoader packet = entity.latestUpdatePacket;
-        entity.latestUpdatePacket = null;
+        entity.plog("applyUpdatePacket: " + packet);
         
         // fire controls, used by server to spawn projectiles
-        entity.fire1 = packet.dataInt[2];
-        entity.fire2 = packet.dataInt[3];
-        if (entity.fire1 > 0 || entity.fire2 > 0) log("entity is firing: " + entity.fire1 + ", " + entity.fire2);
+        entity.cmd_reload      = packet.dataInt[2];
+        entity.cmd_create_item = packet.dataInt[3];
         
-        entity.cmd_exit = packet.dataInt[5];
-        entity.cmd_create_map = packet.dataInt[6];
+        entity.cmd_exit        = packet.dataInt[5];
+        entity.cmd_create_map  = packet.dataInt[6];
         
         entity.setPositionAndRotation(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2], packet.dataFloat[3], packet.dataFloat[4]);
         
@@ -65,5 +61,11 @@ public class ThxEntityHelperServer extends ThxEntityHelper
         {
             entity.updateRiderPosition();
         }
+    }
+
+    @Override
+    void addChatMessage(String s)
+    {
+        log("chatMessage: " + s);
     }
 }

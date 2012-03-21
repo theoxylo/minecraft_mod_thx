@@ -69,13 +69,6 @@ public class ThxConfig
         
         // add any missing properties using default values
         writeFile = ensureDefault(props, "enable_logging", "false") || writeFile;
-        writeFile = ensureDefault(props, "rotor_speed_percent", "70") || writeFile;
-        writeFile = ensureDefault(props, "enable_look_yaw", "true") || writeFile;
-        writeFile = ensureDefault(props, "enable_drone_mode", "false") || writeFile;
-        writeFile = ensureDefault(props, "enable_rotor", "true") || writeFile;
-        writeFile = ensureDefault(props, "enable_auto_level", "true") || writeFile;
-        //writeFile = ensureDefault(props, "enable_look_down_trans", "true") || writeFile;
-        writeFile = ensureDefault(props, "enable_auto_throttle_zero", "true") || writeFile;
         
         log("Loaded properties: " + props);
         

@@ -20,11 +20,11 @@ public class ThxEntityHelper
         throw new RuntimeException("not implemented");
     }
 
-    void applyUpdatePacketFromServer()
+    void applyUpdatePacket(Packet230ModLoader updatePacket)
     {
-        throw new RuntimeException("not implemented");
+        // to be overridden by client and server specific subclasses
     }
-
+    
     void sendUpdatePacketToServer(Packet230ModLoader updatePacket)
     {
         throw new RuntimeException("not implemented");
@@ -51,10 +51,5 @@ public class ThxEntityHelper
     void log(String s)
     {
         entity.log(s);
-    }
-
-    void applyUpdatePacketFromClient()
-    {
-        throw new RuntimeException("not implemented");
     }
 }

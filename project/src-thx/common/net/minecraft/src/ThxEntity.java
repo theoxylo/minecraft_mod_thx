@@ -37,11 +37,12 @@ public abstract class ThxEntity extends Entity
     Vector3 up   = new Vector3(); // up
     
     ThxEntityHelper helper;
+    
     Packet230ModLoader latestUpdatePacket;
     int NET_PACKET_TYPE;
     
-    int fire1;
-    int fire2;
+    int cmd_reload;
+    int cmd_create_item;
     int cmd_exit;
     int cmd_create_map;
     
@@ -67,10 +68,19 @@ public abstract class ThxEntity extends Entity
 
         prevTime = System.nanoTime();
     }
-
+    
+    void applyUpdatePacket()
+    {
+        if (helper == null) return;
+        helper.applyUpdatePacket(latestUpdatePacket); // this will apply client and server update packets if IClientDriven
+        latestUpdatePacket = null;
+    }
+    
     @Override
     public void onUpdate()
     {
+        applyUpdatePacket();
+        
         ticksExisted++;
         int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
         plog(String.format("start onUpdate, pilot %d [posX: %5.2f, posY: %5.2f, posZ: %5.2f, yaw: %5.2f]", riddenById, posX, posY, posZ, rotationYaw));
@@ -228,15 +238,15 @@ public abstract class ThxEntity extends Entity
         packet.dataInt = new int[7];
         packet.dataInt[0] = entityId;
         packet.dataInt[1] = riddenByEntity != null ? riddenByEntity.entityId : 0;
-        packet.dataInt[2] = fire1;
-        packet.dataInt[3] = fire2;
+        packet.dataInt[2] = cmd_reload;
+        packet.dataInt[3] = cmd_create_item;
         packet.dataInt[4] = owner != null ? owner.entityId : 0;
         packet.dataInt[5] = cmd_exit;
         packet.dataInt[6] = cmd_create_map;
         
         // clear cmd flags after setting them in packet
-        fire1 = 0;
-        fire2 = 0;
+        cmd_reload = 0;
+        cmd_create_item = 0;
         cmd_exit = 0;
 		cmd_create_map = 0;
 		
@@ -292,11 +302,12 @@ public abstract class ThxEntity extends Entity
             }
         }
         
-        // new pilot boarding
+        // new pilot boarding!
         if (!worldObj.isRemote)
         {
 	        log("interact() calling mountEntity on player " + player.entityId);
 	        player.mountEntity(this);
+	        owner = player;
         }
         
         player.rotationYaw = rotationYaw;
@@ -334,7 +345,7 @@ public abstract class ThxEntity extends Entity
         if (attackingEntity.equals(riddenByEntity))
         {
             attackedByPilot();
-            return false; // ignore attach by pilot (player left click)
+            return false; // ignore attack by pilot (player left click)
         }
         log("attacked by entity: " + attackingEntity);
         return true; // hit landed

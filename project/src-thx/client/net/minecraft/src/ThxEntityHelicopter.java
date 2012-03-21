@@ -32,48 +32,23 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
         
     static boolean ENABLE_AUTO_LEVEL = ThxConfig.getBoolProperty("enable_auto_level");
     static boolean ENABLE_AUTO_THROTTLE_ZERO = ThxConfig.getBoolProperty("enable_auto_throttle_zero");
-    static boolean ENABLE_DRONE_MODE = ThxConfig.getBoolProperty("enable_drone_mode");
-    static boolean ENABLE_LOOK_YAW = ThxConfig.getBoolProperty("enable_look_yaw") && !ENABLE_DRONE_MODE;
+    static boolean ENABLE_LOOK_YAW = ThxConfig.getBoolProperty("enable_look_yaw");
         
-    boolean enable_drone_mode = ENABLE_DRONE_MODE;
-    
     int prevViewMode; // = 2; // 2 is looking back
     
+    float smokeDelay;
     
-
-    double dronePilotPosX;
-    double dronePilotPosY;
-    double dronePilotPosZ;
-    
-    // enemy AI helicopter or friend?
-    public ThxEntityHelicopter targetHelicopter;
-    public boolean isTargetHelicopterFriendly;
-    Vector3 deltaPosToTarget = new Vector3();
-
     public ThxEntityHelicopter(World world)
     {
         super(world);
-        
         helper = new ThxEntityHelperClient(this, new ThxModelHelicopter());
-
 	    minecraft = ModLoader.getMinecraftInstance();
-	    
-        setSize(1.8f, 2f);
-
-        yOffset = .6f;
-        
-        NET_PACKET_TYPE = 75;
-
-        log("C1 - ThxEntityHelicopter() with world: " + world.getWorldInfo());
     }
 
     public ThxEntityHelicopter(World world, double x, double y, double z, float yaw)
     {
         this(world);
-        
         setPositionAndRotation(x, y + yOffset, z, yaw, 0f);
-        
-        log("C2 - posX: " + posX + ", posY: " + posY + ", posZ: " + posZ + ", yaw: " + yaw);
     }
 
     public Entity getPilot()
@@ -87,15 +62,8 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
     {
         super.onUpdate();
 		
-		helper.applyUpdatePacketFromServer();
-
-        updateRotation();
-        updateVectors();
-        
-        // for auto-heal: 
-        if (damage > 0f) damage -= deltaTime; // heal rate: 1 pt / sec
-
         // create smoke to indicate damage
+        smokeDelay -= deltaTime;
         if (smokeDelay < 0f)
         {
             smokeDelay = 1f - damage / MAX_HEALTH;
@@ -110,74 +78,29 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
             }
             if (damage / MAX_HEALTH > .75f) worldObj.spawnParticle("flame", posX -.5f + Math.random(), posY -.5f + Math.random(), posZ -.5f + Math.random(), 0.0, 0.0, 0.0);
         }
+    }
+    
+    void onUpdatePilot()
+    {
+        if (riddenByEntity == null) return;
         
-        // decrement cooldown timers
-        smokeDelay   -= deltaTime;
-        missileDelay -= deltaTime;
-        rocketDelay  -= deltaTime;
-        
-        if (rocketReload > 0f)
-        {
-	        rocketReload -= deltaTime;
-        }
-        if (rocketReload < 0f)
-        {
-            // play sound to indicate rocket reload is complete
-            rocketReload = 0f;
-            worldObj.playSoundAtEntity(this, "random.click",  .4f, .7f); // volume, pitch
-        }
-        
-        // adjust model rotor speed to match old throttle
+        // adjust model rotor speed to match throttle
         float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
         ((ThxModelHelicopter) helper.model).rotorSpeed = power / 2f + .75f;
         
-        if (worldObj.isRemote && riddenByEntity != null && !minecraft.thePlayer.equals(riddenByEntity))
+        if (!minecraft.thePlayer.equals(riddenByEntity))
         {
-	        // piloted by other player client, so just update from server and be done
-            // pos, motion already handled in super.onUpdate() for IClientDriven
-        }
-        else if (minecraft.thePlayer.equals(riddenByEntity))
-        {
-	        // piloted by current player
-            onUpdatePlayerPilot();
-        }
-        else if (targetHelicopter != null)
-        {
-	        // drone, ai is engaged
-            onUpdateDrone();
-        }
-        else
-        {
-            // unattended helicopter
-            
-	        ((ThxModelHelicopter) helper.model).rotorSpeed = 0f;
-	        
-            onUpdateVacant(); // effective for single player only. for smp, handled by server
+	        // piloted by other player mp client, so already updated by server packet
+            return;
         }
         
-        // convert pitch, roll, and throttle into thrust and call moveEntity
-        updateMotion(altitudeLock);
-            
-        if (handleCollisions())
-        {
-	        helper.addChatMessage(this + " - Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
-        }
+        // player is the pilot
         
-        if (minecraft.thePlayer.equals(riddenByEntity))
-        {
-            //if (ticksExisted % UPDATE_RATE == 0)
-            helper.sendUpdatePacketToServer(getUpdatePacket());
-        }
-    }
-    
-    private void onUpdatePlayerPilot()
-    {
         Entity pilot = getPilot();
-        
         if (!worldObj.isRemote && pilot != null && pilot.isDead)
         {
             //riddenByEntity = null;
-            pilot.mountEntity(this);
+            pilot.mountEntity(this); // unmount
         }
             
         if (onGround) // very slow on ground
@@ -203,6 +126,9 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
             motionY += 0.01;
         }
                         
+        // short-circuit if any GUI is open (including console or chat) to prevent keyboard commands
+        if (minecraft.currentScreen != null) return;
+        
         createMapDelay -= deltaTime;
         if (Keyboard.isKeyDown(KEY_CREATE_MAP) && createMapDelay < 0f && pilot != null)
         {
@@ -307,25 +233,11 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
             altitudeLock = !altitudeLock;
         }
 
-        // FIRE ROCKET
-        if (Keyboard.isKeyDown(KEY_FIRE_ROCKET))
-        {
-            fireRocket();
-        }
-            
-        // MANUAL ROCKET RELOAD
+        // MANUAL ROCKET RELOAD 
+        // TODO: need to move to server packet command
         if (Keyboard.isKeyDown(KEY_ROCKET_RELOAD) && rocketCount > 0)
         {
-            worldObj.playSoundAtEntity(this, "random.click",  .4f, .4f); // volume, pitch
-                
-            rocketReload = ROCKET_RELOAD_DELAY;
-            rocketCount = 0;
-        }
-
-        // FIRE MISSILE
-        if (Keyboard.isKeyDown(KEY_FIRE_MISSILE))
-        {
-            fireMissile();
+            reload();
         }
 
         if (ENABLE_LOOK_YAW && pilot != null)
@@ -550,137 +462,15 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
             
 	        //altitudeLock = true; // no falling during pitch/roll -- beginner mode 
         }
+        
+        helper.sendUpdatePacketToServer(getUpdatePacket());
     }
     
-    private void onUpdateDrone()
+    void onUpdateVacant()
     {
-        if (targetHelicopter == null) return;
-    
-        float thd = 0f; // thd is targetHelicopter distance
-        if (targetHelicopter != null)
-        {
-            deltaPosToTarget.set((float)(targetHelicopter.posX - posX), 0f, (float)(targetHelicopter.posZ - posZ));
-            thd = deltaPosToTarget.length();
-        }
-            
-        if (!isTargetHelicopterFriendly 
-                && thd < 20f 
-                && thd > 5f 
-                && Math.abs(targetHelicopter.posY - posY) < 2f 
-           )
-        {
-            // fire rocket
-        }
+        super.onUpdateVacant();
         
-        // YAW
-        if (isTargetHelicopterFriendly && thd < 10f)
-        {
-            // mimic friendly target yaw rotation when close by
-            float deltaYawDeg = targetHelicopter.rotationYaw - rotationYaw;
-
-            while (deltaYawDeg > 180f) deltaYawDeg -= 360f;
-            while (deltaYawDeg < -180f) deltaYawDeg += 360f;
-
-            rotationYawSpeed = deltaYawDeg * 3f; // saving this for render use
-            if (rotationYawSpeed > 90f) rotationYawSpeed = 90f;
-            if (rotationYawSpeed < -90f) rotationYawSpeed = -90f;
-            rotationYaw += rotationYawSpeed * deltaTime;
-        }
-        else
-        {
-            // turn toward target helicopter
-                
-            Vector3 deltaPos = Vector3.add(targetHelicopter.pos, pos.negate(null), null);
-            //deltaPos.add(vel, deltaPos, deltaPos);
-                
-            if (Vector3.dot(side, deltaPos) > 0f)
-            {
-                rotationYaw += 60f * deltaTime;
-            }
-            else
-            {
-                rotationYaw -= 60f * deltaTime;
-            }
-        }
-        
-        // PITCH
-        if (thd > 10f)
-        {
-            rotationPitch = 45f * (thd - 10f) / 20f;
-        }
-		else 
-	    {
-		   if (!isTargetHelicopterFriendly) rotationPitch =  (1 - (thd / 10f)) * -20f;// -20f;
-	    }
-        rotationPitchSpeed = 0f;
-        
-        
-        if (isTargetHelicopterFriendly && thd < 10f)
-        {
-            rotationPitch = targetHelicopter.rotationPitch;
-            rotationPitchSpeed = targetHelicopter.rotationPitchSpeed;
-                
-            rotationRoll = targetHelicopter.rotationRoll;
-            rotationRollSpeed = targetHelicopter.rotationRollSpeed;
-        }
-
-        if (posY + 1f < targetHelicopter.posY)
-        {
-            if (throttle < THROTTLE_MAX * .6f) throttle += THROTTLE_INC * .4f;
-            if (throttle > THROTTLE_MAX * .6f) throttle = THROTTLE_MAX * .6f;
-        }
-        else if (posY - 2f > targetHelicopter.posY)
-        {
-            if (throttle > THROTTLE_MIN * .6f) throttle -= THROTTLE_INC * .4f;
-            if (throttle < THROTTLE_MIN * .6f) throttle = THROTTLE_MIN * .6f;
-        }
-        else
-        {
-            throttle *= .6; // auto zero throttle   
-        }
-    }
-    
-    protected void onUpdateVacant()
-    {
-        throttle *= .6; // quickly zero throttle
-        
-        ((ThxModel) helper.model).visible = true;
-
-        if (onGround) // very slow on ground
-        {
-            if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
-            if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
-
-            // double apply friction when on ground
-            motionX *= FRICTION;
-            motionY = 0.0;
-            motionZ *= FRICTION;
-                
-            rotationYawSpeed = 0f;
-        }
-        else if (inWater)
-        {
-            if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
-            if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
-                
-            motionX *= .7;
-            motionY *= .7;
-            motionZ *= .7;
-            
-            // float up
-            motionY += 0.01;
-        }
-        else
-        {
-            // settle back to ground naturally if pilot bails
-                
-            rotationPitch *= PITCH_RETURN;
-            rotationRoll *= ROLL_RETURN;
-                
-            motionX *= FRICTION;
-            motionY -= (GRAVITY / 2f) * deltaTime; // weakened gravity since no thrust
-            motionZ *= FRICTION;
-        }
+        ((ThxModelHelicopter) helper.model).rotorSpeed = 0f;
     }
     
     @Override
@@ -740,37 +530,12 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
         // inactivate ai
         targetHelicopter = null;
             
-        if (ENABLE_DRONE_MODE)
-        {
-            // store original position of pilot
-            dronePilotPosX = player.posX;
-            dronePilotPosY = player.posY;
-            dronePilotPosZ = player.posZ;
-        }
-        else
-        {
-            enable_drone_mode = false;
-            player.rotationYaw = rotationYaw;
-        }
+        player.rotationYaw = rotationYaw;
         
-        log("interact() added pilot: " + player);
+        log("interact() added pilot: " + player + ", " + player.entityId);
         return true;
     }
 
-    @Override
-    public void updateRiderPosition()
-    {
-        if (!enable_drone_mode)
-        {
-	        super.updateRiderPosition();
-            return;
-        }
-        else
-        {
-            riddenByEntity.setPosition(dronePilotPosX, dronePilotPosY, dronePilotPosZ);
-        }
-    }
-    
     double getPilotPositionAdjustment()
     {
         return 0.0;
@@ -788,17 +553,11 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
         // clear pitch speed to prevent judder
         rotationPitchSpeed = 0f;
         
-        if (enable_drone_mode) 
-        {
-            enable_drone_mode = false;
-            return;
-        }
-        
         Entity pilot = riddenByEntity;
         if (!worldObj.isRemote)
         {
             log("pilotExit() calling mountEntity on player " + pilot);
-            pilot.mountEntity(this); // riddenByEntity is now null
+            pilot.mountEntity(this); // riddenByEntity is now null // unmount
         }
         
         // place pilot to left of helicopter
@@ -807,79 +566,11 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
         pilot.setPosition(posX + fwd.z * exitDist, posY + pilot.yOffset, posZ - fwd.x * exitDist);
     }
     
-    void fireRocket()
-    {
-        if (rocketDelay > 0f) return;
-        if (rocketReload > 0f) return;
-        
-        rocketDelay = ROCKET_DELAY;
-                
-        if (worldObj.isRemote)
-        {
-            // queue fire command for server
-            fire1 = 1;
-	        rocketCount++;
-        }
-        else
-        {
-	        // aim with cursor if pilot
-	        //float yaw = riddenByEntity != null ? riddenByEntity.rotationYaw : rotationYaw;
-	        //float pitch = riddenByEntity != null ? riddenByEntity.rotationPitch : rotationPitch;
-        
-            super.fireRocket();
-        }
-        
-        if (rocketCount == FULL_ROCKET_COUNT)
-        {
-            worldObj.playSoundAtEntity(this, "random.click",  .3f, .4f); // volume, pitch
-                
-            rocketReload = ROCKET_RELOAD_DELAY;
-            rocketCount = 0;
-        }
-    }
-    
-    void fireMissile()
-    {
-        if (missileDelay > 0f) return;
-        missileDelay = MISSILE_DELAY;
-                
-        if (worldObj.isRemote)
-        {
-	        // queue fire command for next server packet
-            fire2 = 1;
-            return;
-        }
-        
-        super.fireMissile();
-    }
-    
     /* from ISpawnable interface */
     public void spawn(Packet230ModLoader packet)
     {
         helper.spawn(packet);
     }
     
-    void attackedByPilot()
-    {
-        fireMissile();
-        /* 
-        exit_helicopter_and_convert_back_to_item:
-        {
-            //riddenByEntity.mountEntity(this);
-            pilotExit();
-            setEntityDead();
-            if (this instanceof ThxEntityHelicopter && !worldObj.isRemote)
-            {
-                // could add a dropItem() method for subclasses instead of instanceof
-                dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0);
-            }
-        }
-        */
-    }
-    
-    void interactByPilot()
-    {
-        fireRocket();
-    }
 }
 

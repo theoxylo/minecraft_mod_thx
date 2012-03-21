@@ -1,19 +1,21 @@
-Minecraft THX Helicopter Mod, v016 for mc123, 20120311, mod_thx-mc123_v016_bp1
+Minecraft THX Helicopter Mod, v016 for mc123, 20120319, mod_thx-mc123_v016_bp2
 
 
 
 INTRODUCTION
 ------------
-This version is v016 BETA 2, for use with Minecraft and ModLoader 1.2.3, with ModLoaderMP 1.2.3v3 for both single- and multi-player.
+This version is v016 BETA patch 2, for use with Minecraft and ModLoader 1.2.3, with ModLoaderMP 1.2.3v3 for both single- and multi-player.
 
 You can download the compiled binary zip files from GitHub:
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_mc123_v016_client-BETA-p1.zip
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_mc123_v016_server-BETA-p1.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_mc123_v016_CLIENT-beta-p2.zip
+
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_mc123_v016_SERVER-beta-p2.zip
 
 
 And you can download the exact ModLoader and ModLoaderMP files you need from their respective download links (not affiliated with this mod):
+
 
     ModLoader client 1.2.3    : http://adf.ly/1849S
 
@@ -34,7 +36,7 @@ Please visit the forum thread to discuss, report issues, leave feedback, etc:
 
 INSTALLATION
 ------------
-There are 2 types of installation: single player and smp client, and multiplayer smp server. Please see below for details.
+There are 2 types of installation: single player and smp CLIENT, and multiplayer smp SERVER. Please see below for details.
 
 
 
@@ -66,7 +68,7 @@ There are 2 types of installation: single player and smp client, and multiplayer
         http://www.minecraftforum.net/index.php?showtopic=86765
         
 
-    2. Then add the server THX mod files from the above server download to your minecraft_server.jar.
+    2. Then add the server THX mod files from the above server download to your minecraft_server.jar. Alternate method: add just the jh.class file to your minecraft_server.jar and then put the zip download file into the server 'mods' folder.
 
 
     3. After running at least once, check out the options in file '.minecraft/mod_thx_server.options' for controls and other settings (see below for annotated listing).
@@ -116,7 +118,9 @@ Welcome to the Minecraft mod_thx Helicopter project! If you are still reading th
 ACKNOWLEDGEMENTS
 ----------------
 Thanks to vip3r for the helicopter skin.
+
 Thanks to dannyoboy007 for managing the forum topic and recruiting.
+
 Thanks to all forum participants.
 
 Special thanks to the ModLoader and MCP projects, without which this project would not be possible! 
@@ -135,9 +139,10 @@ Official YouTube playlist:
 
 ISSUES
 ------
-* client: smp "lag-up" on helicopter position?
-* client: pause accumulation bugs on rotations
-* client: rotor still spinning while paused
+* occassional self collision with rocket/missile
+* parked helicopters out of sync, can't be boarded
+* pause accumulation bugs on rotations
+* rotor still spinning while paused
 
 
 

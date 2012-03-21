@@ -96,6 +96,8 @@ public class mod_Thx extends BaseModMp
         else
         {
 	        Entity entity = ((WorldClient) ModLoader.getMinecraftInstance().theWorld).getEntityByID(entityId);
+	        
+            // TODO: try calling applyUpdatePacket(packet);
 	        if (entity instanceof ThxEntity) ((ThxEntity) entity).latestUpdatePacket = packet;
         }
     }

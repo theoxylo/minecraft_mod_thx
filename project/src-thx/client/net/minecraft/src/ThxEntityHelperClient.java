@@ -35,6 +35,7 @@ public class ThxEntityHelperClient extends ThxEntityHelper
         return false;
     }
     
+    @Override
     void addChatMessage(String s)
     {
         minecraft.ingameGUI.addChatMessage(s);
@@ -59,8 +60,8 @@ public class ThxEntityHelperClient extends ThxEntityHelper
 
         entity.entityId = packet.dataInt[0];
 
-        entity.latestUpdatePacket = packet;
-        applyUpdatePacketFromServer();
+        //entity.latestUpdatePacket = packet;
+        applyUpdatePacket(packet);
         
         entity.updateRotation();
         entity.updateVectors();
@@ -69,14 +70,11 @@ public class ThxEntityHelperClient extends ThxEntityHelper
         log("spawn(): posX: " + entity.posX + ", posY: " + entity.posY + ", posZ: " + entity.posZ);
     }
 
-    void applyUpdatePacketFromServer()
+    void applyUpdatePacket(Packet230ModLoader packet)
     {
-        if (entity.latestUpdatePacket == null) return;
+        if (packet == null) return;
         
-        Packet230ModLoader packet = entity.latestUpdatePacket;
-        entity.latestUpdatePacket = null;
-        
-        entity.plog("applyUpdatePacketFromServer: " + packet);
+        entity.plog("applyUpdatePacket: " + packet);
         
         int packetPilotId = packet.dataInt[1];
         
@@ -97,13 +95,13 @@ public class ThxEntityHelperClient extends ThxEntityHelper
         }
         
         
-        // ignore fire controls, only used by server to spawn projectiles
-        //fire1 = packet.dataInt[2];
-        //fire2 = packet.dataInt[3];
+        // ignore commands on client, only used by server to trigger methods
+        //cmd_reload = packet.dataInt[2];
+        //cmd_create_item = packet.dataInt[3];
         
         int ownerId = packet.dataInt[4];
         if (ownerId > 0) entity.owner = ((WorldClient) world).getEntityByID(ownerId);
-        log("Entity owner: " + entity.owner);
+        //log("Entity owner: " + entity.owner);
 
         entity.serverPosX = MathHelper.floor_float(packet.dataFloat[0] * 32f);
         entity.serverPosY = MathHelper.floor_float(packet.dataFloat[1] * 32f);
