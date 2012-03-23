@@ -20,33 +20,30 @@ public class ThxEntityHelper
         throw new RuntimeException("not implemented");
     }
 
-    void applyUpdatePacket(Packet230ModLoader updatePacket)
-    {
-        // to be overridden by client and server specific subclasses
-    }
-    
     void sendUpdatePacketToServer(Packet230ModLoader updatePacket)
     {
         throw new RuntimeException("not implemented");
     }
 
-    void spawn(Packet230ModLoader packet)
-    {
-        throw new RuntimeException("not implemented");
-    }
-
     // SERVER methods
     // SERVER methods
     // SERVER methods
     
+    /*
     Packet230ModLoader getSpawnPacket()
     {
         throw new RuntimeException("not implemented");
     }
+    */
     
     // COMMON methods
     // COMMON methods
     // COMMON methods
+    
+    void applyUpdatePacket(Packet230ModLoader updatePacket)
+    {
+        // to be overridden by client and server specific subclasses
+    }
     
     void log(String s)
     {

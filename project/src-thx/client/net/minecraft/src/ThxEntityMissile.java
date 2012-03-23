@@ -42,13 +42,6 @@ public class ThxEntityMissile extends ThxEntityMissileBase implements ISpawnable
         super.onUpdate();
     }
     
-    /* from ISpawnable interface */
-    @Override
-    public void spawn(Packet230ModLoader packet)
-    {
-        helper.spawn(packet);
-    }
-    
     @Override
     ThxEntityHelper createHelper()
     {

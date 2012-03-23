@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 
 import org.lwjgl.input.Keyboard;
 
-public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements IClientDriven, ISpawnable
+public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpawnable
 {    
     Minecraft minecraft;
     
@@ -62,6 +62,15 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
     {
         super.onUpdate();
 		
+        // only send if changed
+        ////Packet230ModLoader updatePacket; // move out of method for implementation
+        //Packet230ModLoader prevUpdatePacket = updatePacket;
+        //updatePacket = getUpdatePacket();
+        //if (prevUpdatePacket.equals(updatePacket)) continue;
+        
+        // try sending update packet in all cases! bandwidth?
+        helper.sendUpdatePacketToServer(getUpdatePacket());
+            
         // create smoke to indicate damage
         smokeDelay -= deltaTime;
         if (smokeDelay < 0f)
@@ -82,8 +91,6 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
     
     void onUpdatePilot()
     {
-        if (riddenByEntity == null) return;
-        
         // adjust model rotor speed to match throttle
         float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
         ((ThxModelHelicopter) helper.model).rotorSpeed = power / 2f + .75f;
@@ -211,21 +218,6 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
         // view could be switched by player using F5
         if (minecraft.gameSettings.thirdPersonView != 0) ((ThxModel) helper.model).visible = true;
 
-        exitDelay -= deltaTime;
-        if (Keyboard.isKeyDown(KEY_EXIT) && exitDelay < 0f && pilot != null)
-        {
-            exitDelay = 1f; // seconds before player can exit
-            
-            if (worldObj.isRemote)
-            {
-                cmd_exit = 1;
-            }
-            else
-            {
-	            pilotExit();
-            }
-        }
-
         altitudeLockToggleDelay -= deltaTime;
         if (Keyboard.isKeyDown(KEY_LOCK_ALT) && altitudeLockToggleDelay < 0f && pilot != null)
         {
@@ -233,10 +225,18 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
             altitudeLock = !altitudeLock;
         }
 
+        // PILOT EXIT
+        if (Keyboard.isKeyDown(KEY_EXIT) && pilot != null)
+        {
+            if (worldObj.isRemote) cmd_exit = 1; // queue for server packet
+            pilotExit();
+        }
+
         // MANUAL ROCKET RELOAD 
-        // TODO: need to move to server packet command
         if (Keyboard.isKeyDown(KEY_ROCKET_RELOAD) && rocketCount > 0)
         {
+	        if (worldObj.isRemote) cmd_reload = 1; // queue for server packet
+	        
             reload();
         }
 
@@ -463,14 +463,8 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
 	        //altitudeLock = true; // no falling during pitch/roll -- beginner mode 
         }
         
-        helper.sendUpdatePacketToServer(getUpdatePacket());
-    }
-    
-    void onUpdateVacant()
-    {
-        super.onUpdateVacant();
-        
-        ((ThxModelHelicopter) helper.model).rotorSpeed = 0f;
+        //helper.sendUpdatePacketToServer(getUpdatePacket());
+        // testing send packet after method
     }
     
     @Override
@@ -548,10 +542,16 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
         
         if (riddenByEntity == null) return;
         
-        ((ThxModel) helper.model).visible = true; // hard to find otherwise!
+        //((ThxModel) helper.model).visible = true; // hard to find otherwise!
+        //((ThxModelHelicopter) helper.model).rotorSpeed = 0f;
+        ThxModelHelicopter model = (ThxModelHelicopter) helper.model;
+        model.visible = true;
+        model.rotorSpeed = 0f;
         
-        // clear pitch speed to prevent judder
+        // clear rotation speed to prevent judder
+        rotationYawSpeed = 0f;
         rotationPitchSpeed = 0f;
+        rotationRollSpeed = 0f;
         
         Entity pilot = riddenByEntity;
         if (!worldObj.isRemote)
@@ -566,11 +566,12 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
         pilot.setPosition(posX + fwd.z * exitDist, posY + pilot.yOffset, posZ - fwd.x * exitDist);
     }
     
-    /* from ISpawnable interface */
-    public void spawn(Packet230ModLoader packet)
+    @Override
+    void reload()
     {
-        helper.spawn(packet);
+        super.reload();
+        
+        worldObj.playSoundAtEntity(this, "random.click",  .4f, .4f); // volume, pitch
     }
-    
 }
 

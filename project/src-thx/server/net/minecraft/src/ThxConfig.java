@@ -6,8 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import net.minecraft.server.MinecraftServer;
-
 public class ThxConfig
 {
     static boolean ENABLE_LOGGING;
@@ -16,11 +14,19 @@ public class ThxConfig
     
     static String getProperty(String name)
     {
+        String value = getProperty(name, null);
+        log("getProperty: " + name + " = " + value);
+        return value;
+    }
+    
+    static String getProperty(String name, String def)
+    {
         if (props == null)
         {
             loadProperties();
         }
-        return props.getProperty(name);
+        String value =  props.getProperty(name);
+        return value != null ? value : def;
     }
     
     static int getIntProperty(String name)
@@ -31,7 +37,7 @@ public class ThxConfig
         }
         catch (Exception e)
         {
-            log("Error loading int property '" + name + "'");
+            log("int property '" + name + "' not found");
             return 0;
         }
     }
@@ -44,7 +50,7 @@ public class ThxConfig
         }
         catch (Exception e)
         {
-            log("Boolean property '" + name + "' not found");
+            log("boolean property '" + name + "' not found");
             return false;
         }
     }
@@ -58,7 +64,7 @@ public class ThxConfig
         {
             props.load(new FileInputStream(filename));
         }
-        catch(FileNotFoundException ioe1)
+        catch(FileNotFoundException e)
         {
             writeFile = true;
         }
@@ -84,8 +90,6 @@ public class ThxConfig
         }
         
         ENABLE_LOGGING = getBoolProperty("enable_logging");
-        
-        //logKeyMap();
     }
     
     static boolean ensureDefault(Properties props, String name, String defaultValue)

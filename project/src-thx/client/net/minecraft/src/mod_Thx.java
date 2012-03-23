@@ -1,5 +1,7 @@
 package net.minecraft.src;
 
+import net.minecraft.client.Minecraft;
+
 public class mod_Thx extends BaseModMp
 {
     public static mod_Thx instance;
@@ -89,16 +91,16 @@ public class mod_Thx extends BaseModMp
     @Override
     public void handlePacket(Packet230ModLoader packet)
     {
-        if (ThxConfig.LOG_INCOMING_PACKETS) log("received incoming server packet: " + packetToString(packet));
-        
         int entityId = packet.dataInt[0];
         if (entityId < 1) log("Received non-entity packet type " + packet.packetType + ": " + packet);
         else
         {
 	        Entity entity = ((WorldClient) ModLoader.getMinecraftInstance().theWorld).getEntityByID(entityId);
 	        
-            // TODO: try calling applyUpdatePacket(packet);
-	        if (entity instanceof ThxEntity) ((ThxEntity) entity).latestUpdatePacket = packet;
+            // try calling applyUpdatePacket(packet);
+	        if (entity instanceof ThxEntity) ((ThxEntity) entity).applyUpdatePacket(packet);
+	        
+	        //if (entity instanceof ThxEntity) ((ThxEntity) entity).latestUpdatePacket = packet;
         }
     }
 
@@ -118,39 +120,5 @@ public class mod_Thx extends BaseModMp
         if (ThxConfig.ENABLE_LOGGING) System.out.println("mod_thx_client: " + s);
     }
 
-    public String packetToString(Packet230ModLoader p)
-    {
-        StringBuffer s = new StringBuffer();
-        s.append("Packet230 {");
-        s.append("type: ").append(p.packetType).append(", ");
-        s.append("modId: ").append(p.modId).append(", ");
 
-        for (int i = 0; p.dataInt != null && i < p.dataInt.length; i++)
-        {
-            s.append("dataInt[" + i + "]: ");
-            s.append(p.dataInt[i]);
-            s.append(", ");
-        }
-        for (int i = 0; p.dataFloat != null && i < p.dataFloat.length; i++)
-        {
-            s.append("dataFloat[" + i + "]: ");
-            s.append(p.dataFloat[i]);
-            s.append(", ");
-        }
-        for (int i = 0; p.dataDouble != null && i < p.dataDouble.length; i++) 
-        {
-            s.append("dataDouble[" + i + "]: "); 
-            s.append(p.dataDouble[i]); 
-            s.append(", "); 
-        }
-        for (int i = 0; p.dataString != null && i < p.dataString.length; i++)
-        {
-            s.append("dataString[" + i + "]: ");
-            s.append(p.dataString[i]);
-            s.append(", ");
-        }
-        s.append("}");
-
-        return s.toString();
-    }
 }

@@ -3,7 +3,7 @@ package net.minecraft.src;
 import java.util.List;
 
 
-public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements IClientDriven, ISpawnable
+public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpawnable
 {
     public ThxEntityHelicopter(World world)
     {
@@ -18,11 +18,19 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
     }
 
     @Override
+    public void onUpdate()
+    {
+        super.onUpdate();
+    }
+    
+    @Override
     public void onUpdatePilot()
     {
-        if (riddenByEntity == null) return;
-        
-        if (riddenByEntity.isDead) riddenByEntity.mountEntity(this);
+        if (cmd_exit > 0 || riddenByEntity.isDead)
+        {
+            cmd_exit = 0;
+            pilotExit();
+        }
         
         if (cmd_reload > 0)
         {
@@ -34,12 +42,6 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
         {
             cmd_create_item = 0;
             //convertToItem();
-        }
-        
-        if (cmd_exit > 0)
-        {
-            cmd_exit = 0;
-            pilotExit();
         }
         
         if (cmd_create_map > 0)
@@ -94,12 +96,6 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ICli
 
     }
  
-    /* from ISpawnable interface */
-    public Packet230ModLoader getSpawnPacket()
-    {
-        return helper.getSpawnPacket();
-    }
-    
     @Override
     public void updateRiderPosition()
     {

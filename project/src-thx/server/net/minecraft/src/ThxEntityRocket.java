@@ -21,12 +21,6 @@ public class ThxEntityRocket extends ThxEntityRocketBase implements ISpawnable
         super.onUpdate();
     }
 
-    /* from ISpawnable interface */
-    public Packet230ModLoader getSpawnPacket()
-    {
-        return helper.getSpawnPacket();
-    }
-        
     @Override
     ThxEntityHelper createHelper()
     {

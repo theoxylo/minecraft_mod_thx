@@ -95,7 +95,7 @@ public class EntityTrackerEntry
         if (updateCounter++ % field_9234_e == 0 || trackedEntity.isAirBorne)
         {
             //if (trackedEntity instanceof IClientDriven) //&& trackedEntity.riddenByEntity != null)
-            if (trackedEntity instanceof IClientDriven && trackedEntity.riddenByEntity != null)
+            if (trackedEntity instanceof IClientDriven) // && trackedEntity.riddenByEntity != null)
             {
                 //sendPacketToTrackedPlayers(((IClientDriven) trackedEntity).getUpdatePacket());
                 //Packet34EntityTeleport packet = new Packet34EntityTeleport(trackedEntity.entityId, encodedPosX, encodedPosY, encodedPosZ, (byte)encodedRotationYaw, (byte)encodedRotationPitch);

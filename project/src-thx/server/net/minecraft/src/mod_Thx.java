@@ -1,11 +1,39 @@
 package net.minecraft.src;
 
+import java.io.IOException;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+
 public class mod_Thx extends BaseModMp
 {
     public static mod_Thx instance;
+    public static Logger logger = Logger.getLogger("thxLog"); 
 
     public mod_Thx()
     {
+        /* java.util.logging approach...
+        try
+        {
+            Handler handler = new FileHandler("mods/mod_thx.log");
+            handler.setFormatter(new SimpleFormatter());
+            logger.addHandler(handler);
+            
+	        String level = ThxConfig.getProperty("enable_logging_level", "SEVERE");
+	        System.out.println("thxLog.level: " + level);
+	        logger.setLevel(Level.parse(level));
+        }
+        catch (Exception e)
+        {
+            System.out.println("Could not open log file 'mods/mod_thx.log': " + e);
+        }
+        logger.fine("log fine test");
+        logger.info("log info test");
+        logger.warning("log warning test");
+        */
+        
         log("mod_Thx() called");
 
         instance = this; // for easy access by static methods and to instance methods
@@ -16,7 +44,7 @@ public class mod_Thx extends BaseModMp
     {
         log("load() called");
 
-        ThxConfig.loadProperties();
+        //ThxConfig.loadProperties();
 
         ModLoader.setInGameHook(this, true, true);
 
@@ -24,7 +52,8 @@ public class mod_Thx extends BaseModMp
         ModLoader.getMinecraftServerInstance().allowFlight = true;
         log("server.allowFlight: " + ModLoader.getMinecraftServerInstance().allowFlight);
 
-        int distance = 200; // 160; // spawn/despawn at this distance from entity
+        //int distance = 200; // 160; // spawn/despawn at this distance from entity
+        int distance = 40; // for testing
         int frequency = 1; // ticks per update, 1 to 60 (20 ticks/sec)
         
         // register entity classes
@@ -98,8 +127,9 @@ public class mod_Thx extends BaseModMp
 
         if (player.ridingEntity instanceof IClientDriven)
         {
-            // TODO: try calling applyUpdatePacket(packet);
-            ((ThxEntity) player.ridingEntity).latestUpdatePacket = packet;
+            // try calling applyUpdatePacket(packet);
+            ((ThxEntity) player.ridingEntity).applyUpdatePacket(packet);
+            //((ThxEntity) player.ridingEntity).latestUpdatePacket = packet;
         }
     }
 
@@ -116,6 +146,6 @@ public class mod_Thx extends BaseModMp
 
     public static void log(String s)
     {
-        if (ThxConfig.ENABLE_LOGGING) System.out.println("mod_thx_server: " + s);
+        if (ThxConfig.ENABLE_LOGGING) System.out.println("mod_thx: " + s);
     }
 }

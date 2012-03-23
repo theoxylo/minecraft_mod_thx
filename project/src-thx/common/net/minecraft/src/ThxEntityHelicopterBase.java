@@ -2,7 +2,7 @@ package net.minecraft.src;
 
 import java.util.List;
 
-public abstract class ThxEntityHelicopterBase extends ThxEntity
+public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClientDriven
 {
     int rocketCount;
     
@@ -50,7 +50,6 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
     final float ROCKET_RELOAD_DELAY = 3f;
     
     float autoLevelDelay;
-    float exitDelay;
     
     Vector3 thrust = new Vector3();
     Vector3 velocity = new Vector3();
@@ -66,7 +65,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
         
         setSize(1.8f, 2f);
 
-        yOffset = .6f;
+        yOffset = .8f;
         
         NET_PACKET_TYPE = 75;
     }
@@ -152,7 +151,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
         float yaw = rotationYaw;
         float pitch = rotationPitch + 5f;
                 
-        if (!isMpClient)
+        if (!worldObj.isRemote)
         {
 	        ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
 	        newRocket.owner = riddenByEntity != null ? riddenByEntity : this;
@@ -167,7 +166,6 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
     
     void reload()
     {
-        worldObj.playSoundAtEntity(this, "random.click",  .4f, .4f); // volume, pitch
         rocketReload = ROCKET_RELOAD_DELAY;
         rocketCount = 0;
     }
@@ -189,7 +187,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
         float yaw = rotationYaw;
         float pitch = rotationPitch + 5f;
                 
-        if (!isMpClient)
+        if (!worldObj.isRemote)
         {
 	        ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
 	        newMissile.owner = riddenByEntity != null ? riddenByEntity : this;
@@ -454,13 +452,16 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
     void onUpdateDrone()
     {
         if (targetHelicopter == null) return;
+        
+        if (targetHelicopter.isDead)
+        {
+            targetHelicopter = null;
+            return;
+        }
     
         float thd = 0f; // thd is targetHelicopter distance
-        if (targetHelicopter != null)
-        {
-            deltaPosToTarget.set((float)(targetHelicopter.posX - posX), 0f, (float)(targetHelicopter.posZ - posZ));
-            thd = deltaPosToTarget.length();
-        }
+        deltaPosToTarget.set((float)(targetHelicopter.posX - posX), 0f, (float)(targetHelicopter.posZ - posZ));
+        thd = deltaPosToTarget.length();
             
         if (!isTargetHelicopterFriendly 
                 && thd < 20f 
@@ -564,7 +565,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
         }
         */
         
-        throttle *= .6; // quickly zero throttle
+        throttle *= .8; // quickly zero throttle
         
         if (onGround) // very slow on ground
         {
@@ -598,8 +599,22 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity
             rotationRoll *= ROLL_RETURN;
                 
             motionX *= FRICTION;
-            motionY -= (GRAVITY / 2f) * deltaTime; // weakened gravity since no thrust
+            motionY -= GRAVITY * deltaTime;
+            //motionY -= (GRAVITY / 2f) * deltaTime; // weakened gravity since no thrust
             motionZ *= FRICTION;
+        }
+    }
+    
+    void attackedByThxEntity(ThxEntity entity)
+    {
+        if (entity.equals(targetHelicopter))
+        {
+            isTargetHelicopterFriendly = false;
+        }
+        else if (entity instanceof ThxEntityHelicopter)
+        {
+            targetHelicopter = (ThxEntityHelicopter) entity;
+            isTargetHelicopterFriendly = true;
         }
     }
 }

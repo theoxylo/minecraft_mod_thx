@@ -12,13 +12,6 @@ public class ThxEntityMissile extends ThxEntityMissileBase implements ISpawnable
         super(world, x, y, z, dx, dy, dz, yaw, pitch);
     }
     
-    /* from ISpawnable interface */
-    @Override
-    public Packet230ModLoader getSpawnPacket()
-    {
-        return helper.getSpawnPacket();
-    }
-    
     @Override
     ThxEntityHelper createHelper()
     {

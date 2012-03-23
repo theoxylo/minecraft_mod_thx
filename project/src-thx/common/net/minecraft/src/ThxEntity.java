@@ -38,7 +38,7 @@ public abstract class ThxEntity extends Entity
     
     ThxEntityHelper helper;
     
-    Packet230ModLoader latestUpdatePacket;
+    //Packet230ModLoader latestUpdatePacket;
     int NET_PACKET_TYPE;
     
     int cmd_reload;
@@ -55,31 +55,21 @@ public abstract class ThxEntity extends Entity
     float timeSinceAttacked;
     float timeSinceCollided;
     
-    boolean isMpClient;
-    
     public ThxEntity(World world)
     {
         super(world);
 
-        isMpClient = world.isRemote;
-        log(isMpClient ? "Created new MP client entity" : "Created new SP/MP master entity");
+        log(world.isRemote ? "Created new MP client entity" : "Created new SP/MP master entity");
 
         preventEntitySpawning = true;
 
         prevTime = System.nanoTime();
     }
     
-    void applyUpdatePacket()
-    {
-        if (helper == null) return;
-        helper.applyUpdatePacket(latestUpdatePacket); // this will apply client and server update packets if IClientDriven
-        latestUpdatePacket = null;
-    }
-    
     @Override
     public void onUpdate()
     {
-        applyUpdatePacket();
+        //applyUpdatePacket();
         
         ticksExisted++;
         int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
@@ -317,14 +307,9 @@ public abstract class ThxEntity extends Entity
         return true;
     }
     
-    public int getPilotId()
-    {
-        return riddenByEntity != null ? riddenByEntity.entityId : 0;
-    }
-    
     protected void pilotExit()
     {
-        log("pilotExit called for pilot " + riddenByEntity + " " + getPilotId());
+        log("pilotExit called for pilot entity " + (riddenByEntity != null ? riddenByEntity.entityId : 0));
     }
     
     void takeDamage(float amount)
@@ -347,12 +332,25 @@ public abstract class ThxEntity extends Entity
             attackedByPilot();
             return false; // ignore attack by pilot (player left click)
         }
+        if (attackingEntity instanceof ThxEntity)
+        {
+            attackedByThxEntity((ThxEntity) attackingEntity);
+        }
+        if (attackingEntity.ridingEntity instanceof ThxEntity)
+        {
+            attackedByThxEntity((ThxEntity) attackingEntity.ridingEntity);
+        }
         log("attacked by entity: " + attackingEntity);
         return true; // hit landed
     }
     
     /* subclasses can react to player left click, e.g. helicopter fires rocket */
     void attackedByPilot()
+    {
+    }
+    
+    /* subclasses can react to attack by other thx entity */
+    void attackedByThxEntity(ThxEntity entity)
     {
     }
     
@@ -397,4 +395,109 @@ public abstract class ThxEntity extends Entity
         return d < 128.0 * 128.0;
     }
 
+    /* ISpawnable SERVER interface */
+    public Packet230ModLoader getSpawnPacket()
+    {
+        Packet230ModLoader packet = getUpdatePacket();
+        packet.dataString[0] = "spawn packet for thx entity " + entityId;
+        
+        // bump Y for non-piloted to avoid getting stuck in landscape
+        /*
+        if (entity.riddenByEntity == null)
+        {
+            packet.dataFloat[1] += .2;
+        }
+        */
+        
+        log("Returning spawn packet: " + packet);
+        return packet;
+    }
+    
+    /* ISpawnable CLIENT interface */
+    public void spawn(Packet230ModLoader packet)
+    {
+        log("Received spawn packet: " + packet);
+
+        int entityIdOrig = entityId;
+        entityId = packet.dataInt[0];
+
+        //latestUpdatePacket = packet;
+        //applyUpdatePacket();
+        applyUpdatePacket(packet);
+        
+        updateRotation();
+        updateVectors();
+
+        log("spawn with pos, rot, mot, and id for entity with previous id " + entityIdOrig);
+        log("spawn(): posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
+    }
+    
+    //void applyUpdatePacket()
+    void applyUpdatePacket(Packet230ModLoader packet)
+    {
+        plog("<<< " + packetToString(packet));
+        //if (ThxConfig.LOG_INCOMING_PACKETS) plog("<<< " + packetToString(packet));
+        
+        if (packet == null) return;
+        //if (latestUpdatePacket == null) return;
+        //Packet230ModLoader packet = latestUpdatePacket;
+        //latestUpdatePacket = null;
+        
+        if (!worldObj.isRemote)
+        {
+	        cmd_reload      = packet.dataInt[2];
+	        cmd_create_item = packet.dataInt[3];
+	        cmd_exit        = packet.dataInt[5];
+	        cmd_create_map  = packet.dataInt[6];
+        }
+        
+        setPositionAndRotation(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2], packet.dataFloat[3], packet.dataFloat[4]);
+        
+        rotationRoll = packet.dataFloat[5] % 360f;
+
+        motionX =  packet.dataFloat[6];
+        motionY =  packet.dataFloat[7];
+        motionZ =  packet.dataFloat[8];
+        
+        damage = packet.dataFloat[9];
+        throttle = packet.dataFloat[10];
+
+        helper.applyUpdatePacket(packet); // this will apply client and server update packets if IClientDriven
+    }    
+    
+    public String packetToString(Packet230ModLoader p)
+    {
+        StringBuffer s = new StringBuffer();
+        s.append("Packet230 {");
+        s.append("type: ").append(p.packetType).append(", ");
+        s.append("modId: ").append(p.modId).append(", ");
+
+        for (int i = 0; p.dataInt != null && i < p.dataInt.length; i++)
+        {
+            s.append("dataInt[" + i + "]: ");
+            s.append(p.dataInt[i]);
+            s.append(", ");
+        }
+        for (int i = 0; p.dataFloat != null && i < p.dataFloat.length; i++)
+        {
+            s.append("dataFloat[" + i + "]: ");
+            s.append(p.dataFloat[i]);
+            s.append(", ");
+        }
+        for (int i = 0; p.dataDouble != null && i < p.dataDouble.length; i++) 
+        {
+            s.append("dataDouble[" + i + "]: "); 
+            s.append(p.dataDouble[i]); 
+            s.append(", "); 
+        }
+        for (int i = 0; p.dataString != null && i < p.dataString.length; i++)
+        {
+            s.append("dataString[" + i + "]: ");
+            s.append(p.dataString[i]);
+            s.append(", ");
+        }
+        s.append("}");
+
+        return s.toString();
+    }
 }
