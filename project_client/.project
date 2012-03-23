@@ -16,11 +16,6 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>src-modloader-thx_client</name>
-			<type>2</type>
-			<locationURI>THX_HOME/src-modloader-thx/client</locationURI>
-		</link>
-		<link>
 			<name>src-thx_client</name>
 			<type>2</type>
 			<locationURI>THX_HOME/src-thx/client</locationURI>

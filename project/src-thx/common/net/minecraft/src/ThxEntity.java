@@ -55,6 +55,8 @@ public abstract class ThxEntity extends Entity
     float timeSinceAttacked;
     float timeSinceCollided;
     
+    boolean isActive;
+    
     public ThxEntity(World world)
     {
         super(world);
@@ -95,6 +97,8 @@ public abstract class ThxEntity extends Entity
         
         updateRotation();
         updateVectors();
+        
+        isActive = true; // trigger custom packets updates for IClientDriven subclasses
     }
     
     public boolean isInWater()

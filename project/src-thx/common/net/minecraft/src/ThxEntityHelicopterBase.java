@@ -458,7 +458,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
             targetHelicopter = null;
             return;
         }
-    
+        
         float thd = 0f; // thd is targetHelicopter distance
         deltaPosToTarget.set((float)(targetHelicopter.posX - posX), 0f, (float)(targetHelicopter.posZ - posZ));
         thd = deltaPosToTarget.length();
@@ -542,6 +542,8 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
     
     void onUpdateVacant()
     {
+        isActive = false; 
+        
         //((ThxModel) helper.model).visible = true; // needed? 
 
         // adjust position height to avoid collisions

@@ -95,8 +95,11 @@ public class EntityTrackerEntry
         if (updateCounter++ % field_9234_e == 0 || trackedEntity.isAirBorne)
         {
             //if (trackedEntity instanceof IClientDriven) //&& trackedEntity.riddenByEntity != null)
-            if (trackedEntity instanceof IClientDriven) // && trackedEntity.riddenByEntity != null)
+            //if (trackedEntity instanceof IClientDriven) // && trackedEntity.riddenByEntity != null)
+            if (trackedEntity instanceof IClientDriven && ((ThxEntity) trackedEntity).isActive)
             {
+                // isActive true for piloted and drone entities, but not vacant ones
+                
                 //sendPacketToTrackedPlayers(((IClientDriven) trackedEntity).getUpdatePacket());
                 //Packet34EntityTeleport packet = new Packet34EntityTeleport(trackedEntity.entityId, encodedPosX, encodedPosY, encodedPosZ, (byte)encodedRotationYaw, (byte)encodedRotationPitch);
 
@@ -118,8 +121,6 @@ public class EntityTrackerEntry
 
                 return;
             }
-
-
 
             int i = MathHelper.floor_double(trackedEntity.posX * 32D);
             int j = MathHelper.floor_double(trackedEntity.posY * 32D);

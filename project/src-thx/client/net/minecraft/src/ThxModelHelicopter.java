@@ -154,41 +154,6 @@ public class ThxModelHelicopter extends ThxModel
             rotor3.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
             rotor3.setRotationPoint(4f * centerScale, -11f * centerScale, 0f * centerScale);
         }
-        /*
-        cockpit1:
-        {
-            // cockpit1 right vertical support
-            float length =  1f;
-            float height = 13f;
-            float width  =  1f;
-            cockpit1 = new ModelRenderer(this, 43, 4);
-            cockpit1.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            cockpit1.setRotationPoint(-11f * centerScale, -9f * centerScale, 9f * centerScale);
-            cockpit1.rotateAngleY = PI / 2f;
-        }
-        cockpit2:
-        {
-            // cockpit2 left vertical support
-            float length =  1f;
-            float height = 13f;
-            float width  =  1f;
-            cockpit2 = new ModelRenderer(this, 48, 4);
-            cockpit2.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            cockpit2.setRotationPoint(-11f * centerScale, -9f * centerScale, -9f * centerScale);
-        }
-        cockpit3:
-        {
-            // cockpit3 horizontal support
-            float length =  1f;
-            float height = 19f;
-            float width  =  1f;
-            cockpit3 = new ModelRenderer(this, 53, 4);
-            cockpit3.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            cockpit3.setRotationPoint(-11f * centerScale, -16f * centerScale, 0f * centerScale);
-            cockpit3.rotateAngleX = PI / 2f;
-            cockpit3.rotateAngleZ = PI / 2f;
-        }
-        */
         windshield:
         {
             float length = 9f;
@@ -228,7 +193,7 @@ public class ThxModelHelicopter extends ThxModel
         
         tail.render(x2scale);
         
-        if (ENABLE_ROTOR)
+        if (ENABLE_ROTOR && !paused)
         {
             if (rotorSpeed > 0f)
             {
