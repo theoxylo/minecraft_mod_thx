@@ -1,4 +1,4 @@
-Minecraft THX Helicopter Mod, v016 for mc123, 20120319, mod_thx-mc123_v016_bp2
+Minecraft THX Helicopter Mod, v016 for mc123, 20120323, mod_thx-mc123_v016_bp2
 
 
 
@@ -9,9 +9,9 @@ This version is v016 BETA patch 2, for use with Minecraft and ModLoader 1.2.3, w
 You can download the compiled binary zip files from GitHub:
 
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_mc123_v016_CLIENT-beta-p2.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_CLIENT_mc123_v016-BETA-p2.zip
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_mc123_v016_SERVER-beta-p2.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_SERVER_mc123_v016-BETA-p2.zip
 
 
 And you can download the exact ModLoader and ModLoaderMP files you need from their respective download links (not affiliated with this mod):
@@ -150,9 +150,12 @@ ISSUES
 CHANGELOG
 ---------
 v016: now for use with Minecraft and ModLoader 1.2.3, with ModLoaderMP 1.2.3v3
+v016: NOT for use with Minecraft 1.2.4
+v016: left-click (pilot attack) fires missile
+v016: right-click (pilot interact) fires rockets, subject to reload after 12
+v016: drone ai almost working, but no
 v016: added manual rocket reload
 v016: added smoke and flame to indicate damge
-v016: added revert to item as alt exit (pilot attack/left click)
 v016: added rocket model and skin, please customize
 v016: added new skin with wireframe and enlarged HUD, please customize
 
