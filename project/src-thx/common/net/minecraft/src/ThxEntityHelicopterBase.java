@@ -327,6 +327,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
     {
         boolean isCollidedWithEntity = false;
         
+        /* causing problems...
         detectCollisionsAndBounce:
         {
             List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(0.2, 0.2, 0.2));
@@ -353,6 +354,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
                 isCollidedWithEntity = true;
             }
         }
+        */
         
         // crash, take damage and slow down
         if (isCollidedHorizontally || isCollidedVertically || isCollidedWithEntity)
