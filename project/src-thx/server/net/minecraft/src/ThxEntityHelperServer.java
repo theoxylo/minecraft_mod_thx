@@ -22,7 +22,8 @@ public class ThxEntityHelperServer extends ThxEntityHelper
         {
 	        // last update for this player packet if player is dead
             log ("pilot entity is dead");
-            entity.riddenByEntity.mountEntity(entity);
+            //entity.riddenByEntity.mountEntity(entity);
+            entity.pilotExit();
         }
         else 
         {

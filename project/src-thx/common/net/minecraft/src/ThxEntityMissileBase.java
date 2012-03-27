@@ -132,7 +132,7 @@ public abstract class ThxEntityMissileBase extends ThxEntity
 	        float power = .9f;
 	        boolean flaming = true;
 	        worldObj.newExplosion(this, posX, posY, posZ, power, flaming);
-	        setEntityDead(); // call on both client and server?
+	        setDead(); // call on both client and server?
         }
     }
 }

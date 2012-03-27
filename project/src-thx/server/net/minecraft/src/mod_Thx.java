@@ -53,7 +53,7 @@ public class mod_Thx extends BaseModMp
         log("server.allowFlight: " + ModLoader.getMinecraftServerInstance().allowFlight);
 
         //int distance = 200; // 160; // spawn/despawn at this distance from entity
-        int distance = 40; // for testing
+        int distance = 120; // at this distance, it is hard to see more than a dot in the sky
         int frequency = 1; // ticks per update, 1 to 60 (20 ticks/sec)
         
         // register entity classes
@@ -116,7 +116,7 @@ public class mod_Thx extends BaseModMp
     public String getVersion()
     {
         // log("getVersion called");
-        return "Minecraft THX Helicopter Mod - mod_thx-mc123_v016_bp2";
+        return "Minecraft THX Helicopter Mod - mod_thx-mc124_v016";
     }
 
     @Override

@@ -67,13 +67,14 @@ public class ThxEntityHelperClient extends ThxEntityHelper
             if (pilot != null && !pilot.isDead)
             {
                 log("*** applyUpdatePacket: pilot " + pilot + " now boarding");
-                pilot.mountEntity(entity);
+                pilot.mountEntity(entity); // boarding
             }
         }
         else if (packetPilotId == 0 && entity.riddenByEntity != null)
         {
             log("*** current pilot id " + entity.riddenByEntity.entityId + " is exiting");
-            entity.riddenByEntity.mountEntity(entity); // unmount
+            //entity.riddenByEntity.mountEntity(entity); // unmount
+            entity.pilotExit();
         }
         
         int ownerId = packet.dataInt[4];

@@ -5,6 +5,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="C:/Dropbox/minecraft/workspace_git_mod_thx/project/lib/lwjgl.jar"/>
 	<classpathentry kind="lib" path="C:/Dropbox/minecraft/workspace_git_mod_thx/project/lib/lwjgl_util.jar"/>
-	<classpathentry kind="lib" path="C:/Dropbox/minecraft/workspace_git_mod_thx/project/lib/minecraft-dev123v3-lib.jar" sourcepath="C:/Dropbox/minecraft/reference_jars/00_mc_123/ML_MP_SDK_V3/minecraft-dev123v3-src.zip"/>
+	<classpathentry kind="lib" path="C:/Dropbox/minecraft/workspace_git_mod_thx/project/lib/minecraft-dev124-lib.jar" sourcepath="C:/Dropbox/minecraft/reference_jars/00_mc_124/ML_MP_UN/minecraft-dev124-src.zip"/>
 	<classpathentry kind="output" path="temp"/>
 </classpath>

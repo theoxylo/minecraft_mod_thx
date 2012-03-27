@@ -102,12 +102,17 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         }
         
         // player is the pilot
-        
         Entity pilot = getPilot();
-        if (!worldObj.isRemote && pilot != null && pilot.isDead)
-        {
+        
+        //if (!worldObj.isRemote && pilot != null && pilot.isDead)
+        //{
             //riddenByEntity = null;
-            pilot.mountEntity(this); // unmount
+            //pilot.mountEntity(this); // unmount
+        //}
+        if (riddenByEntity.isDead)
+        {
+            pilotExit();
+            return;
         }
             
         if (onGround) // very slow on ground
@@ -478,29 +483,6 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         // take damage sound
         worldObj.playSoundAtEntity(this, "random.bowhit", 1f, 1f);
 
-        // activate AI for empty helicopter hit by another helicopter
-        if (riddenByEntity == null && attackingEntity instanceof ThxEntityHelicopter)
-        {
-            if (targetHelicopter == null)
-            {
-                targetHelicopter = (ThxEntityHelicopter) attackingEntity;
-
-                log("attacked by other helicopter " + targetHelicopter);
-
-                // friendly at first
-                isTargetHelicopterFriendly = true;
-
-                worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f);
-            }
-            else if (attackingEntity == targetHelicopter && isTargetHelicopterFriendly)
-            {
-                isTargetHelicopterFriendly = false;
-
-                missileDelay = 10f; // initial missile delay
-                rocketDelay  =  5f; // initial rocket delay
-            }
-        }
-               
         takeDamage((float) damageAmount * 3f);
         helper.addChatMessage(this + " - Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
 
@@ -516,6 +498,7 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     {
         if (!super.interact(player)) return false;
         
+        // super.interact returns true if player boards and becomes new pilot
         altitudeLock = false;
         
         // reset level to current look pitch
@@ -536,34 +519,24 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     }
     
     @Override
-    protected void pilotExit()
+    void pilotExit()
     {
-        super.pilotExit();
-        
         if (riddenByEntity == null) return;
+        
+        // place pilot to left of helicopter
+        // (use fwd XZ perp to exit left: x = z, z = -x)
+        double exitDist = 1.9;
+        //Entity pilot = riddenByEntity;
+        //pilot.setPosition(posX + fwd.z * exitDist, posY + pilot.yOffset, posZ - fwd.x * exitDist);
+        riddenByEntity.setPosition(posX + fwd.z * exitDist, posY + riddenByEntity.yOffset, posZ - fwd.x * exitDist);
+        
+        super.pilotExit();
         
         //((ThxModel) helper.model).visible = true; // hard to find otherwise!
         //((ThxModelHelicopter) helper.model).rotorSpeed = 0f;
         ThxModelHelicopter model = (ThxModelHelicopter) helper.model;
         model.visible = true;
         model.rotorSpeed = 0f;
-        
-        // clear rotation speed to prevent judder
-        rotationYawSpeed = 0f;
-        rotationPitchSpeed = 0f;
-        rotationRollSpeed = 0f;
-        
-        Entity pilot = riddenByEntity;
-        if (!worldObj.isRemote)
-        {
-            log("pilotExit() calling mountEntity on player " + pilot);
-            pilot.mountEntity(this); // riddenByEntity is now null // unmount
-        }
-        
-        // place pilot to left of helicopter
-        // (use fwd XZ perp to exit left: x = z, z = -x)
-        double exitDist = 1.9;
-        pilot.setPosition(posX + fwd.z * exitDist, posY + pilot.yOffset, posZ - fwd.x * exitDist);
     }
     
     @Override

@@ -99,7 +99,7 @@ public abstract class ThxEntityRocketBase extends ThxEntity
     {
         if (ticksExisted > 500) 
         {
-            setEntityDead();
+            setDead();
             return;
         }
 	        
@@ -198,7 +198,7 @@ public abstract class ThxEntityRocketBase extends ThxEntity
 	            }
 	        }
 	        
-	        if (!worldObj.isRemote) setEntityDead();
+	        if (!worldObj.isRemote) setDead();
             
             return;
         }

@@ -175,10 +175,10 @@ public abstract class ThxEntity extends Entity
     */
 
     @Override
-    public void setEntityDead()
+    public void setDead()
     {
-        log("setEntityDead called");
-        super.setEntityDead();
+        log("setDead called");
+        super.setDead();
     }
 
     @Override
@@ -300,7 +300,7 @@ public abstract class ThxEntity extends Entity
         if (!worldObj.isRemote)
         {
 	        log("interact() calling mountEntity on player " + player.entityId);
-	        player.mountEntity(this);
+	        player.mountEntity(this); // boarding
 	        owner = player;
         }
         
@@ -311,9 +311,9 @@ public abstract class ThxEntity extends Entity
         return true;
     }
     
-    protected void pilotExit()
+    void pilotExit()
     {
-        log("pilotExit called for pilot entity " + (riddenByEntity != null ? riddenByEntity.entityId : 0));
+        // vehicle subclasses will override
     }
     
     void takeDamage(float amount)

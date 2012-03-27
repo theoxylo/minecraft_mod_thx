@@ -114,11 +114,12 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
             boolean flaming = true;
             worldObj.newExplosion(this, posX, posY, posZ, power, flaming);
             
-            if (riddenByEntity != null) riddenByEntity.mountEntity(this); // unmount
+            //if (riddenByEntity != null) riddenByEntity.mountEntity(this); // unmount
+            if (riddenByEntity != null) pilotExit();
             
             dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0);
             
-            setEntityDead();
+            setDead();
         }
         
         // auto-heal: 
@@ -441,7 +442,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         exit_helicopter_and_convert_back_to_item:
         {
             pilotExit();
-            setEntityDead();
+            setDead();
             if (this instanceof ThxEntityHelicopter && !worldObj.isRemote)
             {
                 dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0);
@@ -609,17 +610,57 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         }
     }
     
-    void attackedByThxEntity(ThxEntity entity)
+    void attackedByThxEntity(ThxEntity attackingEntity)
     {
-        if (entity.equals(targetHelicopter))
+        // activate/adjust AI for empty helicopter hit by another helicopter
+        if (riddenByEntity == null)
         {
-            isTargetHelicopterFriendly = false;
+	        if (attackingEntity.equals(targetHelicopter) && isTargetHelicopterFriendly)
+	        {
+	            isTargetHelicopterFriendly = false;
+                missileDelay = 10f; // initial missile delay
+                rocketDelay  =  5f; // initial rocket delay
+	        }
+	        else if (attackingEntity instanceof ThxEntityHelicopter)
+	        {
+	            targetHelicopter = (ThxEntityHelicopter) attackingEntity;
+	            isTargetHelicopterFriendly = true;
+	            
+                worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
+	        }
         }
-        else if (entity instanceof ThxEntityHelicopter)
+        else
         {
-            targetHelicopter = (ThxEntityHelicopter) entity;
-            isTargetHelicopterFriendly = true;
+            // for piloted helicopter, track last attacker?
         }
+    }
+    
+    @Override
+    void pilotExit()
+    {
+        log("pilotExit called for pilot entity " + (riddenByEntity != null ? riddenByEntity.entityId : 0));
+        
+        if (worldObj.isRemote) return;
+        if (riddenByEntity == null) return;
+        if (!equals(riddenByEntity.ridingEntity)) return;
+        
+        // can't set these private fields as mountEntity does. problem?
+        //riddenByEntity.entityRiderPitchDelta = 0.0D;
+        //riddenByEntity.entityRiderYawDelta = 0.0D;
+
+        riddenByEntity.ridingEntity = null;
+        riddenByEntity = null;
+        
+        // clear rotation speed to prevent judder
+        rotationYawSpeed = 0f;
+        rotationPitchSpeed = 0f;
+        rotationRollSpeed = 0f;
+        
+        //if (!worldObj.isRemote)
+        //{
+            //log("pilotExit() calling mountEntity on player " + pilot);
+            //riddenByEntity.mountEntity(this); // riddenByEntity is now null // unmount
+        //}
     }
 }
 
