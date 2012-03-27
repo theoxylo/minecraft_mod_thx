@@ -1,17 +1,17 @@
-Minecraft THX Helicopter Mod, v016 for mc124, 20120326, mod_thx-mc124_v016
+Minecraft THX Helicopter Mod, v017 for mcXXX, 20120327, mod_thx-mcXXX_v017
 
 
 
 INTRODUCTION
 ------------
-This version is v016 for use with Minecraft and ModLoader 1.2.4, with ModLoaderMP 1.2.4 for both single- and multi-player.
+This version is v017 for use with Minecraft and ModLoader XXX, with ModLoaderMP XXX for both single- and multi-player.
 
 You can download the compiled binary zip files from GitHub:
 
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_CLIENT_mc124_v016.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_CLIENT_
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_SERVER_mc124_v016.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_SERVER_
 
 
 And you can download the exact ModLoader and ModLoaderMP files you need from their respective download links (not affiliated with this mod):
@@ -32,6 +32,7 @@ Keep in mind that this is an early release of a mod still under construction. Ev
 Make sure that Minecraft, ModLoader, and ModLoaderMP are working properly before installing this mod -- see log ouput in .minecraft/ModLoader.txt
 
 Please visit the forum thread to discuss, report issues, leave feedback, etc:
+
 
     http://www.minecraftforum.net/index.php?showtopic=763209
 
