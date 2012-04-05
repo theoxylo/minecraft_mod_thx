@@ -1,6 +1,6 @@
 package net.minecraft.src;
 
-public class ThxEntityHelper
+public abstract class ThxEntityHelper
 {
     ThxEntity entity;
     
@@ -12,17 +12,17 @@ public class ThxEntityHelper
     
     boolean isPaused()
     {
-        throw new RuntimeException("not implemented");
+        return false;
     }
 
-    void addChatMessage(String string)
+    abstract void addChatMessageToAll(String string);
+
+    void addChatMessageToPilot(String string)
     {
-        throw new RuntimeException("not implemented");
     }
 
     void sendUpdatePacketToServer(Packet230ModLoader updatePacket)
     {
-        throw new RuntimeException("not implemented");
     }
 
     // SERVER methods
@@ -40,10 +40,7 @@ public class ThxEntityHelper
     // COMMON methods
     // COMMON methods
     
-    void applyUpdatePacket(Packet230ModLoader updatePacket)
-    {
-        // to be overridden by client and server specific subclasses
-    }
+    abstract void applyUpdatePacket(Packet230ModLoader updatePacket);
     
     void log(String s)
     {

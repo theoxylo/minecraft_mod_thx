@@ -38,7 +38,6 @@ public abstract class ThxEntity extends Entity
     
     ThxEntityHelper helper;
     
-    //Packet230ModLoader latestUpdatePacket;
     int NET_PACKET_TYPE;
     
     int cmd_reload;
@@ -71,11 +70,9 @@ public abstract class ThxEntity extends Entity
     @Override
     public void onUpdate()
     {
-        //applyUpdatePacket();
-        
         ticksExisted++;
         int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
-        plog(String.format("start onUpdate, pilot %d [posX: %5.2f, posY: %5.2f, posZ: %5.2f, yaw: %5.2f]", riddenById, posX, posY, posZ, rotationYaw));
+        plog(String.format("start onUpdate, pilot %d [posX: %5.2f, posY: %5.2f, posZ: %5.2f, yaw: %5.2f, throttle: %5.2f, motionY: %5.2f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionY));
         
         long time = System.nanoTime();
         deltaTime = ((float) (time - prevTime)) / 1000000000f; // convert to sec
@@ -327,6 +324,9 @@ public abstract class ThxEntity extends Entity
         log("attackEntityFrom called with damageSource: " + damageSource + " with amount " + damageAmount);
 
         if (timeSinceAttacked > 0f || isDead || damageSource == null) return false;
+        //timeSinceAttacked = .5f; // sec delay before this entity can be attacked again
+        timeSinceAttacked = .2f; // sec delay before this entity can be attacked again
+        
 
         Entity attackingEntity = damageSource.getEntity();
         if (attackingEntity == null) return false; // when is this the case?
@@ -425,8 +425,6 @@ public abstract class ThxEntity extends Entity
         int entityIdOrig = entityId;
         entityId = packet.dataInt[0];
 
-        //latestUpdatePacket = packet;
-        //applyUpdatePacket();
         applyUpdatePacket(packet);
         
         updateRotation();
@@ -436,16 +434,11 @@ public abstract class ThxEntity extends Entity
         log("spawn(): posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
     }
     
-    //void applyUpdatePacket()
     void applyUpdatePacket(Packet230ModLoader packet)
     {
-        plog("<<< " + packetToString(packet));
-        //if (ThxConfig.LOG_INCOMING_PACKETS) plog("<<< " + packetToString(packet));
+        if (ThxConfig.LOG_INCOMING_PACKETS) plog("<<< " + packetToString(packet));
         
         if (packet == null) return;
-        //if (latestUpdatePacket == null) return;
-        //Packet230ModLoader packet = latestUpdatePacket;
-        //latestUpdatePacket = null;
         
         if (!worldObj.isRemote)
         {
@@ -467,6 +460,9 @@ public abstract class ThxEntity extends Entity
         throttle = packet.dataFloat[10];
 
         helper.applyUpdatePacket(packet); // this will apply client and server update packets if IClientDriven
+        
+        int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
+        plog(String.format("end applyPaket, pilot %d [posX: %5.2f, posY: %5.2f, posZ: %5.2f, yaw: %5.2f, throttle: %5.2f, motionY: %5.2f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionY));
     }    
     
     public String packetToString(Packet230ModLoader p)

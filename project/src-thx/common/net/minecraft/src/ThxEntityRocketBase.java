@@ -5,11 +5,6 @@ import java.util.Random;
 
 public abstract class ThxEntityRocketBase extends ThxEntity
 {
-    private int xTile;
-    private int yTile;
-    private int zTile;
-    private int inTile;
-    
     boolean enteredWater;
     boolean launched;
     
@@ -24,10 +19,6 @@ public abstract class ThxEntityRocketBase extends ThxEntity
         
         helper = createHelper();
         
-        xTile = -1;
-        yTile = -1;
-        zTile = -1;
-        inTile = 0;
         setSize(0.25F, 0.25F);
         
         NET_PACKET_TYPE = 76;
@@ -118,36 +109,38 @@ public abstract class ThxEntityRocketBase extends ThxEntity
             worldObj.spawnParticle("smoke", posX, posY, posZ, 0.0, 0.0, 0.0);
         }
         
-        Vec3D vec3d = Vec3D.createVector(posX, posY, posZ);
-        Vec3D vec3d1 = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
-        MovingObjectPosition movingobjectposition = worldObj.rayTraceBlocks(vec3d, vec3d1);
+        Vec3D posStart = Vec3D.createVector(posX, posY, posZ);
+        Vec3D posEnd = Vec3D.createVector(posX + motionX, posY + motionY, posZ + motionZ);
+        MovingObjectPosition movingobjectposition = worldObj.rayTraceBlocks(posStart, posEnd);
         
         if(movingobjectposition != null)
         {
-            vec3d1 = Vec3D.createVector(movingobjectposition.hitVec.xCoord, movingobjectposition.hitVec.yCoord, movingobjectposition.hitVec.zCoord);
+            posEnd = Vec3D.createVector(movingobjectposition.hitVec.xCoord, movingobjectposition.hitVec.yCoord, movingobjectposition.hitVec.zCoord);
         }
         Entity entity = null;
+        double closest = .0;
         List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.addCoord(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
-        double d = 0.0;
         for(int i1 = 0; i1 < list.size(); i1++)
         {
-            Entity entity1 = (Entity)list.get(i1);
-            if(!entity1.canBeCollidedWith() || entity1 == owner) // && field_20049_i < 50)
+            Entity nextEntity = (Entity)list.get(i1);
+            if (nextEntity == null) continue;
+            if(!nextEntity.canBeCollidedWith()) continue;
+            if (nextEntity == owner) // && field_20049_i < 50)
             {
                 continue;
             }
             float f4 = 0.3F;
-            AxisAlignedBB axisalignedbb = entity1.boundingBox.expand(f4, f4, f4);
-            MovingObjectPosition movingobjectposition1 = axisalignedbb.calculateIntercept(vec3d, vec3d1);
+            AxisAlignedBB axisalignedbb = nextEntity.boundingBox.expand(f4, f4, f4);
+            MovingObjectPosition movingobjectposition1 = axisalignedbb.calculateIntercept(posStart, posEnd);
             if(movingobjectposition1 == null)
             {
                 continue;
             }
-            double d1 = vec3d.distanceTo(movingobjectposition1.hitVec);
-            if(d1 < d || d == 0.0D)
+            double d1 = posStart.distanceTo(movingobjectposition1.hitVec);
+            if (d1 < closest || closest == .0)
             {
-                entity = entity1;
-                d = d1;
+                entity = nextEntity; // remember closest entity
+                closest = d1;
             }
         }
 
@@ -163,7 +156,7 @@ public abstract class ThxEntityRocketBase extends ThxEntity
 	            log("rocket hit entity " + movingobjectposition.entityHit);
                 if (owner.equals(movingobjectposition.entityHit.riddenByEntity) || owner.equals(movingobjectposition.entityHit)) 
                 {
-                    log("ignoring hit from own rocket");
+                    log(owner + " ignoring hit from own rocket");
                 }
                 else
                 {
@@ -177,20 +170,21 @@ public abstract class ThxEntityRocketBase extends ThxEntity
             worldObj.playSoundAtEntity(this, "random.explode", .7f, .5f + (float) Math.random() * .2f);
             //worldObj.playSoundAtEntity(this, "random.explode", .3f, 1f);
 
-	        // kick up some debris if we hit a block, but only works for top surface
 	        int i = MathHelper.floor_double(posX);
 	        int j = MathHelper.floor_double(posY - 0.2 -(double)yOffset);
 	        int k = MathHelper.floor_double(posZ);
-	        int j1 = worldObj.getBlockId(i, j, k);
-	        if (j1 > 0)
+	        int blockId = worldObj.getBlockId(i, j, k);
+	        if (blockId > 0)
 	        {
+		        // kick up some debris if we hit a block, but only works for top surface
 	            for (int k1 = 0; k1 < 2; k1++)
 	            {
-		            worldObj.spawnParticle((new StringBuilder()).append("tilecrack_").append(j1).toString(), posX + ((double)rand.nextFloat() - 0.5) * (double)width, boundingBox.minY + 0.1, posZ + ((double)rand.nextFloat() - 0.5) * (double)width, 1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5));
+		            worldObj.spawnParticle((new StringBuilder()).append("tilecrack_").append(blockId).toString(), posX + ((double)rand.nextFloat() - 0.5) * (double)width, boundingBox.minY + 0.1, posZ + ((double)rand.nextFloat() - 0.5) * (double)width, 1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5));
 	            }
 	        }
 	        else
 	        {
+	            // create some non-block debris instead
 	            for (int k1 = 0; k1 < 2; k1++)
 	            {
 		            //worldObj.spawnParticle("flame", posX, posY, posZ, 0.0, 0.0, 0.0);
@@ -220,22 +214,6 @@ public abstract class ThxEntityRocketBase extends ThxEntity
                 worldObj.spawnParticle("bubble", posX - motionX * (double)f3, posY - motionY * (double)f3, posZ - motionZ * (double)f3, motionX, motionY, motionZ);
             }
         }
-    }
-
-    public void writeEntityToNBT(NBTTagCompound nbttagcompound)
-    {
-        nbttagcompound.setShort("xTile", (short)xTile);
-        nbttagcompound.setShort("yTile", (short)yTile);
-        nbttagcompound.setShort("zTile", (short)zTile);
-        nbttagcompound.setByte("inTile", (byte)inTile);
-    }
-
-    public void readEntityFromNBT(NBTTagCompound nbttagcompound)
-    {
-        xTile = nbttagcompound.getShort("xTile");
-        yTile = nbttagcompound.getShort("yTile");
-        zTile = nbttagcompound.getShort("zTile");
-        inTile = nbttagcompound.getByte("inTile") & 0xff;
     }
 }
 

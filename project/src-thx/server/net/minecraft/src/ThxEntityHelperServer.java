@@ -10,9 +10,9 @@ public class ThxEntityHelperServer extends ThxEntityHelper
     // needed?
     void applyUpdatePacket(Packet230ModLoader packet)
     {
-        if (packet == null) return;
+        if (true) return;
         
-        entity.plog("applyUpdatePacket: " + packet);
+        if (packet == null) return;
         
         if (entity.riddenByEntity == null)
         {
@@ -32,8 +32,8 @@ public class ThxEntityHelperServer extends ThxEntityHelper
     }
 
     @Override
-    void addChatMessage(String s)
+    void addChatMessageToAll(String s)
     {
-        log("chatMessage: " + s);
+        log("Chat broadcast: " + s);
     }
 }

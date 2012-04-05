@@ -11,7 +11,7 @@ public class ThxModelHelicopter extends ThxModel
     float rotorSpeed = 0f;
     float lastRotorRad = 0f;
     float lastTailRotorRad = 0f;
-    float MAX_ROTOR_SPEED = 18f * ((float)ThxConfig.getIntProperty("rotor_speed_percent")) / 100f;
+    float MAX_ROTOR_SPEED = 18f * ((float)mod_Thx.getIntProperty("rotor_speed_percent")) / 100f;
     
     float SPIN_UP_TIME = 10f;
     float timeSpun = 0f;
@@ -41,7 +41,7 @@ public class ThxModelHelicopter extends ThxModel
     {
         renderTexture = "/thx/helicopter.png";
 
-        ENABLE_ROTOR = ThxConfig.getBoolProperty("enable_rotor");
+        ENABLE_ROTOR = mod_Thx.getBoolProperty("enable_rotor");
         
         // All model boxes are now scaled x2 at rendering time to save texture space
         // (with the exception of the windsheield which is already min size)

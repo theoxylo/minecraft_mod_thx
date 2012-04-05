@@ -9,7 +9,10 @@ import java.util.logging.SimpleFormatter;
 
 public class mod_Thx extends BaseModMp
 {
+    static ThxConfig config;
+    
     public static mod_Thx instance;
+    
     public static Logger logger = Logger.getLogger("thxLog"); 
 
     public mod_Thx()
@@ -35,6 +38,8 @@ public class mod_Thx extends BaseModMp
         */
         
         log("mod_Thx() called");
+        
+		config = new ThxConfig();
 
         instance = this; // for easy access by static methods and to instance methods
     }
@@ -52,8 +57,7 @@ public class mod_Thx extends BaseModMp
         ModLoader.getMinecraftServerInstance().allowFlight = true;
         log("server.allowFlight: " + ModLoader.getMinecraftServerInstance().allowFlight);
 
-        //int distance = 200; // 160; // spawn/despawn at this distance from entity
-        int distance = 120; // at this distance, it is hard to see more than a dot in the sky
+        int distance = 160; // spawn/despawn at this distance from entity
         int frequency = 1; // ticks per update, 1 to 60 (20 ticks/sec)
         
         // register entity classes
@@ -70,7 +74,7 @@ public class mod_Thx extends BaseModMp
         {
             boolean hasOwner = true;
             ModLoaderMp.registerEntityTrackerEntry(ThxEntityRocket.class, hasOwner, 76);
-            ModLoaderMp.registerEntityTracker(ThxEntityRocket.class, distance, /*frequency*/ 4);
+            ModLoaderMp.registerEntityTracker(ThxEntityRocket.class, /*distance*/ 100, /*frequency*/ 4);
             
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Rocket with entity id " + entityId);
@@ -92,7 +96,7 @@ public class mod_Thx extends BaseModMp
             log("Setting up inventory item for helicopter with item id " + itemId);
             Item item = new ThxItemHelicopter(itemId);
 
-            if (ThxConfig.getBoolProperty("disable_helicopter_item_image"))
+            if (config.getBoolProperty("disable_helicopter_item_image"))
             {
                 item.setIconIndex(92); // hard-code to cookie icon for compatibility
             }
@@ -147,5 +151,20 @@ public class mod_Thx extends BaseModMp
     public static void log(String s)
     {
         if (ThxConfig.ENABLE_LOGGING) System.out.println("mod_thx: " + s);
+    }
+    
+    static String getProperty(String name)
+    {
+        return config.getProperty(name);
+    }
+    
+    static int getIntProperty(String name)
+    {
+        return config.getIntProperty(name);
+    }
+    
+    static boolean getBoolProperty(String name)
+    {
+        return config.getBoolProperty(name);
     }
 }

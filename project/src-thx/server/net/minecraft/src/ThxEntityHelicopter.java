@@ -64,8 +64,6 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
 
         takeDamage((float) i * 3f);
 
-        timeSinceAttacked = .5f; // sec delay before this entity can be attacked again
-
         //setBeenAttacked(); // this will cause Entity.velocityChanged to be true, so additional Packet28 to jump on hit
 
         return true; // the hit landed

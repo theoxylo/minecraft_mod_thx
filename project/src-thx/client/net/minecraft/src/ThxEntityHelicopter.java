@@ -10,29 +10,29 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     
     // controls and options
     // set from mod_thx.properties
-    static int KEY_ASCEND = Keyboard.getKeyIndex(ThxConfig.getProperty("key_ascend"));
-    static int KEY_DESCEND = Keyboard.getKeyIndex(ThxConfig.getProperty("key_descend"));
-    static int KEY_FORWARD = Keyboard.getKeyIndex(ThxConfig.getProperty("key_forward"));
-    static int KEY_BACK = Keyboard.getKeyIndex(ThxConfig.getProperty("key_back"));
-    static int KEY_LEFT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_left"));
-    static int KEY_RIGHT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_right"));
-    static int KEY_ROTATE_LEFT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_rotate_left"));
-    static int KEY_ROTATE_RIGHT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_rotate_right"));
-    static int KEY_FIRE_MISSILE = Keyboard.getKeyIndex(ThxConfig.getProperty("key_fire_missile"));
-    static int KEY_FIRE_ROCKET = Keyboard.getKeyIndex(ThxConfig.getProperty("key_fire_rocket"));
-    static int KEY_ROCKET_RELOAD = Keyboard.getKeyIndex(ThxConfig.getProperty("key_rocket_reload"));
-    static int KEY_LOOK_PITCH = Keyboard.getKeyIndex(ThxConfig.getProperty("key_look_pitch"));
-    static int KEY_AUTO_LEVEL = Keyboard.getKeyIndex(ThxConfig.getProperty("key_auto_level"));
-    static int KEY_EXIT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_exit"));
-    static int KEY_LOOK_BACK = Keyboard.getKeyIndex(ThxConfig.getProperty("key_look_back"));
-    static int KEY_CREATE_MAP = Keyboard.getKeyIndex(ThxConfig.getProperty("key_create_map"));
-    static int KEY_HUD_MODE = Keyboard.getKeyIndex(ThxConfig.getProperty("key_hud_mode"));
-    static int KEY_LOCK_ALT = Keyboard.getKeyIndex(ThxConfig.getProperty("key_lock_alt"));
+    static int KEY_ASCEND = Keyboard.getKeyIndex(mod_Thx.getProperty("key_ascend"));
+    static int KEY_DESCEND = Keyboard.getKeyIndex(mod_Thx.getProperty("key_descend"));
+    static int KEY_FORWARD = Keyboard.getKeyIndex(mod_Thx.getProperty("key_forward"));
+    static int KEY_BACK = Keyboard.getKeyIndex(mod_Thx.getProperty("key_back"));
+    static int KEY_LEFT = Keyboard.getKeyIndex(mod_Thx.getProperty("key_left"));
+    static int KEY_RIGHT = Keyboard.getKeyIndex(mod_Thx.getProperty("key_right"));
+    static int KEY_ROTATE_LEFT = Keyboard.getKeyIndex(mod_Thx.getProperty("key_rotate_left"));
+    static int KEY_ROTATE_RIGHT = Keyboard.getKeyIndex(mod_Thx.getProperty("key_rotate_right"));
+    static int KEY_FIRE_MISSILE = Keyboard.getKeyIndex(mod_Thx.getProperty("key_fire_missile"));
+    static int KEY_FIRE_ROCKET = Keyboard.getKeyIndex(mod_Thx.getProperty("key_fire_rocket"));
+    static int KEY_ROCKET_RELOAD = Keyboard.getKeyIndex(mod_Thx.getProperty("key_rocket_reload"));
+    static int KEY_LOOK_PITCH = Keyboard.getKeyIndex(mod_Thx.getProperty("key_look_pitch"));
+    static int KEY_AUTO_LEVEL = Keyboard.getKeyIndex(mod_Thx.getProperty("key_auto_level"));
+    static int KEY_EXIT = Keyboard.getKeyIndex(mod_Thx.getProperty("key_exit"));
+    static int KEY_LOOK_BACK = Keyboard.getKeyIndex(mod_Thx.getProperty("key_look_back"));
+    static int KEY_CREATE_MAP = Keyboard.getKeyIndex(mod_Thx.getProperty("key_create_map"));
+    static int KEY_HUD_MODE = Keyboard.getKeyIndex(mod_Thx.getProperty("key_hud_mode"));
+    static int KEY_LOCK_ALT = Keyboard.getKeyIndex(mod_Thx.getProperty("key_lock_alt"));
     
         
-    static boolean ENABLE_AUTO_LEVEL = ThxConfig.getBoolProperty("enable_auto_level");
-    static boolean ENABLE_AUTO_THROTTLE_ZERO = ThxConfig.getBoolProperty("enable_auto_throttle_zero");
-    static boolean ENABLE_LOOK_YAW = ThxConfig.getBoolProperty("enable_look_yaw");
+    static boolean ENABLE_AUTO_LEVEL = mod_Thx.getBoolProperty("enable_auto_level");
+    static boolean ENABLE_AUTO_THROTTLE_ZERO = mod_Thx.getBoolProperty("enable_auto_throttle_zero");
+    static boolean ENABLE_LOOK_YAW = mod_Thx.getBoolProperty("enable_look_yaw");
         
     int prevViewMode; // = 2; // 2 is looking back
     
@@ -89,15 +89,12 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         }
     }
     
+    @Override
     void onUpdatePilot()
     {
-        // adjust model rotor speed to match throttle
-        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
-        ((ThxModelHelicopter) helper.model).rotorSpeed = power / 2f + .75f;
-        
         if (!minecraft.thePlayer.equals(riddenByEntity))
         {
-	        // piloted by other player mp client, so already updated by server packet
+	        // piloted by other player mp client or ai, so already updated by server packet
             return;
         }
         
@@ -189,13 +186,13 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
                 lookPitchZeroLevel = 0f;
 
                 // show status message
-                helper.addChatMessage("Look-Pitch:  ON, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
+                helper.addChatMessageToPilot("Look-Pitch:  ON, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
             }
             else
             {
                 // turn off cockpit
                 lookPitch = false;
-                helper.addChatMessage("Look-Pitch: OFF, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
+                helper.addChatMessageToPilot("Look-Pitch: OFF, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
             }
         }
         else if (Keyboard.isKeyDown(KEY_HUD_MODE) && hudModeToggleDelay < 0f && pilot != null)
@@ -212,7 +209,7 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
             else
             {
                 model.visible = true;
-	            helper.addChatMessage("Cam 1, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
+	            helper.addChatMessageToPilot("Cam 1, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
             }
         }
         else if (minecraft.gameSettings.thirdPersonView == 2) // must hold look back key, not a toggle, so cancel here
@@ -468,8 +465,28 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
 	        //altitudeLock = true; // no falling during pitch/roll -- beginner mode 
         }
         
-        //helper.sendUpdatePacketToServer(getUpdatePacket());
-        // testing send packet after method
+        // adjust model rotor speed according to throttle
+        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
+        ((ThxModelHelicopter) helper.model).rotorSpeed = power / 2f + .75f;
+    }
+    
+    @Override
+    void onUpdateDrone()
+    {
+        super.onUpdateDrone();
+        
+        // adjust model rotor speed according to throttle
+        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
+        ((ThxModelHelicopter) helper.model).rotorSpeed = power / 2f + .75f;
+    }
+    
+    @Override
+    void onUpdateVacant()
+    {
+        super.onUpdateVacant();
+        
+        // power down rotor
+        ((ThxModelHelicopter) helper.model).rotorSpeed = 0f;
     }
     
     @Override
@@ -484,10 +501,9 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         worldObj.playSoundAtEntity(this, "random.bowhit", 1f, 1f);
 
         takeDamage((float) damageAmount * 3f);
-        helper.addChatMessage(this + " - Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
+        helper.addChatMessageToPilot("Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
 
-        timeSinceAttacked = .5f; // sec delay before this entity can be attacked again
-        
+        //setBeenAttacked(); // this will cause Entity.velocityChanged to be true, so additional Packet28 to jump on hit
         setBeenAttacked();
 
         return true; // the hit landed

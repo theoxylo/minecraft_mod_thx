@@ -4,11 +4,14 @@ import net.minecraft.client.Minecraft;
 
 public class mod_Thx extends BaseModMp
 {
+    static ThxConfig config;
+    
     public static mod_Thx instance;
 
     public mod_Thx()
     {
         log("mod_Thx() called");
+		config = new ThxConfig();
         instance = this; // for easy access by static methods and to instance methods
     }
 
@@ -16,8 +19,6 @@ public class mod_Thx extends BaseModMp
     public void load()
     {
         log("load() called");
-
-        ThxConfig.loadProperties();
 
         ModLoader.setInGameHook(this, true, true);
 
@@ -53,7 +54,7 @@ public class mod_Thx extends BaseModMp
             log("Setting up inventory item for helicopter with item id " + itemId);
             Item item = new ThxItemHelicopter(itemId);
 
-            if (ThxConfig.getBoolProperty("disable_helicopter_item_image"))
+            if (config.getBoolProperty("disable_helicopter_item_image"))
             {
                 item.setIconIndex(92); // hard-code to cookie icon for compatibility
             }
@@ -119,6 +120,19 @@ public class mod_Thx extends BaseModMp
     {
         if (ThxConfig.ENABLE_LOGGING) System.out.println("mod_thx_client: " + s);
     }
-
-
+    
+    static String getProperty(String name)
+    {
+        return config.getProperty(name);
+    }
+    
+    static int getIntProperty(String name)
+    {
+        return config.getIntProperty(name);
+    }
+    
+    static boolean getBoolProperty(String name)
+    {
+        return config.getBoolProperty(name);
+    }
 }

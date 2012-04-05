@@ -65,7 +65,8 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         
         setSize(1.8f, 2f);
 
-        yOffset = .8f;
+        //yOffset = .8f; // avoid getting stuck in ground upon spawn
+        yOffset = .7f;
         
         NET_PACKET_TYPE = 75;
     }
@@ -105,7 +106,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         
         if (handleCollisions())
         {
-	        helper.addChatMessage(this + " - Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
+	        helper.addChatMessageToPilot("Current damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
         }
         
         if (damage > MAX_HEALTH && !worldObj.isRemote) // helicopter destroyed!
@@ -308,9 +309,9 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         }
 
         // apply velocity changes
-        motionX = velocity.x;
-        motionY = velocity.y;
-        motionZ = velocity.z;
+        motionX = (double) velocity.x;
+        motionY = (double) velocity.y;
+        motionZ = (double) velocity.z;
             
         if (altitudeLock)
         {
@@ -366,7 +367,8 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
 	        {
 	            log("crash velSq: " + velSq);
                 
-                timeSinceCollided = .5f; // sec delay before another collision possible
+                //timeSinceCollided = .5f; // sec delay before another collision possible
+                timeSinceCollided = .2f; // sec delay before another collision possible
 	            
                 if (riddenByEntity != null)
                 {
@@ -386,6 +388,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
 	            
                 float volume = (float) velSq * 10f;
                 if (volume > .8f) volume = .8f;
+                if (volume < .3f) volume = .3f;
                 
                 float pitch = .4f + worldObj.rand.nextFloat() * .4f;
                 log("volume: " + volume + ", pitch: " + pitch);
@@ -462,6 +465,11 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
             return;
         }
         
+        if (worldObj.isRemote)
+        {
+            return; // applyUpdatePacket will do update
+        }
+        
         float thd = 0f; // thd is targetHelicopter distance
         deltaPosToTarget.set((float)(targetHelicopter.posX - posX), 0f, (float)(targetHelicopter.posZ - posZ));
         thd = deltaPosToTarget.length();
@@ -529,11 +537,15 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
 
         if (posY + 1f < targetHelicopter.posY)
         {
+            //if (throttle < THROTTLE_MAX) throttle += THROTTLE_INC;
+            //if (throttle > THROTTLE_MAX) throttle = THROTTLE_MAX;
             if (throttle < THROTTLE_MAX * .6f) throttle += THROTTLE_INC * .4f;
             if (throttle > THROTTLE_MAX * .6f) throttle = THROTTLE_MAX * .6f;
         }
         else if (posY - 2f > targetHelicopter.posY)
         {
+            //if (throttle > THROTTLE_MIN) throttle -= THROTTLE_INC;
+            //if (throttle < THROTTLE_MIN) throttle = THROTTLE_MIN;
             if (throttle > THROTTLE_MIN * .6f) throttle -= THROTTLE_INC * .4f;
             if (throttle < THROTTLE_MIN * .6f) throttle = THROTTLE_MIN * .6f;
         }
@@ -541,6 +553,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         {
             throttle *= .6; // auto zero throttle   
         }
+        plog("*** throttle: " + throttle);
     }
     
     void onUpdateVacant()
@@ -571,15 +584,18 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         */
         
         throttle *= .8; // quickly zero throttle
+        plog("*** throttle: " + throttle);
         
         if (onGround) // very slow on ground
         {
             if (Math.abs(rotationPitch) > .1f) rotationPitch *= .70f;
             if (Math.abs(rotationRoll) > .1f) rotationRoll *= .70f; // very little lateral
 
-            // double apply friction when on ground
+            // tripple apply friction when on ground
+            motionX *= FRICTION;
             motionX *= FRICTION;
             motionY = 0.0;
+            motionZ *= FRICTION;
             motionZ *= FRICTION;
                 
             rotationYawSpeed = 0f;
@@ -612,26 +628,49 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
     
     void attackedByThxEntity(ThxEntity attackingEntity)
     {
-        // activate/adjust AI for empty helicopter hit by another helicopter
-        if (riddenByEntity == null)
+        if (worldObj.isRemote)
         {
-	        if (attackingEntity.equals(targetHelicopter) && isTargetHelicopterFriendly)
-	        {
-	            isTargetHelicopterFriendly = false;
-                missileDelay = 10f; // initial missile delay
-                rocketDelay  =  5f; // initial rocket delay
-	        }
-	        else if (attackingEntity instanceof ThxEntityHelicopter)
-	        {
+            log("smp client ignoring client side attack call, should it even be called?");
+            return;
+        }
+        
+        if (riddenByEntity != null)
+        {
+            // for piloted helicopter, track attacker? could allow guided missiles, radar, nemesis
+            //targetHelicopter = (ThxEntityHelicopter) attackingEntity;
+            return;
+        }
+        
+        // activate/adjust AI for empty helicopter hit by another helicopter
+        if (riddenByEntity == null && attackingEntity instanceof ThxEntityHelicopter)
+        {
+            log("drone " + this + " is attacked by " + attackingEntity);
+            
+            if (targetHelicopter == null) // first attack by other helo, begin tracking as friendly
+            {
 	            targetHelicopter = (ThxEntityHelicopter) attackingEntity;
 	            isTargetHelicopterFriendly = true;
 	            
                 worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
-	        }
-        }
-        else
-        {
-            // for piloted helicopter, track last attacker?
+            }
+            else // already tracking
+            {
+		        if (isTargetHelicopterFriendly) // friendly fire, retaliate
+		        {
+		            // for testing, deactivate ai
+		            targetHelicopter = null;
+		            
+		            isTargetHelicopterFriendly = false;
+	                missileDelay = 10f; // initial missile delay
+	                rocketDelay  =  5f; // initial rocket delay
+	                
+	                worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
+		        }
+		        else
+		        {
+		            // enemy hit us again!
+		        }
+            }
         }
     }
     
