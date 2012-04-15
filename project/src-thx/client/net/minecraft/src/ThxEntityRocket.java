@@ -1,8 +1,5 @@
 package net.minecraft.src;
 
-import java.util.List;
-import java.util.Random;
-
 public class ThxEntityRocket extends ThxEntityRocketBase implements ISpawnable
 {
     public ThxEntityRocket(World world)
@@ -31,6 +28,14 @@ public class ThxEntityRocket extends ThxEntityRocketBase implements ISpawnable
 	        model.rotationRollSpeed = 90f; // units?
         }
         return new ThxEntityHelperClient(this, model);
+    }
+    
+    @Override
+    public void spawn(Packet230ModLoader packet)
+    {
+        super.spawn(packet);
+       
+        log("*** rocket spawn(): owner: " + owner);
     }
 }
 

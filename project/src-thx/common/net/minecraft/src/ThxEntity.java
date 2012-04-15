@@ -39,6 +39,7 @@ public abstract class ThxEntity extends Entity
     ThxEntityHelper helper;
     
     int NET_PACKET_TYPE;
+    Packet230ModLoader lastUpdatePacket;
     
     int cmd_reload;
     int cmd_create_item;
@@ -71,8 +72,6 @@ public abstract class ThxEntity extends Entity
     public void onUpdate()
     {
         ticksExisted++;
-        int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
-        plog(String.format("start onUpdate, pilot %d [posX: %5.2f, posY: %5.2f, posZ: %5.2f, yaw: %5.2f, throttle: %5.2f, motionY: %5.2f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionY));
         
         long time = System.nanoTime();
         deltaTime = ((float) (time - prevTime)) / 1000000000f; // convert to sec
@@ -85,6 +84,12 @@ public abstract class ThxEntity extends Entity
         prevRotationPitch = rotationPitch;
         prevRotationYaw = rotationYaw;
         prevRotationRoll = rotationRoll;
+        
+        if (worldObj.isRemote)
+        {
+	        applyUpdatePacket(lastUpdatePacket);
+	        lastUpdatePacket = null; // only apply once
+        }
         
         inWater = isInWater();
         
@@ -211,52 +216,12 @@ public abstract class ThxEntity extends Entity
     
     void plog(String s) // periodic log
     {
-        if (plog && ticksExisted % 60 == 0)
+        if (plog && worldObj.worldInfo.getWorldTime() % 60 == 0)
         {
-            log(s);
+            log(s); //
         }
     }
     
-    public Packet230ModLoader getUpdatePacket()
-    {
-        Packet230ModLoader packet = new Packet230ModLoader();
-
-        packet.modId = mod_Thx.instance.getId();
-        packet.packetType = NET_PACKET_TYPE;
-
-        packet.dataString = new String[] { "thx update packet for tick " + ticksExisted };
-
-        packet.dataInt = new int[7];
-        packet.dataInt[0] = entityId;
-        packet.dataInt[1] = riddenByEntity != null ? riddenByEntity.entityId : 0;
-        packet.dataInt[2] = cmd_reload;
-        packet.dataInt[3] = cmd_create_item;
-        packet.dataInt[4] = owner != null ? owner.entityId : 0;
-        packet.dataInt[5] = cmd_exit;
-        packet.dataInt[6] = cmd_create_map;
-        
-        // clear cmd flags after setting them in packet
-        cmd_reload = 0;
-        cmd_create_item = 0;
-        cmd_exit = 0;
-		cmd_create_map = 0;
-		
-        packet.dataFloat = new float[11];
-        packet.dataFloat[0] = (float) posX;
-        packet.dataFloat[1] = (float) posY;
-        packet.dataFloat[2] = (float) posZ;
-        packet.dataFloat[3] = rotationYaw;
-        packet.dataFloat[4] = rotationPitch;
-        packet.dataFloat[5] = rotationRoll;
-        packet.dataFloat[6] = (float) motionX;
-        packet.dataFloat[7] = (float) motionY;
-        packet.dataFloat[8] = (float) motionZ;
-        packet.dataFloat[9] = damage;
-        packet.dataFloat[10] = throttle;
-        
-        return packet;
-    }
-
     /* subclasses can react to player pilot right click, e.g. helicopter fires missile */
     void interactByPilot()
     {
@@ -329,6 +294,8 @@ public abstract class ThxEntity extends Entity
         
 
         Entity attackingEntity = damageSource.getEntity();
+        log("attacked by entity: " + attackingEntity);
+        
         if (attackingEntity == null) return false; // when is this the case?
         if (attackingEntity.equals(this)) return false; // ignore damage from self?
         if (attackingEntity.equals(riddenByEntity))
@@ -336,15 +303,14 @@ public abstract class ThxEntity extends Entity
             attackedByPilot();
             return false; // ignore attack by pilot (player left click)
         }
-        if (attackingEntity instanceof ThxEntity)
+        if (attackingEntity instanceof ThxEntity) // check for drone
         {
             attackedByThxEntity((ThxEntity) attackingEntity);
         }
-        if (attackingEntity.ridingEntity instanceof ThxEntity)
+        if (attackingEntity.ridingEntity instanceof ThxEntity) // check for other player pilot helicopter
         {
             attackedByThxEntity((ThxEntity) attackingEntity.ridingEntity);
         }
-        log("attacked by entity: " + attackingEntity);
         return true; // hit landed
     }
     
@@ -405,14 +371,6 @@ public abstract class ThxEntity extends Entity
         Packet230ModLoader packet = getUpdatePacket();
         packet.dataString[0] = "spawn packet for thx entity " + entityId;
         
-        // bump Y for non-piloted to avoid getting stuck in landscape
-        /*
-        if (entity.riddenByEntity == null)
-        {
-            packet.dataFloat[1] += .2;
-        }
-        */
-        
         log("Returning spawn packet: " + packet);
         return packet;
     }
@@ -420,7 +378,7 @@ public abstract class ThxEntity extends Entity
     /* ISpawnable CLIENT interface */
     public void spawn(Packet230ModLoader packet)
     {
-        log("Received spawn packet: " + packet);
+        log("Received spawn packet: " + packetToString(packet));
 
         int entityIdOrig = entityId;
         entityId = packet.dataInt[0];
@@ -434,16 +392,56 @@ public abstract class ThxEntity extends Entity
         log("spawn(): posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
     }
     
+    public Packet230ModLoader getUpdatePacket()
+    {
+        Packet230ModLoader packet = new Packet230ModLoader();
+
+        packet.modId = mod_Thx.instance.getId();
+        packet.packetType = NET_PACKET_TYPE;
+
+        packet.dataString = new String[] { "thx update packet for tick " + ticksExisted };
+
+        packet.dataInt = new int[7];
+        packet.dataInt[0] = entityId;
+        packet.dataInt[1] = owner != null ? owner.entityId : 0;
+        packet.dataInt[2] = riddenByEntity != null ? riddenByEntity.entityId : 0;
+        packet.dataInt[3] = cmd_create_item;
+        packet.dataInt[4] = cmd_reload;
+        packet.dataInt[5] = cmd_exit;
+        packet.dataInt[6] = cmd_create_map;
+        
+        // clear cmd flags after setting them in packet
+        cmd_reload = 0;
+        cmd_create_item = 0;
+        cmd_exit = 0;
+		cmd_create_map = 0;
+		
+        packet.dataFloat = new float[11];
+        packet.dataFloat[0] = (float) posX;
+        packet.dataFloat[1] = (float) posY;
+        packet.dataFloat[2] = (float) posZ;
+        packet.dataFloat[3] = rotationYaw;
+        packet.dataFloat[4] = rotationPitch;
+        packet.dataFloat[5] = rotationRoll;
+        packet.dataFloat[6] = (float) motionX;
+        packet.dataFloat[7] = (float) motionY;
+        packet.dataFloat[8] = (float) motionZ;
+        packet.dataFloat[9] = damage;
+        packet.dataFloat[10] = throttle;
+        
+        return packet;
+    }
+
     void applyUpdatePacket(Packet230ModLoader packet)
     {
-        if (ThxConfig.LOG_INCOMING_PACKETS) plog("<<< " + packetToString(packet));
-        
         if (packet == null) return;
+        
+        if (ThxConfig.LOG_INCOMING_PACKETS) plog("<<< " + packetToString(packet));
         
         if (!worldObj.isRemote)
         {
-	        cmd_reload      = packet.dataInt[2];
 	        cmd_create_item = packet.dataInt[3];
+	        cmd_reload      = packet.dataInt[4];
 	        cmd_exit        = packet.dataInt[5];
 	        cmd_create_map  = packet.dataInt[6];
         }
@@ -459,10 +457,10 @@ public abstract class ThxEntity extends Entity
         damage = packet.dataFloat[9];
         throttle = packet.dataFloat[10];
 
-        helper.applyUpdatePacket(packet); // this will apply client and server update packets if IClientDriven
+        helper.applyUpdatePacket(packet);
         
         int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
-        plog(String.format("end applyPaket, pilot %d [posX: %5.2f, posY: %5.2f, posZ: %5.2f, yaw: %5.2f, throttle: %5.2f, motionY: %5.2f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionY));
+        plog(String.format("end applyPaket, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
     }    
     
     public String packetToString(Packet230ModLoader p)

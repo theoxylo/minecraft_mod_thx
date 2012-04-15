@@ -32,7 +32,9 @@ public abstract class ThxEntityRocketBase extends ThxEntity
         
         setPositionAndRotation(x, y, z, yaw, pitch);
         
-        float acceleration = .7f;
+        //float acceleration = .7f;
+        float acceleration = .6f;
+        
         motionX = -MathHelper.sin((rotationYaw / 180F) * 3.141593F) * MathHelper.cos((rotationPitch / 180F) * 3.141593F) * acceleration;
         motionZ = MathHelper.cos((rotationYaw / 180F) * 3.141593F) * MathHelper.cos((rotationPitch / 180F) * 3.141593F) * acceleration;
         motionY = -MathHelper.sin((rotationPitch / 180F) * 3.141593F) * acceleration;
@@ -151,10 +153,11 @@ public abstract class ThxEntityRocketBase extends ThxEntity
         if(movingobjectposition != null)
         {
             // we hit an entity!
-            if(movingobjectposition.entityHit != null && !worldObj.isRemote)
+            //if(movingobjectposition.entityHit != null && !worldObj.isRemote)
+            if(movingobjectposition.entityHit != null) //&& !worldObj.isRemote) // allow client side event
             {
 	            log("rocket hit entity " + movingobjectposition.entityHit);
-                if (owner.equals(movingobjectposition.entityHit.riddenByEntity) || owner.equals(movingobjectposition.entityHit)) 
+                if (owner == null || owner.equals(movingobjectposition.entityHit.riddenByEntity) || owner.equals(movingobjectposition.entityHit)) 
                 {
                     log(owner + " ignoring hit from own rocket");
                 }

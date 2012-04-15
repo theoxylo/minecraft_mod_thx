@@ -99,9 +99,9 @@ public class mod_Thx extends BaseModMp
 	        Entity entity = ((WorldClient) ModLoader.getMinecraftInstance().theWorld).getEntityByID(entityId);
 	        
             // try calling applyUpdatePacket(packet);
-	        if (entity instanceof ThxEntity) ((ThxEntity) entity).applyUpdatePacket(packet);
+	        //if (entity instanceof ThxEntity) ((ThxEntity) entity).applyUpdatePacket(packet);
 	        
-	        //if (entity instanceof ThxEntity) ((ThxEntity) entity).latestUpdatePacket = packet;
+	        if (entity instanceof ThxEntity) ((ThxEntity) entity).lastUpdatePacket = packet;
         }
     }
 
@@ -118,7 +118,7 @@ public class mod_Thx extends BaseModMp
 
     public static void log(String s)
     {
-        if (ThxConfig.ENABLE_LOGGING) System.out.println("mod_thx_client: " + s);
+        if (ThxConfig.ENABLE_LOGGING) System.out.println("mod_thx: " + s);
     }
     
     static String getProperty(String name)
@@ -134,5 +134,17 @@ public class mod_Thx extends BaseModMp
     static boolean getBoolProperty(String name)
     {
         return config.getBoolProperty(name);
+    }
+    
+    static EntityPlayer getEntityPlayerById(int id)
+    {
+        Object[] players = ModLoader.getMinecraftInstance().theWorld.playerEntities.toArray();
+
+        for (int i = 0; i < players.length; i++)
+        {
+            EntityPlayer ep = (EntityPlayer) players[i];
+            if (ep != null && ep.entityId == id) return ep;
+        }
+        return null;
     }
 }

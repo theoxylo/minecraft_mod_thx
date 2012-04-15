@@ -60,14 +60,11 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     @Override
     public void onUpdate()
     {
+        int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
+        plog(String.format("start  onUpdate, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
+        
         super.onUpdate();
 		
-        // only send if changed
-        ////Packet230ModLoader updatePacket; // move out of method for implementation
-        //Packet230ModLoader prevUpdatePacket = updatePacket;
-        //updatePacket = getUpdatePacket();
-        //if (prevUpdatePacket.equals(updatePacket)) continue;
-        
         // try sending update packet in all cases! bandwidth?
         helper.sendUpdatePacketToServer(getUpdatePacket());
             
@@ -83,10 +80,13 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
                 if (i % 2 == 0) worldObj.spawnParticle("smoke", posX -.5f + Math.random(), posY -.5f + Math.random(), posZ -.5f + Math.random(), 0.0, 0.0, 0.0);
                 else worldObj.spawnParticle("largesmoke", posX -.5f + Math.random(), posY -.5f + Math.random(), posZ -.5f + Math.random(), 0.0, 0.0, 0.0);
                 
-                if (i > 6) break;
+                //if (i > 6) break;
             }
             if (damage / MAX_HEALTH > .75f) worldObj.spawnParticle("flame", posX -.5f + Math.random(), posY -.5f + Math.random(), posZ -.5f + Math.random(), 0.0, 0.0, 0.0);
         }
+        
+        riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
+        plog(String.format("finish onUpdate, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
     }
     
     @Override
@@ -94,7 +94,12 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     {
         if (!minecraft.thePlayer.equals(riddenByEntity))
         {
-	        // piloted by other player mp client or ai, so already updated by server packet
+	        // piloted by other player mp client, so already updated by server packet
+        
+	        // adjust model rotor speed according to throttle
+	        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
+	        ((ThxModelHelicopter) helper.model).rotorSpeed = power / 2f + .75f;
+        
             return;
         }
         
@@ -228,8 +233,10 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         }
 
         // PILOT EXIT
+        pilotExitDelay -= deltaTime;
         if (Keyboard.isKeyDown(KEY_EXIT) && pilot != null)
         {
+            pilotExitDelay = .5f; // the delay in seconds
             if (worldObj.isRemote) cmd_exit = 1; // queue for server packet
             pilotExit();
         }
@@ -473,11 +480,16 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     @Override
     void onUpdateDrone()
     {
+        plog("client onUpdateDrone thottle: " + throttle);
+        
         super.onUpdateDrone();
         
         // adjust model rotor speed according to throttle
         float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
         ((ThxModelHelicopter) helper.model).rotorSpeed = power / 2f + .75f;
+        
+        float rotorSpeed = ((ThxModelHelicopter) helper.model).rotorSpeed;
+        plog("other player rotorSpeed: " + rotorSpeed);
     }
     
     @Override
@@ -514,18 +526,14 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     {
         if (!super.interact(player)) return false;
         
-        // super.interact returns true if player boards and becomes new pilot
         altitudeLock = false;
         
         // reset level to current look pitch
         lookPitchZeroLevel = player.rotationPitch;
         
-        // inactivate ai
-        targetHelicopter = null;
-            
         player.rotationYaw = rotationYaw;
         
-        log("interact() added pilot: " + player + ", " + player.entityId);
+        log("interact() added pilot " + player.entityId);
         return true;
     }
 
@@ -548,8 +556,6 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         
         super.pilotExit();
         
-        //((ThxModel) helper.model).visible = true; // hard to find otherwise!
-        //((ThxModelHelicopter) helper.model).rotorSpeed = 0f;
         ThxModelHelicopter model = (ThxModelHelicopter) helper.model;
         model.visible = true;
         model.rotorSpeed = 0f;

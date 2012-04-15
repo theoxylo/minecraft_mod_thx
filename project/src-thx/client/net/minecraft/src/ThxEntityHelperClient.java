@@ -64,8 +64,20 @@ public class ThxEntityHelperClient extends ThxEntityHelper
     {
         if (packet == null) return;
         
-        int packetPilotId = packet.dataInt[1];
-        
+        int ownerId = packet.dataInt[1];
+        if (ownerId > 0)
+    	{
+            if (entity.owner == null || entity.owner.entityId != ownerId)
+            {
+            	//entity.owner = ((WorldClient) world).getEntityByID(ownerId);
+            	//entity.owner = ((WorldClient) ModLoader.getMinecraftInstance().theWorld).getEntityByID(ownerId);
+            	entity.owner = mod_Thx.getEntityPlayerById(ownerId);
+                log("*** Entity owner id: " + ownerId);
+                log("*** Entity owner: " + entity.owner);
+            }
+    	}
+
+        int packetPilotId = packet.dataInt[2];
         // no or wrong current pilot
         if (packetPilotId > 0 && (entity.riddenByEntity == null || entity.riddenByEntity.entityId != packetPilotId))
         {
@@ -83,10 +95,6 @@ public class ThxEntityHelperClient extends ThxEntityHelper
             entity.pilotExit();
         }
         
-        int ownerId = packet.dataInt[4];
-        if (ownerId > 0) entity.owner = ((WorldClient) world).getEntityByID(ownerId);
-        //log("Entity owner: " + entity.owner);
-
         entity.serverPosX = MathHelper.floor_float(packet.dataFloat[0] * 32f);
         entity.serverPosY = MathHelper.floor_float(packet.dataFloat[1] * 32f);
         entity.serverPosZ = MathHelper.floor_float(packet.dataFloat[2] * 32f);
