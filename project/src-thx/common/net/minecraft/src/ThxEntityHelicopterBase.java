@@ -75,8 +75,6 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
     @Override
     public void onUpdate()
     {
-        plog("base onUpdate");
-        
         super.onUpdate();
                 
         // decrement cooldown timers
@@ -101,7 +99,8 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
             plog("@@@ targetHelicopter: " + targetHelicopter);
             
             onUpdateDrone(); // drone ai
-	        if (!worldObj.isRemote) updateMotion(false);
+	        //if (!worldObj.isRemote) updateMotion(false);
+	        updateMotion(false);
         }
         else
         {
@@ -166,6 +165,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         if (!worldObj.isRemote)
         {
 	        ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
+            // pilot is owner to get xp, if no pilot (ai) then helicopter is owner
 	        newRocket.owner = riddenByEntity != null ? riddenByEntity : this;
 	        worldObj.spawnEntityInWorld(newRocket);
         }
@@ -259,8 +259,18 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
     
     void updateMotion(boolean altitudeLock)
     {
+        plog("***1 motionY: " + motionY);
         // now calculate thrust and velocity based on yaw, pitch, roll, throttle
     
+        /*
+        if (worldObj.isRemote)
+        {
+            moveEntity(motionX, motionY, motionZ);
+            plog("***2 motionY: " + motionY);
+            return;
+        }
+        */
+        
         ascendDescendLift:
         {
             // as pitch and roll increases, lift decreases by fall-off function.
@@ -330,6 +340,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         }
         
         moveEntity(motionX, motionY, motionZ);
+        plog("***2 motionY: " + motionY);
     }
     
     /**

@@ -60,7 +60,14 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     @Override
     void updateMotion(boolean flag)
     {
-        moveEntity(motionX, motionY, motionZ);
+        if (riddenByEntity != null) // motionX,Y,Z are updated by pilot client packet so just move
+    	{
+        	moveEntity(motionX, motionY, motionZ);
+    	}
+        else
+        {
+        	super.updateMotion(flag);
+        }
     }
     
     @Override

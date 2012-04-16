@@ -489,7 +489,7 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         ((ThxModelHelicopter) helper.model).rotorSpeed = power / 2f + .75f;
         
         float rotorSpeed = ((ThxModelHelicopter) helper.model).rotorSpeed;
-        plog("other player rotorSpeed: " + rotorSpeed);
+        plog("drone rotorSpeed: " + rotorSpeed);
     }
     
     @Override

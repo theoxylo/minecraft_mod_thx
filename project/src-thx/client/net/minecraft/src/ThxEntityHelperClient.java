@@ -69,10 +69,17 @@ public class ThxEntityHelperClient extends ThxEntityHelper
     	{
             if (entity.owner == null || entity.owner.entityId != ownerId)
             {
-            	//entity.owner = ((WorldClient) world).getEntityByID(ownerId);
-            	//entity.owner = ((WorldClient) ModLoader.getMinecraftInstance().theWorld).getEntityByID(ownerId);
-            	entity.owner = mod_Thx.getEntityPlayerById(ownerId);
                 log("*** Entity owner id: " + ownerId);
+                
+            	// first check for owner that is entity (e.g. helicopter)
+            	entity.owner = ((WorldClient) world).getEntityByID(ownerId);
+                
+                if (entity.owner == null)
+                {
+                    // otherwise, check for owner that is a player
+                	entity.owner = mod_Thx.getEntityPlayerById(ownerId);
+                }
+                
                 log("*** Entity owner: " + entity.owner);
             }
     	}
