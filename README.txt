@@ -1,4 +1,4 @@
-Minecraft THX Helicopter Mod, v017 for mcXXX, 20120417, mod_thx-mc125_v017
+Minecraft THX Helicopter Mod, v017 for Minecraft 1.2.5, 20120417, mod_thx-mc125_v017
 
 
 
