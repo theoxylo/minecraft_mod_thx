@@ -1,10 +1,10 @@
-Minecraft THX Helicopter Mod, v017 for mcXXX, 20120417, mod_thx-mc125_v017
+Minecraft THX Helicopter Mod, v018 for mcXXX, 20120417, mod_thx-mc125_v018
 
 
 
 INTRODUCTION
 ------------
-This version is v017 for use with Minecraft and ModLoader/MP 1.2.5 for both single- and multi-player.
+This version is v018 for use with Minecraft and ModLoader/MP 1.2.5 for both single- and multi-player.
 
 You can download the compiled binary zip files from GitHub:
 
