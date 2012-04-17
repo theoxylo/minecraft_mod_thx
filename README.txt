@@ -1,29 +1,31 @@
-Minecraft THX Helicopter Mod, v017 for mcXXX, 20120327, mod_thx-mcXXX_v017
+Minecraft THX Helicopter Mod, v017 for mcXXX, 20120417, mod_thx-mc125_v017
 
 
 
 INTRODUCTION
 ------------
-This version is v017 for use with Minecraft and ModLoader XXX, with ModLoaderMP XXX for both single- and multi-player.
+This version is v017 for use with Minecraft and ModLoader/MP 1.2.5 for both single- and multi-player.
 
 You can download the compiled binary zip files from GitHub:
 
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_CLIENT_
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_CLIENT_mc125_v017.zip
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_SERVER_
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_SERVER_mc125_v017.zip
 
 
 And you can download the exact ModLoader and ModLoaderMP files you need from their respective download links (not affiliated with this mod):
 
 
-    ModLoader client 1.2.4  : http://adf.ly/1849S
+	ModLoader 1.2.5: http://adf.ly/1849S or
+	http://dl.dropbox.com/u/20629262/Latest/ModLoader.zip
 
-    ModLoaderMP Client 1.2.4 v1: http://adf.ly/6h2h4
+	ModLoaderMP Client 1.2.5 v1: http://adf.ly/74Eeb or
+	http://dl.dropbox.com/u/16399537/Releases/1.2.5/ModLoaderMP%201.2.5%20v1.zip
 
-    ModLoaderMP Server 1.2.4 v1: http://adf.ly/6h2m6 (NOT WORKING)
+	ModLoaderMP Server 1.2.5 v1: http://adf.ly/74EhX or
+	http://dl.dropbox.com/u/16399537/Releases/1.2.5/ModLoaderMP%20Server%201.2.5%20v1.zip
 
-    ModLoaderMP Server 1.2.4 THX: http://dl.dropbox.com/u/8642515/ModLoaderMP_1.2.4_server_THX.zip (CUSTOM THX VERSION)
 
 
 
@@ -121,7 +123,7 @@ Welcome to the Minecraft mod_thx Helicopter project! If you are still reading th
 
 ACKNOWLEDGEMENTS
 ----------------
-Thanks to vip3r for the helicopter skin.
+Thanks to vip3r for improving the helicopter skin.
 
 Thanks to dannyoboy007 for managing the forum topic and recruiting.
 
@@ -142,6 +144,9 @@ Official YouTube playlist:
 
 CHANGELOG
 ---------
+v017: now for use with Minecraft and ModLoader 1.2.5
+v017: added basic ai for friendly and enemy drones
+
 v016: now for use with Minecraft and ModLoader 1.2.4
 v016: left-click (pilot attack) fires missile
 v016: right-click (pilot interact) fires rockets, subject to reload after 12

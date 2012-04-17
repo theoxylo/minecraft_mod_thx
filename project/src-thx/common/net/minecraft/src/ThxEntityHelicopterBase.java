@@ -10,10 +10,12 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
 
     float MAX_ACCEL    = 0.2000f;
     float GRAVITY      = 0.2005f;
-    float MAX_VELOCITY = 0.30f;
+    //float MAX_VELOCITY = 0.30f;
+    float MAX_VELOCITY = 0.26f;
     float FRICTION = 0.98f;
 
-    float MAX_PITCH = 60.00f;
+    //float MAX_PITCH = 60.00f;
+    float MAX_PITCH = 50.00f;
     float PITCH_SPEED_DEG = 40f;
     float PITCH_RETURN = 0.98f;
 
@@ -43,9 +45,9 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
     float missileDelay;
     final float MISSILE_DELAY = 6f;
 
+    boolean hasFiredRocket;
     float rocketDelay;
-    //final float ROCKET_DELAY = .12f;
-    final float ROCKET_DELAY = .001f; // now controlled by interact rate //.20f;
+    final float ROCKET_DELAY = .3f; // only applies to drones, pilot rocket rate controlled by interact
     final int FULL_ROCKET_COUNT = 12;
     float rocketReload;
     final float ROCKET_RELOAD_DELAY = 3f;
@@ -77,6 +79,8 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
     {
         super.onUpdate();
                 
+        hasFiredRocket = false;
+        
         // decrement cooldown timers
         missileDelay -= deltaTime;
         rocketDelay  -= deltaTime;
@@ -96,10 +100,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         }
         else if (targetHelicopter != null)
         {
-            plog("@@@ targetHelicopter: " + targetHelicopter);
-            
             onUpdateDrone(); // drone ai
-	        //if (!worldObj.isRemote) updateMotion(false);
 	        updateMotion(false);
         }
         else
@@ -107,11 +108,6 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
             onUpdateVacant(); // empty
 	        updateMotion(false);
         }
-        
-        // convert pitch, roll, and throttle into thrust and call moveEntity
-        //logMotion("before updateMotion");
-        //updateMotion(altitudeLock);
-        //logMotion("after updateMotion ");
         
         if (handleCollisions())
         {
@@ -144,7 +140,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
     
     void fireRocket()
     {
-        if (rocketDelay > 0f) return;
+        if (rocketDelay > 0f && riddenByEntity == null) return;
         if (rocketReload > 0f) return;
         
         rocketDelay = ROCKET_DELAY;
@@ -169,6 +165,8 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
 	        newRocket.owner = riddenByEntity != null ? riddenByEntity : this;
 	        worldObj.spawnEntityInWorld(newRocket);
         }
+        
+        hasFiredRocket = true;
         
         if (rocketCount == FULL_ROCKET_COUNT)
         {
@@ -259,18 +257,8 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
     
     void updateMotion(boolean altitudeLock)
     {
-        plog("***1 motionY: " + motionY);
         // now calculate thrust and velocity based on yaw, pitch, roll, throttle
     
-        /*
-        if (worldObj.isRemote)
-        {
-            moveEntity(motionX, motionY, motionZ);
-            plog("***2 motionY: " + motionY);
-            return;
-        }
-        */
-        
         ascendDescendLift:
         {
             // as pitch and roll increases, lift decreases by fall-off function.
@@ -340,7 +328,6 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         }
         
         moveEntity(motionX, motionY, motionZ);
-        plog("***2 motionY: " + motionY);
     }
     
     /**
@@ -478,8 +465,6 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
     
     void onUpdateDrone()
     {
-        plog("base onUpdateDrone thottle: " + throttle);
-        
         if (targetHelicopter == null) return;
         
         if (targetHelicopter.isDead)
@@ -497,13 +482,20 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         deltaPosToTarget.set((float)(targetHelicopter.posX - posX), 0f, (float)(targetHelicopter.posZ - posZ));
         thd = deltaPosToTarget.length();
             
-        if (!isTargetHelicopterFriendly 
-                && thd < 20f 
-                && thd > 5f 
-                && Math.abs(targetHelicopter.posY - posY) < 2f 
-           )
+        if (isTargetHelicopterFriendly)
         {
-            // fire rocket
+            if (targetHelicopter.hasFiredRocket)
+            {
+            	fireRocket();
+            }
+        }
+        else // not friendly
+        {
+        	if (thd < 20f && thd > 5f && Math.abs(targetHelicopter.posY - posY) < 2.0)
+    		{
+                if (damage > .8 * MAX_HEALTH) fireMissile();
+                else fireRocket();
+    		}
         }
         
         // YAW
@@ -576,7 +568,6 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         {
             throttle *= .6; // auto zero throttle   
         }
-        plog("*** throttle: " + throttle);
     }
     
     void onUpdateVacant()
@@ -668,7 +659,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         {
             log("attacked by " + attackingEntity + " with pilot: " + attackingEntity.riddenByEntity);
             
-            if (targetHelicopter == null) // first attack by other helo, begin tracking as friendly
+            if (targetHelicopter == null || !targetHelicopter.equals(attackingEntity)) // first attack by another helo, begin tracking as friendly
             {
 	            targetHelicopter = (ThxEntityHelicopter) attackingEntity;
 	            isTargetHelicopterFriendly = true;
@@ -682,17 +673,17 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
 		        if (isTargetHelicopterFriendly) // friendly fire, retaliate
 		        {
 		            // deactivate ai
-                    log("deactivate ai, forgetting targetHelicopter: " + targetHelicopter);
-		            targetHelicopter = null;
-                    return;
+                    //log("deactivate ai, forgetting targetHelicopter: " + targetHelicopter);
+		            //targetHelicopter = null;
+                    //return;
 		            
-		            //isTargetHelicopterFriendly = false;
-	                //missileDelay = 10f; // initial missile delay
-	                //rocketDelay  =  5f; // initial rocket delay
+		            isTargetHelicopterFriendly = false;
+	                missileDelay = 10f; // initial missile delay
+	                rocketDelay  =  5f; // initial rocket delay
 	                
-	                //worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
+	                worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
                     
-                    //log("new enemy targetHelicopter: " + targetHelicopter);
+                    log("new enemy targetHelicopter: " + targetHelicopter);
 		        }
 		        else
 		        {

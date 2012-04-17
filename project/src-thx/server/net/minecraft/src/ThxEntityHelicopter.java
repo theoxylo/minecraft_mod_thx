@@ -18,20 +18,11 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     }
 
     @Override
-    public void onUpdate()
-    {
-        int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
-        plog(String.format("start  onUpdate, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
-        
-        super.onUpdate();
-        
-        riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
-        plog(String.format("finish onUpdate, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
-    }
-    
-    @Override
     public void onUpdatePilot()
     {
+        int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
+        plog(String.format("onUpdatePilot, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
+        
         if (cmd_exit > 0 || riddenByEntity.isDead)
         {
             cmd_exit = 0;
@@ -60,7 +51,7 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     @Override
     void updateMotion(boolean flag)
     {
-        if (riddenByEntity != null) // motionX,Y,Z are updated by pilot client packet so just move
+        if (riddenByEntity != null) // server motionX,Y,Z are updated by pilot client packet so just move
     	{
         	moveEntity(motionX, motionY, motionZ);
     	}
@@ -87,41 +78,18 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     {
         if (riddenByEntity == null) return;
         
-        //EntityPlayerMP pilot = (EntityPlayerMP) riddenByEntity;
-        //Packet packet = new Packet39AttachEntity(pilot, null);
         Packet packet = new Packet39AttachEntity(riddenByEntity, null);
         List players = ModLoader.getMinecraftServerInstance().configManager.playerEntities;
         for (Object player : players)
         {
-            //if (player.equals(pilot)) continue; // already sent above by mountEntity call
             ((EntityPlayerMP) player).playerNetServerHandler.sendPacket(packet);
         }
 
         // place pilot to left of helicopter
         // (use fwd XZ perp to exit left: x = z, z = -x)
         double exitDist = 1.9;
-        //pilot.playerNetServerHandler.teleportTo(posX + fwd.z * exitDist, posY + pilot.getYOffset(), posZ - fwd.x * exitDist, rotationYaw, 0f);
         ((EntityPlayerMP) riddenByEntity).playerNetServerHandler.teleportTo(posX + fwd.z * exitDist, posY + riddenByEntity.getYOffset(), posZ - fwd.x * exitDist, rotationYaw, 0f);
 
         super.pilotExit();
-        //riddenByEntity.mountEntity(this); // riddenByEntity is now null
-    }
- 
-    @Override
-    public void updateRiderPosition()
-    {
-        if (riddenByEntity == null) return;
-        
-        super.updateRiderPosition();
-        
-        /* broken! causes fixed pilot until teleport when exit, interesting rotation acceleration on view makes it hard to play even as rc drone
-        if (getDistanceSqToEntity(riddenByEntity) > 4)
-        {
-            System.out.println("Teleporting pilot to helicopter location");
-            
-	        EntityPlayerMP pilot = (EntityPlayerMP) riddenByEntity;
-	        pilot.playerNetServerHandler.teleportTo(posX, posY + riddenByEntity.getYOffset() + getMountedYOffset(), posZ, rotationYaw, 0f);
-        }
-        */
     }
 }

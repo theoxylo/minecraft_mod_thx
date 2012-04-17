@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<project name="xmc_thx_mod_CLIENT" default="copy_to_mcp" basedir="..">
+
+	<property name="MCP_HOME" value="../mcp62-125" />
+
+	<target name="copy_to_mcp">
+
+		<echo message="Project: ${ant.project.name}" />
+		
+		<echo message="Copying modified resource files..." />
+		<copy todir="${MCP_HOME}/jars/mods/thx.zip/thx" verbose="true">
+			<fileset dir="project/resources/thx" includes="*.png" />
+		</copy>
+
+		<echo message="Copying modified COMMON java files..." />
+		<copy todir="${MCP_HOME}/src/minecraft" verbose="true">
+			<fileset dir="project/src-thx/common" includes="**/*.java" />
+		</copy>
+
+        <echo message="Copying modified CLIENT java files..." />
+        <copy todir="${MCP_HOME}/src/minecraft" verbose="true">
+            <fileset dir="project/src-thx/client" includes="**/*.java" />
+        </copy>
+
+	</target>
+
+</project>
