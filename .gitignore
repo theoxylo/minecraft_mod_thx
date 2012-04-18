@@ -1,3 +1,5 @@
-project_client/temp/
-project_server/temp/
 .metadata/
+project_client/temp/
+project_client/debug.log
+project_server/temp/
+project_server/debug.log
