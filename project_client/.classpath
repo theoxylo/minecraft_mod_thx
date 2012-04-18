@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="thx/src-thx/client"/>
 	<classpathentry kind="src" path="thx/src-thx/common"/>
 	<classpathentry kind="src" path="mc_ref/src/minecraft"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="lib" path="mcp/bin/jinput.jar"/>
 	<classpathentry kind="lib" path="mcp/bin/lwjgl_util.jar"/>
 	<classpathentry kind="lib" path="mcp/bin/lwjgl.jar">
@@ -12,5 +11,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="mcp/bin/minecraft.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="temp"/>
 </classpath>
