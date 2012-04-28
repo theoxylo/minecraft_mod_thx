@@ -22,8 +22,6 @@ public class ThxConfig extends ThxConfigBase
         defaultAdded = ensureDefault(props, "key_right", Keyboard.getKeyName(Keyboard.KEY_D)) || defaultAdded;
         defaultAdded = ensureDefault(props, "key_rotate_left", Keyboard.getKeyName(Keyboard.KEY_G)) || defaultAdded;
         defaultAdded = ensureDefault(props, "key_rotate_right", Keyboard.getKeyName(Keyboard.KEY_H)) || defaultAdded;
-        defaultAdded = ensureDefault(props, "key_fire_missile", Keyboard.getKeyName(Keyboard.KEY_M)) || defaultAdded;
-        defaultAdded = ensureDefault(props, "key_fire_rocket", Keyboard.getKeyName(Keyboard.KEY_R)) || defaultAdded;
         defaultAdded = ensureDefault(props, "key_rocket_reload", Keyboard.getKeyName(Keyboard.KEY_I)) || defaultAdded;
         defaultAdded = ensureDefault(props, "key_look_pitch", Keyboard.getKeyName(Keyboard.KEY_L)) || defaultAdded;
         defaultAdded = ensureDefault(props, "key_auto_level", Keyboard.getKeyName(Keyboard.KEY_K)) || defaultAdded;

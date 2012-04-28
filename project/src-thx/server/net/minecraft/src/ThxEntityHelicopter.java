@@ -8,13 +8,17 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     public ThxEntityHelicopter(World world)
     {
         super(world);
-	    helper = new ThxEntityHelperServer(this);
     }
 
     public ThxEntityHelicopter(World world, double x, double y, double z, float yaw)
     {
-        this(world);
-        setPositionAndRotation(x, y + yOffset, z, yaw, 0f);
+        super(world, x, y, z, yaw);
+    }
+    
+    @Override
+    ThxEntityHelper createHelper()
+    {
+	    return new ThxEntityHelperServer(this);
     }
 
     @Override

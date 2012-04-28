@@ -7,9 +7,9 @@ public class ThxEntityMissile extends ThxEntityMissileBase implements ISpawnable
         super(world);
     }
 
-    public ThxEntityMissile(World world, double x, double y, double z, double dx, double dy, double dz, float yaw, float pitch)
+    public ThxEntityMissile(Entity owner, double x, double y, double z, double dx, double dy, double dz, float yaw, float pitch)
     {
-        super(world, x, y, z, dx, dy, dz, yaw, pitch);
+        super(owner, x, y, z, dx, dy, dz, yaw, pitch);
     }
     
     @Override

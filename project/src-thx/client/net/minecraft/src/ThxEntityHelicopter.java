@@ -18,8 +18,6 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     static int KEY_RIGHT = Keyboard.getKeyIndex(mod_Thx.getProperty("key_right"));
     static int KEY_ROTATE_LEFT = Keyboard.getKeyIndex(mod_Thx.getProperty("key_rotate_left"));
     static int KEY_ROTATE_RIGHT = Keyboard.getKeyIndex(mod_Thx.getProperty("key_rotate_right"));
-    static int KEY_FIRE_MISSILE = Keyboard.getKeyIndex(mod_Thx.getProperty("key_fire_missile"));
-    static int KEY_FIRE_ROCKET = Keyboard.getKeyIndex(mod_Thx.getProperty("key_fire_rocket"));
     static int KEY_ROCKET_RELOAD = Keyboard.getKeyIndex(mod_Thx.getProperty("key_rocket_reload"));
     static int KEY_LOOK_PITCH = Keyboard.getKeyIndex(mod_Thx.getProperty("key_look_pitch"));
     static int KEY_AUTO_LEVEL = Keyboard.getKeyIndex(mod_Thx.getProperty("key_auto_level"));
@@ -41,14 +39,19 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     public ThxEntityHelicopter(World world)
     {
         super(world);
-        helper = new ThxEntityHelperClient(this, new ThxModelHelicopter());
 	    minecraft = ModLoader.getMinecraftInstance();
     }
 
     public ThxEntityHelicopter(World world, double x, double y, double z, float yaw)
     {
-        this(world);
-        setPositionAndRotation(x, y + yOffset, z, yaw, 0f);
+        super(world, x, y, z, yaw);
+	    minecraft = ModLoader.getMinecraftInstance();
+    }
+    
+    @Override
+    ThxEntityHelper createHelper()
+    {
+        return new ThxEntityHelperClient(this, new ThxModelHelicopter());
     }
 
     public Entity getPilot()

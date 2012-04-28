@@ -13,12 +13,6 @@ public class ThxEntityRocket extends ThxEntityRocketBase implements ISpawnable
     }
 
     @Override
-    public void onUpdate()
-    {
-        super.onUpdate();
-    }
-    
-    @Override
     ThxEntityHelper createHelper()
     {
         ThxModel model = new ThxModelMissile();
@@ -29,13 +23,4 @@ public class ThxEntityRocket extends ThxEntityRocketBase implements ISpawnable
         }
         return new ThxEntityHelperClient(this, model);
     }
-    
-    @Override
-    public void spawn(Packet230ModLoader packet)
-    {
-        super.spawn(packet);
-       
-        log("*** rocket spawn(): owner: " + owner);
-    }
 }
-

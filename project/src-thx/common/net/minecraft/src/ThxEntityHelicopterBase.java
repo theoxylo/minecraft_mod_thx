@@ -45,7 +45,6 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
     float missileDelay;
     final float MISSILE_DELAY = 6f;
 
-    boolean hasFiredRocket;
     float rocketDelay;
     final float ROCKET_DELAY = .3f; // only applies to drones, pilot rocket rate controlled by interact
     final int FULL_ROCKET_COUNT = 12;
@@ -62,16 +61,30 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
     public boolean isTargetHelicopterFriendly;
     Vector3 deltaPosToTarget = new Vector3();
 	    
+    ThxEntityMissile lastMissileFired;
+    
     public ThxEntityHelicopterBase(World world)
     {
         super(world);
         
         setSize(1.8f, 2f);
 
-        //yOffset = .8f; // avoid getting stuck in ground upon spawn
-        yOffset = .7f;
+        yOffset = .8f; // avoid getting stuck in ground upon spawn, but looks high
+        //yOffset = .7f;
         
-        NET_PACKET_TYPE = 75;
+        helper = createHelper();
+    }
+    
+    public ThxEntityHelicopterBase(World world, double x, double y, double z, float yaw)
+    {
+        this(world);
+        setPositionAndRotation(x, y + yOffset, z, yaw, 0f);
+    }
+    
+    @Override
+    public int getPacketTypeId()
+    {
+        return 75;
     }
     
     @Override
@@ -79,8 +92,6 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
     {
         super.onUpdate();
                 
-        hasFiredRocket = false;
-        
         // decrement cooldown timers
         missileDelay -= deltaTime;
         rocketDelay  -= deltaTime;
@@ -109,7 +120,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
 	        updateMotion(false);
         }
         
-        if (handleCollisions())
+        if (handleCollisions()) // true if collided with other entity or environment
         {
 	        helper.addChatMessageToPilot("Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
         }
@@ -120,7 +131,6 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
             boolean flaming = true;
             worldObj.newExplosion(this, posX, posY, posZ, power, flaming);
             
-            //if (riddenByEntity != null) riddenByEntity.mountEntity(this); // unmount
             if (riddenByEntity != null) pilotExit();
             
             dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0);
@@ -129,7 +139,13 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         }
         
         // auto-heal: 
-        if (damage > 0f) damage -= deltaTime; // heal rate: 1 pt / sec
+        if (isBurning()) damage += deltaTime * 5f; // damage from fire
+        else if (damage > 0f) damage -= deltaTime; // heal rate: 1 pt / sec
+        
+        if (damage / MAX_HEALTH > .9f && ticksExisted % 20 == 0)
+        {
+	        helper.addChatMessageToPilot("Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
+        }
     }
     
     @Override
@@ -160,13 +176,11 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
                 
         if (!worldObj.isRemote)
         {
-	        ThxEntityRocket newRocket = new ThxEntityRocket(this, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
             // pilot is owner to get xp, if no pilot (ai) then helicopter is owner
-	        newRocket.owner = riddenByEntity != null ? riddenByEntity : this;
+	        Entity newOwner = riddenByEntity != null ? riddenByEntity : this;
+	        ThxEntityRocket newRocket = new ThxEntityRocket(newOwner, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
 	        worldObj.spawnEntityInWorld(newRocket);
         }
-        
-        hasFiredRocket = true;
         
         if (rocketCount == FULL_ROCKET_COUNT)
         {
@@ -182,9 +196,17 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
     
     void fireMissile()
     {
-        log("firing missile");
+        if (missileDelay > 0f)
+        {
+            if (lastMissileFired != null && !lastMissileFired.isDead)
+            {
+		        log("remote detonating missile");
+                lastMissileFired.detonate();
+            }
+            return;
+        }
         
-        if (missileDelay > 0f) return;
+        log("firing missile");
         missileDelay = MISSILE_DELAY;
                 
         float offX = (fwd.x * 2.5f) + (up.x * -.5f);
@@ -199,8 +221,10 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
                 
         if (!worldObj.isRemote)
         {
-	        ThxEntityMissile newMissile = new ThxEntityMissile(worldObj, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
-	        newMissile.owner = riddenByEntity != null ? riddenByEntity : this;
+            // pilot is owner to get xp, if no pilot (ai) then helicopter is owner
+	        Entity newOwner = riddenByEntity != null ? riddenByEntity : this;
+	        ThxEntityMissile newMissile = new ThxEntityMissile(newOwner, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
+	        lastMissileFired = newMissile;
 	        worldObj.spawnEntityInWorld(newMissile);
         }
     }
@@ -279,7 +303,8 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
             thrust.z = -fwd.z * accel;
             
             // also adjust y in addition to ascend/descend to simulate diving
-            thrust.y += -fwd.y * accel * .3f;
+            //thrust.y += -fwd.y * accel * .3f;
+            thrust.y += -fwd.y * accel;
         }
 
         strafeLeftRight:
@@ -484,17 +509,15 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
             
         if (isTargetHelicopterFriendly)
         {
-            if (targetHelicopter.hasFiredRocket)
-            {
-            	fireRocket();
-            }
+            // TODO: if (targetHelicopter.hasFiredRocket) fireRocket();
         }
         else // not friendly
         {
         	if (thd < 20f && thd > 5f && Math.abs(targetHelicopter.posY - posY) < 2.0)
     		{
-                if (damage > .8 * MAX_HEALTH) fireMissile();
-                else fireRocket();
+        	    // extra checks here on fire delays to avoid methods which do log
+                if (damage > .8 * MAX_HEALTH && missileDelay < 0f) fireMissile();
+                else if (rocketDelay < 0f) fireRocket();
     		}
         }
         

@@ -56,6 +56,7 @@ abstract public class ThxConfigBase
     {
         if (props.getProperty(name) == null)
         {
+            log("adding default property value for " + name + ": " + defaultValue);
             props.setProperty(name, defaultValue);
             return true;
         }
