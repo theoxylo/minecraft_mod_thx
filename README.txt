@@ -1,4 +1,4 @@
-Minecraft THX Helicopter Mod, v018 for mcXXX, 20120417, mod_thx-mc125_v018
+Minecraft THX Helicopter Mod, v018 for mcXXX, 20120428, mod_thx-mc125_v018
 
 
 
@@ -9,9 +9,9 @@ This version is v018 for use with Minecraft and ModLoader/MP 1.2.5 for both sing
 You can download the compiled binary zip files from GitHub:
 
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_CLIENT_mc125_v017.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_CLIENT_mc125_v018.zip
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_SERVER_mc125_v017.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_SERVER_mc125_v018.zip
 
 
 And you can download the exact ModLoader and ModLoaderMP files you need from their respective download links (not affiliated with this mod):
@@ -144,6 +144,14 @@ Official YouTube playlist:
 
 CHANGELOG
 ---------
+v018: added ower support to missile (e.g. xp)
+v018: added remote detonation to missile
+v018: added entity on fire for direct missile hit
+v018: added splash damage for missile and rocket
+v018: added damage to helicopter from fire
+v018: added damage display when critical
+v018: missile explosion is slightly more powerful and without fire
+
 v017: now for use with Minecraft and ModLoader 1.2.5
 v017: added basic ai for friendly and enemy drones
 
