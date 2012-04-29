@@ -1,9 +1,12 @@
 package net.minecraft.src;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClientDriven
 {
+    List followers = new ArrayList();
+    
     int rocketCount;
     
     float MAX_HEALTH = 160f;
@@ -59,6 +62,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
     // enemy AI helicopter or friend?
     public ThxEntityHelicopter targetHelicopter;
     public boolean isTargetHelicopterFriendly;
+    public boolean isDroneArmed;
     Vector3 deltaPosToTarget = new Vector3();
 	    
     ThxEntityMissile lastMissileFired;
@@ -180,6 +184,12 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
 	        Entity newOwner = riddenByEntity != null ? riddenByEntity : this;
 	        ThxEntityRocket newRocket = new ThxEntityRocket(newOwner, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
 	        worldObj.spawnEntityInWorld(newRocket);
+	        
+	        for (Object followerItem : followers)
+	        {
+	            ThxEntityHelicopter follower = (ThxEntityHelicopter) followerItem;
+	            if (follower.isDroneArmed) follower.fireRocket();
+	        }
         }
         
         if (rocketCount == FULL_ROCKET_COUNT)
@@ -226,6 +236,12 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
 	        ThxEntityMissile newMissile = new ThxEntityMissile(newOwner, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
 	        lastMissileFired = newMissile;
 	        worldObj.spawnEntityInWorld(newMissile);
+	        
+	        for (Object followerItem : followers)
+	        {
+	            ThxEntityHelicopter follower = (ThxEntityHelicopter) followerItem;
+	            //too much, rockets only? follower.fireMissile(); 
+	        }
         }
     }
 
@@ -449,7 +465,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         // that no adjustment need be made to the pilot's yaw or pitch
         // as a direct result of riding this helicopter entity.
         // rather, we let the player rotate the pilot and the helicopter follows
-        // but might be good to have some "free motion" control within limited arc
+        // TODO: add "free look" zone wherecontrol within limited arc
         prevRotationYaw = rotationYaw;
         prevRotationPitch = rotationPitch;
         
@@ -509,14 +525,14 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
             
         if (isTargetHelicopterFriendly)
         {
-            // TODO: if (targetHelicopter.hasFiredRocket) fireRocket();
+            // TODO: defend targer helicopter somehow?
         }
-        else // not friendly
+        else // not friendly, attack target
         {
         	if (thd < 20f && thd > 5f && Math.abs(targetHelicopter.posY - posY) < 2.0)
     		{
         	    // extra checks here on fire delays to avoid methods which do log
-                if (damage > .8 * MAX_HEALTH && missileDelay < 0f) fireMissile();
+                if (damage > .6 * MAX_HEALTH && missileDelay < 0f) fireMissile();
                 else if (rocketDelay < 0f) fireRocket();
     		}
         }
@@ -677,42 +693,73 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
             //return;
         }
         
-        // activate/adjust AI for empty helicopter hit by another helicopter
+        // activate/adjust AI for drone helicopter hit by another helicopter
         if (riddenByEntity == null && attackingEntity instanceof ThxEntityHelicopter)
         {
             log("attacked by " + attackingEntity + " with pilot: " + attackingEntity.riddenByEntity);
             
-            if (targetHelicopter == null || !targetHelicopter.equals(attackingEntity)) // first attack by another helo, begin tracking as friendly
+            if (targetHelicopter == null) // first attack by another helo, begin tracking as friendly
             {
 	            targetHelicopter = (ThxEntityHelicopter) attackingEntity;
-	            isTargetHelicopterFriendly = true;
+	            targetHelicopter.followers.add(this);
+	            
+                isTargetHelicopterFriendly = true;
+	            isDroneArmed = false;
 	            
                 worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
                 
                 log("new targetHelicopter: " + targetHelicopter);
             }
-            else // already tracking
+            else if (targetHelicopter.equals(attackingEntity)) // already tracking
             {
-		        if (isTargetHelicopterFriendly) // friendly fire, retaliate
+		        if (isTargetHelicopterFriendly) // friendly fire
 		        {
-		            // deactivate ai
-                    //log("deactivate ai, forgetting targetHelicopter: " + targetHelicopter);
-		            //targetHelicopter = null;
-                    //return;
-		            
-		            isTargetHelicopterFriendly = false;
-	                missileDelay = 10f; // initial missile delay
-	                rocketDelay  =  5f; // initial rocket delay
-	                
-	                worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
-                    
-                    log("new enemy targetHelicopter: " + targetHelicopter);
+		            if (!isDroneArmed)
+		            {
+			            isDroneArmed = true; // now armed, still friendly, earn xp!
+			            owner = targetHelicopter.owner;
+			            
+		                worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
+		            }
+		            else
+		            {
+			            isTargetHelicopterFriendly = false;
+			            
+			            targetHelicopter.followers.remove(this);
+			            
+			            owner = this; // no more xp
+			            
+		                missileDelay = 10f; // initial missile delay
+		                rocketDelay  =  5f; // initial rocket delay
+		                
+		                worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
+		            }
 		        }
 		        else
 		        {
-                    log("hit by enemy targetHelicopter: " + targetHelicopter);
-		            // enemy hit us again!
+		            // enemy hit us again! surrender, change to friendly if almost dead
+		            if (damage / MAX_HEALTH > .9f && !isBurning())
+		            {
+		                isTargetHelicopterFriendly = true;
+			            isDroneArmed = false;
+		            }
 		        }
+            }
+            else
+            {
+                // hit by a helicopter other than the one we are following, so attack it
+                
+                // prevTargetHelicopter = targetHelicopter; // TODO: switch back to original target if friendly?
+                
+	            targetHelicopter.followers.remove(this);
+	            targetHelicopter = (ThxEntityHelicopter) attackingEntity;
+	            
+                isTargetHelicopterFriendly = false;
+	            
+                worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
+                
+                log("new enemy targetHelicopter: " + targetHelicopter);
+                
             }
         }
     }

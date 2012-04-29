@@ -37,7 +37,7 @@ public abstract class ThxEntityMissileBase extends ThxEntityProjectile
     @Override
     float getAcceleration()
     {
-        return .5f;
+        return .52f;
     }
     
     @Override

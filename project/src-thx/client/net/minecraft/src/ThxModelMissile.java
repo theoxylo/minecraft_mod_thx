@@ -4,6 +4,8 @@ public class ThxModelMissile extends ThxModel
 {
     public ModelRenderer missile;
     
+    float rollRadPerSec = 5f;
+    
     public ThxModelMissile()
     {       
         renderTexture = "/thx/missile.png";
@@ -24,7 +26,7 @@ public class ThxModelMissile extends ThxModel
         if (!visible) return;
         
         // spiral
-        missile.rotateAngleX += deltaTime * 5f; // radians per sec
+        missile.rotateAngleX += deltaTime * rollRadPerSec;
         if (missile.rotateAngleX > 2*PI) missile.rotateAngleX -= 2*PI;
         
         //float scale = .0625f; // original size

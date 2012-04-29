@@ -144,13 +144,19 @@ Official YouTube playlist:
 
 CHANGELOG
 ---------
+v018: still for use with Minecraft and ModLoader/MP 1.2.5
 v018: added ower support to missile (e.g. xp)
+v018: added improved projectile hit detection
 v018: added remote detonation to missile
 v018: added entity on fire for direct missile hit
 v018: added splash damage for missile and rocket
 v018: added damage to helicopter from fire
 v018: added damage display when critical
-v018: missile explosion is slightly more powerful and without fire
+v018: added more powerful missile explosion but without fire
+v018: added rocket attack for friendly ai
+v018: added defend mode for friendly ai
+v018: added more missiles fired by ai
+v018: added surrender for critically damaged ai
 
 v017: now for use with Minecraft and ModLoader 1.2.5
 v017: added basic ai for friendly and enemy drones

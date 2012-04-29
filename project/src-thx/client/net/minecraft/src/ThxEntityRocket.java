@@ -15,11 +15,12 @@ public class ThxEntityRocket extends ThxEntityRocketBase implements ISpawnable
     @Override
     ThxEntityHelper createHelper()
     {
-        ThxModel model = new ThxModelMissile();
+        ThxModelMissile model = new ThxModelMissile();
         overrideMissileModel:
         {
 	        model.renderTexture = "/thx/rocket.png";
-	        model.rotationRollSpeed = 90f; // units?
+	        //model.rotationRollSpeed = 90f; // units?
+	        model.rollRadPerSec = -8f;
         }
         return new ThxEntityHelperClient(this, model);
     }
