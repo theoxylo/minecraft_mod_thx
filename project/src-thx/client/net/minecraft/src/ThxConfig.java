@@ -5,6 +5,17 @@ import org.lwjgl.input.Keyboard;
 
 public class ThxConfig extends ThxConfigBase
 {
+    ThxConfig()
+    {
+        loadProperties();
+    }
+    
+    @Override
+    String getFilename()
+    {
+        return ModLoader.getMinecraftInstance().getMinecraftDir() + "/mods/mod_thx_options.txt";
+    }
+    
     @Override
     boolean loadDefaults(Properties props)
     {

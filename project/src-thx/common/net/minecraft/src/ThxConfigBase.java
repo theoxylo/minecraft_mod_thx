@@ -1,5 +1,6 @@
 package net.minecraft.src;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -15,7 +16,8 @@ abstract public class ThxConfigBase
     static boolean LOG_INCOMING_PACKETS;
     
     Properties props;
-    String filename = "mods/mod_thx.options";
+    
+    abstract String getFilename();
     
     String getProperty(String name)
     {
@@ -67,10 +69,15 @@ abstract public class ThxConfigBase
     {
         boolean writeFile = false;
         
+        String filename = getFilename();
+        
         props = new Properties();
         try
         {
-            props.load(new FileInputStream(filename));
+            File file = new File(filename);
+	        log("Reading properties from file: " + file.getAbsolutePath());
+	        
+            props.load(new FileInputStream(file));
         }
         catch(FileNotFoundException ioe1)
         {
@@ -97,11 +104,15 @@ abstract public class ThxConfigBase
         }
         
         ENABLE_LOGGING = getBoolProperty("enable_logging");
+        log("logging enabled: " + ENABLE_LOGGING);
+        
         LOG_INCOMING_PACKETS = getBoolProperty("enable_logging_p230_inbound");
+        log("inbound packet 230 logging enabled: " + LOG_INCOMING_PACKETS);
     }
     
     void log(String s)
     {
-        mod_Thx.log(s);
+        //mod_Thx.log(s);
+        System.out.println("ThxConfig: " + s);
     }
 }

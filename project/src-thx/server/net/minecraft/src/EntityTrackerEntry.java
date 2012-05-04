@@ -106,11 +106,10 @@ public class EntityTrackerEntry
                 Packet packet = ((IClientDriven) trackedEntity).getUpdatePacket();
                 for (Object player : trackedPlayers)
                 {
-                    // send update packet to all clients except pilot
+                    // send update packet to all clients except pilot, if there is one
                     if (player.equals(trackedEntity.riddenByEntity)) continue;
                     ((EntityPlayerMP)player).playerNetServerHandler.sendPacket(packet);
                 }
-
 
                 // used by updatePlayerEntity for spawn/despawn trigger
                 encodedPosX          = MathHelper.floor_double(trackedEntity.posX * 32D);

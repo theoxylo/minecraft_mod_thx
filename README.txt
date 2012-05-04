@@ -157,6 +157,8 @@ v018: added rocket attack for friendly ai
 v018: added defend mode for friendly ai
 v018: added more missiles fired by ai
 v018: added surrender for critically damaged ai
+v018: changed client config file to 'mod_thx_options.txt'
+v018: changed server config file to 'mod_thx_options.cfg'
 
 v017: now for use with Minecraft and ModLoader 1.2.5
 v017: added basic ai for friendly and enemy drones

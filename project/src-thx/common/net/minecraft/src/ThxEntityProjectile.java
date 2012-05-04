@@ -42,7 +42,7 @@ public abstract class ThxEntityProjectile extends ThxEntity
     {
         super.onUpdate();
         
-        if (owner == null) // should always have owner, but sometimes doesn't during respaw/restart etc
+        if (owner == null) // should always have owner, but sometimes doesn't during respawn/restart etc
         {
             setDead();
             return;

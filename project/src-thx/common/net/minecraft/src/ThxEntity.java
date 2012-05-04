@@ -61,7 +61,7 @@ public abstract class ThxEntity extends Entity
     {
         super(world);
 
-        log(world.isRemote ? "Created new MP client entity" : "Created new SP/MP master entity");
+        //log(world.isRemote ? "Created new MP client entity" : "Created new SP/MP master entity");
 
         preventEntitySpawning = true;
 
@@ -346,7 +346,7 @@ public abstract class ThxEntity extends Entity
     @Override
     protected void entityInit()
     {
-        log(this + " entityInit called");
+        log(this + " entityInit");
     }
 
     @Override

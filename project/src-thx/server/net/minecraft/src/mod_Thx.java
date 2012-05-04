@@ -37,7 +37,8 @@ public class mod_Thx extends BaseModMp
         logger.warning("log warning test");
         */
         
-        log("mod_Thx() called");
+        //log("mod_Thx() called");
+        System.out.println("mod_Thx() called");
         
 		config = new ThxConfig();
 

@@ -10,7 +10,7 @@ public class mod_Thx extends BaseModMp
 
     public mod_Thx()
     {
-        log("mod_Thx() called");
+        System.out.println("mod_Thx() called");
 		config = new ThxConfig();
         instance = this; // for easy access by static methods and to instance methods
     }

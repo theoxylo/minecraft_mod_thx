@@ -611,7 +611,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
     
     void onUpdateVacant()
     {
-        isActive = false; 
+        isActive = false; // skip sending update packet to client, use standard mc packets
         
         //((ThxModel) helper.model).visible = true; // needed? 
 
