@@ -61,17 +61,19 @@ public class ThxModelHelicopterAlt extends ThxModelHelicopterBase
         
         if (!visible) return;
         
-	    float scale = 0.125f;
+        float scale = 0.125f;
     
         body.render(scale * 2f);
         
         mainRotor.rotateAngleY = mainRotorAngle;
         mainRotor.render(scale);
-        mainRotor.rotateAngleY += 1.5707f;
+        // rotate 1/4 turn and render again
+        mainRotor.rotateAngleY += 1.5707f; 
         mainRotor.render(scale);
         
         tailRotor.rotateAngleZ = tailRotorAngle;
         tailRotor.render(scale);
+        // rotate 1/4 turn and render again
         tailRotor.rotateAngleZ += 1.5707f;
         tailRotor.render(scale);
         
