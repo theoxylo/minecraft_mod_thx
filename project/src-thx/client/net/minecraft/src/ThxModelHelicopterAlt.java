@@ -18,12 +18,12 @@ public class ThxModelHelicopterAlt extends ThxModelHelicopterBase
             // in 1st person view, body is invisible and only
             // windshield and rotors are rendered
             
-            float length = 12f;
+            float length = 12f; // units are pixels in a 64x32 texture
             float height =  8f;
             float width  =  6f;
             body = new ModelRenderer(this, 0, 12);
             body.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            body.setRotationPoint(-2f, -1f, 0f);
+            body.setRotationPoint(0f, -2f, 0f); // move up
         }
         mainRotor: 
         {
@@ -50,7 +50,7 @@ public class ThxModelHelicopterAlt extends ThxModelHelicopterBase
             float width  = 0f;
             windshield = new ModelRenderer(this, 0, 4);
             windshield.addBox(-length/2f, -height/2f, -width/2f, (int)length, (int)height, (int)width);
-            windshield.setRotationPoint(-5.5f, -4.5f, 0f);
+            windshield.setRotationPoint(-6.5f, -5.5f, 0f);
             windshield.rotateAngleY = PI * 1.5f; // rotate 270 deg yaw for proper orientation
         }
     }
@@ -66,17 +66,17 @@ public class ThxModelHelicopterAlt extends ThxModelHelicopterBase
         body.render(scale * 2f);
         
         mainRotor.rotateAngleY = mainRotorAngle;
-        mainRotor.render(scale);
+        mainRotor.render(scale * 1.3f);
         // rotate 1/4 turn and render again
         mainRotor.rotateAngleY += 1.5707f; 
-        mainRotor.render(scale);
+        mainRotor.render(scale * 1.3f);
         
         tailRotor.rotateAngleZ = tailRotorAngle;
-        tailRotor.render(scale);
+        tailRotor.render(scale * 1.3f);
         // rotate 1/4 turn and render again
         tailRotor.rotateAngleZ += 1.5707f;
-        tailRotor.render(scale);
+        tailRotor.render(scale * 1.3f);
         
-        windshield.render(scale);
+        windshield.render(scale * 1.3f);
     }
 }
