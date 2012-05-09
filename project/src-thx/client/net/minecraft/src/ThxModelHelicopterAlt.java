@@ -13,10 +13,11 @@ public class ThxModelHelicopterAlt extends ThxModelHelicopterBase
 
         body:
         {
-	        // large enough to hide player model in 3rd person view.
-	        // in 1st person view, it is invisible
+            // will be rendered at increased scale --
+            // large enough to hide player in 3rd person view.
+            // in 1st person view, body is invisible and only
+            // windshield and rotors are rendered
             
-            // will be scaled x2 at render
             float length = 12f;
             float height =  8f;
             float width  =  6f;
@@ -26,7 +27,6 @@ public class ThxModelHelicopterAlt extends ThxModelHelicopterBase
         }
         mainRotor: 
         {
-            // will be scaled x2 at render
             float length = 30f;
             float height =  0f;
             float width  =  1f;
@@ -36,7 +36,6 @@ public class ThxModelHelicopterAlt extends ThxModelHelicopterBase
         }
         tailRotor:
         {
-            // will be scaled x2 at render
             float length = 8f;
             float height = 1f;
             float width  = 0f;
@@ -46,7 +45,6 @@ public class ThxModelHelicopterAlt extends ThxModelHelicopterBase
         }
         windshield:
         {
-            // will be scaled x2 at render
             float length = 9f;
             float height = 7f;
             float width  = 0f;
