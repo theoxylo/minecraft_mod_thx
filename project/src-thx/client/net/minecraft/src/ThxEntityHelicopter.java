@@ -51,6 +51,10 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     @Override
     ThxEntityHelper createHelper()
     {
+        if (mod_Thx.getBoolProperty("enable_alt_model")) 
+        {
+            return new ThxEntityHelperClient(this, new ThxModelHelicopterAlt());
+        }
         return new ThxEntityHelperClient(this, new ThxModelHelicopter());
     }
 
@@ -101,7 +105,7 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         
 	        // adjust model rotor speed according to throttle
 	        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
-	        ((ThxModelHelicopter) helper.model).rotorSpeed = power / 2f + .75f;
+	        ((ThxModelHelicopterBase) helper.model).rotorSpeed = power / 2f + .75f;
         
             return;
         }
@@ -477,7 +481,7 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         
         // adjust model rotor speed according to throttle
         float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
-        ((ThxModelHelicopter) helper.model).rotorSpeed = power / 2f + .75f;
+        ((ThxModelHelicopterBase) helper.model).rotorSpeed = power / 2f + .75f;
     }
     
     @Override
@@ -489,9 +493,9 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         
         // adjust model rotor speed according to throttle
         float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
-        ((ThxModelHelicopter) helper.model).rotorSpeed = power / 2f + .75f;
+        ((ThxModelHelicopterBase) helper.model).rotorSpeed = power / 2f + .75f;
         
-        float rotorSpeed = ((ThxModelHelicopter) helper.model).rotorSpeed;
+        float rotorSpeed = ((ThxModelHelicopterBase) helper.model).rotorSpeed;
         plog("drone rotorSpeed: " + rotorSpeed);
     }
     
@@ -501,7 +505,7 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         super.onUpdateVacant();
         
         // power down rotor
-        ((ThxModelHelicopter) helper.model).rotorSpeed = 0f;
+        ((ThxModelHelicopterBase) helper.model).rotorSpeed = 0f;
     }
     
     @Override
@@ -559,7 +563,7 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         
         super.pilotExit();
         
-        ThxModelHelicopter model = (ThxModelHelicopter) helper.model;
+        ThxModelHelicopterBase model = (ThxModelHelicopterBase) helper.model;
         model.visible = true;
         model.rotorSpeed = 0f;
     }
