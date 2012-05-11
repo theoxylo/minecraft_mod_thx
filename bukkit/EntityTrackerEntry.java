@@ -73,6 +73,27 @@ public class EntityTrackerEntry {
             int k = this.tracker.size.getXZCoord(this.tracker.locZ);
             // CraftBukkit end - logic for clipping
 
+            if (this.tracker instanceof IClientDriven && ((ThxEntity)this.tracker).isActive)
+            {
+                // isActive true for piloted and drone entities, but not vacant ones
+
+                Packet250CustomPayload packet = ((IClientDriven)this.tracker).getUpdatePacket();
+                for (Object player : this.trackedPlayers)
+                {
+                    // send update packet to all clients except pilot, if there is one
+                    if (player.equals(this.tracker.passenger)) continue;
+                    ((EntityPlayer)player).netServerHandler.sendPacket(packet);
+                }
+
+                // used by updatePlayerEntity for spawn/despawn trigger
+                this.xLoc = MathHelper.floor(this.tracker.locX * 32.0D);
+                this.yLoc = MathHelper.floor(this.tracker.locY * 32.0D);
+                this.zLoc = MathHelper.floor(this.tracker.locZ * 32.0D);
+                this.yRot = MathHelper.d(this.tracker.yaw * 256.0F / 360.0F);
+                this.xRot = MathHelper.d(this.tracker.pitch * 256.0F / 360.0F);
+                return;
+            }
+
             int l = MathHelper.d(this.tracker.yaw * 256.0F / 360.0F);
             int i1 = MathHelper.d(this.tracker.pitch * 256.0F / 360.0F);
             int j1 = i - this.xLoc;
