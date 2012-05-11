@@ -52,7 +52,7 @@ public class EntityTrackerEntry
         this.zLoc = MathHelper.floor(par1Entity.locZ * 32.0D);
         this.yRot = MathHelper.d(par1Entity.yaw * 256.0F / 360.0F);
         this.xRot = MathHelper.d(par1Entity.pitch * 256.0F / 360.0F);
-        this.field_48617_i = MathHelper.d(par1Entity.func_48314_aq() * 256.0F / 360.0F);
+        this.field_48617_i = MathHelper.d(par1Entity.ar() * 256.0F / 360.0F);
     }
 
     public boolean equals(Object par1Obj)
@@ -171,7 +171,7 @@ public class EntityTrackerEntry
                 this.broadcastIncludingSelf(new Packet40EntityMetadata(this.tracker.id, var26));
             }
 
-            int var14 = MathHelper.d(this.tracker.func_48314_aq() * 256.0F / 360.0F);
+            int var14 = MathHelper.d(this.tracker.ar() * 256.0F / 360.0F);
 
             if (Math.abs(var14 - this.field_48617_i) >= 4)
             {
