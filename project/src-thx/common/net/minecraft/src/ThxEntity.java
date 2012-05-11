@@ -526,42 +526,20 @@ public abstract class ThxEntity extends Entity
         plog(String.format("end applyPaket, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
     }    
     
-    public String packetToString(Packet250CustomPayload p)
+    public String packetToString(Packet250CustomPayload packet)
     {
-        return "TODO";
-        /*
         StringBuffer s = new StringBuffer();
-        s.append("Packet230 {");
-        s.append("type: ").append(p.packetType).append(", ");
-        s.append("modId: ").append(p.modId).append(", ");
+        s.append("Packet250 {");
+        s.append("channel: ").append(packet.channel).append(", ");
 
-        for (int i = 0; p.dataInt != null && i < p.dataInt.length; i++)
+        for (int i = 0; i < packet.data.length; i++)
         {
-            s.append("dataInt[" + i + "]: ");
-            s.append(p.dataInt[i]);
-            s.append(", ");
-        }
-        for (int i = 0; p.dataFloat != null && i < p.dataFloat.length; i++)
-        {
-            s.append("dataFloat[" + i + "]: ");
-            s.append(p.dataFloat[i]);
-            s.append(", ");
-        }
-        for (int i = 0; p.dataDouble != null && i < p.dataDouble.length; i++) 
-        {
-            s.append("dataDouble[" + i + "]: "); 
-            s.append(p.dataDouble[i]); 
-            s.append(", "); 
-        }
-        for (int i = 0; p.dataString != null && i < p.dataString.length; i++)
-        {
-            s.append("dataString[" + i + "]: ");
-            s.append(p.dataString[i]);
+            s.append(packet.data[i]);
             s.append(", ");
         }
         s.append("}");
 
-        return s.toString();*/
+        return s.toString();
     }
     
     abstract int getPacketTypeId();
