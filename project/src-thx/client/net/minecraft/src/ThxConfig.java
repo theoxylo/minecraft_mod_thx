@@ -23,7 +23,7 @@ public class ThxConfig extends ThxConfigBase
         boolean defaultAdded = false;
         
         defaultAdded = ensureDefault(props, "enable_logging", "false") || defaultAdded;
-        defaultAdded = ensureDefault(props, "enable_logging_p230_inbound", "false") || defaultAdded;
+        defaultAdded = ensureDefault(props, "enable_logging_packets_inbound", "false") || defaultAdded;
         
         defaultAdded = ensureDefault(props, "key_ascend", Keyboard.getKeyName(Keyboard.KEY_SPACE)) || defaultAdded;
         defaultAdded = ensureDefault(props, "key_descend", Keyboard.getKeyName(Keyboard.KEY_X)) || defaultAdded;

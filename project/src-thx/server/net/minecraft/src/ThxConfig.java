@@ -26,7 +26,7 @@ public class ThxConfig extends ThxConfigBase
         
         // add any missing properties using default values
         defaultAdded = ensureDefault(props, "enable_logging", "false") || defaultAdded;
-        defaultAdded = ensureDefault(props, "enable_logging_p230_inbound", "false") || defaultAdded;
+        defaultAdded = ensureDefault(props, "enable_logging_packets_inbound", "false") || defaultAdded;
         
         return defaultAdded;
     }

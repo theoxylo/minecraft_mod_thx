@@ -106,7 +106,7 @@ abstract public class ThxConfigBase
         ENABLE_LOGGING = getBoolProperty("enable_logging");
         log("logging enabled: " + ENABLE_LOGGING);
         
-        LOG_INCOMING_PACKETS = getBoolProperty("enable_logging_p230_inbound");
+        LOG_INCOMING_PACKETS = getBoolProperty("enable_logging_packets_inbound");
         log("inbound packet 230 logging enabled: " + LOG_INCOMING_PACKETS);
     }
     
