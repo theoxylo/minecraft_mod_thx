@@ -1,6 +1,7 @@
 package net.minecraft.src;
 
 import java.util.List;
+import java.io.*;
 
 public abstract class ThxEntity extends Entity
 {
@@ -39,7 +40,7 @@ public abstract class ThxEntity extends Entity
     
     ThxEntityHelper helper;
     
-    Packet230ModLoader lastUpdatePacket;
+    Packet250CustomPayload lastUpdatePacket;
     
     int cmd_reload;
     int cmd_create_item;
@@ -367,22 +368,36 @@ public abstract class ThxEntity extends Entity
     }
 
     /* ISpawnable SERVER interface */
-    public Packet230ModLoader getSpawnPacket()
+    public Packet250CustomPayload getSpawnPacket()
     {
-        Packet230ModLoader packet = getUpdatePacket();
-        packet.dataString[0] = "spawn packet for thx entity " + entityId;
+        Packet250CustomPayload packet = getUpdatePacket();
+        //packet.dataString[0] = "spawn packet for thx entity " + entityId;
         
         log("Returning spawn packet: " + packet);
         return packet;
     }
     
     /* ISpawnable CLIENT interface */
-    public void spawn(Packet230ModLoader packet)
+    public void spawn(Packet250CustomPayload packet)
     {
         log("Received spawn packet: " + packetToString(packet));
 
         int entityIdOrig = entityId;
-        entityId = packet.dataInt[0];
+
+        byte[] bytes = packet.data;
+
+        DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(bytes));
+
+        try
+        {
+            int packetTypeId = dataStream.readInt();
+            // TODO: spawn packet type
+
+            entityId = dataStream.readInt();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
 
         applyUpdatePacket(packet);
         
@@ -393,79 +408,128 @@ public abstract class ThxEntity extends Entity
         log("spawn(): posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
     }
     
-    public Packet230ModLoader getUpdatePacket()
+    public Packet250CustomPayload getUpdatePacket()
     {
-        Packet230ModLoader packet = new Packet230ModLoader();
+        Packet250CustomPayload packet = new Packet250CustomPayload();
 
-        packet.modId = mod_Thx.instance.getId();
-        packet.packetType = getPacketTypeId();
+        packet.channel = mod_Thx.channelName;
 
-        packet.dataString = new String[] { "thx update packet for tick " + ticksExisted };
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        DataOutputStream data = new DataOutputStream(bytes);
+        try
+        {
+            data.writeInt(getPacketTypeId()); // 75-77 for Thx entity IDs
 
-        packet.dataInt = new int[7];
-        packet.dataInt[0] = entityId;
-        packet.dataInt[1] = owner != null ? owner.entityId : 0;
-        packet.dataInt[2] = riddenByEntity != null ? riddenByEntity.entityId : 0;
-        packet.dataInt[3] = cmd_create_item;
-        packet.dataInt[4] = cmd_reload;
-        packet.dataInt[5] = cmd_exit;
-        packet.dataInt[6] = cmd_create_map;
+            data.writeInt(entityId);
+            data.writeInt(owner != null ? owner.entityId : 0);
+            data.writeInt(riddenByEntity != null ? riddenByEntity.entityId : 0);
+            data.writeInt(cmd_create_item);
+            data.writeInt(cmd_reload);
+            data.writeInt(cmd_exit);
+            data.writeInt(cmd_create_map);
         
-        // clear cmd flags after setting them in packet
-        cmd_reload = 0;
-        cmd_create_item = 0;
-        cmd_exit = 0;
-		cmd_create_map = 0;
-		
-        packet.dataFloat = new float[11];
-        packet.dataFloat[0] = (float) posX;
-        packet.dataFloat[1] = (float) posY;
-        packet.dataFloat[2] = (float) posZ;
-        packet.dataFloat[3] = rotationYaw;
-        packet.dataFloat[4] = rotationPitch;
-        packet.dataFloat[5] = rotationRoll;
-        packet.dataFloat[6] = (float) motionX;
-        packet.dataFloat[7] = (float) motionY;
-        packet.dataFloat[8] = (float) motionZ;
-        packet.dataFloat[9] = damage;
-        packet.dataFloat[10] = throttle;
+            // clear cmd flags after setting them in packet
+            cmd_reload = 0;
+            cmd_create_item = 0;
+            cmd_exit = 0;
+            cmd_create_map = 0;
+                
+            data.writeFloat((float) posX);
+            data.writeFloat((float) posY);
+            data.writeFloat((float) posZ);
+            data.writeFloat(rotationYaw);
+            data.writeFloat(rotationPitch);
+            data.writeFloat(rotationRoll);
+            data.writeFloat((float) motionX);
+            data.writeFloat((float) motionY);
+            data.writeFloat((float) motionZ);
+            data.writeFloat(damage);
+            data.writeFloat(throttle);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+
+
+        packet.data = bytes.toByteArray();
+        packet.length = packet.data.length;
         
         return packet;
     }
 
-    void applyUpdatePacket(Packet230ModLoader packet)
+    void applyUpdatePacket(Packet250CustomPayload packet)
     {
         if (packet == null) return;
         
         if (ThxConfig.LOG_INCOMING_PACKETS) plog("<<< " + packetToString(packet));
+
+        byte[] bytes = packet.data;
+        DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(bytes));
+
+        int inPacketTypeId, inEntityID, inOwnerEntityId, inRiddenByEntityId, in_cmd_create_item, in_cmd_reload, in_cmd_exit, in_cmd_create_map; 
+        float inPosX, inPosY, inPosZ, inRotationYaw, inRotationPitch, inRotationRoll, inMotionX, inMotionY, inMotionZ, inDamage, inThrottle; 
+
+        try
+        {
+            inPacketTypeId = dataStream.readInt();
+
+            inEntityID = dataStream.readInt();
+            inOwnerEntityId = dataStream.readInt();
+            inRiddenByEntityId = dataStream.readInt();    // TODO: set?
+            in_cmd_create_item = dataStream.readInt();
+            in_cmd_reload = dataStream.readInt();
+            in_cmd_exit = dataStream.readInt();
+            in_cmd_create_map = dataStream.readInt();
+                
+            inPosX = dataStream.readFloat();
+            inPosY = dataStream.readFloat();
+            inPosZ = dataStream.readFloat();
+            inRotationYaw = dataStream.readFloat();
+            inRotationPitch = dataStream.readFloat();
+            inRotationRoll = dataStream.readFloat();
+            inMotionX = dataStream.readFloat();
+            inMotionY = dataStream.readFloat();
+            inMotionZ = dataStream.readFloat();
+            inDamage = dataStream.readFloat();
+            inThrottle = dataStream.readFloat();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            return;
+        }
+
         
         if (!worldObj.isRemote)
         {
-	        cmd_create_item = packet.dataInt[3];
-	        cmd_reload      = packet.dataInt[4];
-	        cmd_exit        = packet.dataInt[5];
-	        cmd_create_map  = packet.dataInt[6];
+	        cmd_create_item = in_cmd_create_item;
+	        cmd_reload      = in_cmd_reload;
+	        cmd_exit        = in_cmd_exit;
+	        cmd_create_map  = in_cmd_create_map;
         }
         
-        setPositionAndRotation(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2], packet.dataFloat[3], packet.dataFloat[4]);
+        setPositionAndRotation(inPosX, inPosY, inPosZ, inRotationYaw, inRotationPitch);
         
-        rotationRoll = packet.dataFloat[5] % 360f;
+        rotationRoll = inRotationRoll % 360f;
 
-        motionX =  packet.dataFloat[6];
-        motionY =  packet.dataFloat[7];
-        motionZ =  packet.dataFloat[8];
+        motionX =  inMotionX;
+        motionY =  inMotionY;
+        motionZ =  inMotionZ;
         
-        damage = packet.dataFloat[9];
-        throttle = packet.dataFloat[10];
+        damage = inDamage;
+        throttle = inThrottle;
 
-        helper.applyUpdatePacket(packet);
+        helper.applyUpdatePacket(inOwnerEntityId, inRiddenByEntityId, inPosX, inPosY, inPosZ);
         
         int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
         plog(String.format("end applyPaket, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
     }    
     
-    public String packetToString(Packet230ModLoader p)
+    public String packetToString(Packet250CustomPayload p)
     {
+        return "TODO";
+        /*
         StringBuffer s = new StringBuffer();
         s.append("Packet230 {");
         s.append("type: ").append(p.packetType).append(", ");
@@ -497,7 +561,7 @@ public abstract class ThxEntity extends Entity
         }
         s.append("}");
 
-        return s.toString();
+        return s.toString();*/
     }
     
     abstract int getPacketTypeId();

@@ -1,9 +1,15 @@
 package net.minecraft.src;
 
-import java.io.PrintStream;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.logging.Logger;
+
+import net.minecraft.src.forge.ForgeHooks;
+
+// Note this file overwrites net.minecraft.src.EntityTrackerEntry base file
+// Merge with vanilla and Forge's patches:
+// https://github.com/MinecraftForge/MinecraftForge/blob/master/forge/patches/minecraft_server/net/minecraft/src/EntityTrackerEntry.java.patch
 
 public class EntityTrackerEntry
 {
@@ -330,6 +336,16 @@ public class EntityTrackerEntry
             System.out.println("Fetching addPacket for removed entity");
         }
 
+        // Forge https://github.com/MinecraftForge/MinecraftForge/blob/master/forge/patches/minecraft_server/net/minecraft/src/EntityTrackerEntry.java.patch
+        
+        Packet pkt = ForgeHooks.getEntitySpawnPacket(trackedEntity);
+        if (pkt != null)
+        {
+            return pkt;
+        }
+
+        // TODO: how much of this is MLMP and how much is THX?
+        /*
         EntityTrackerEntry2 entitytrackerentry2 = ModLoaderMp.handleEntityTrackerEntries(trackedEntity);
 
         if (entitytrackerentry2 != null)
@@ -338,19 +354,29 @@ public class EntityTrackerEntry
             {
                 if (trackedEntity instanceof ISpawnable)
                 {
-                    Packet230ModLoader packet230modloader = ((ISpawnable)trackedEntity).getSpawnPacket();
-                    packet230modloader.modId = "Spawn".hashCode();
+                    Packet250CustomPayload spawnPacket = ((ISpawnable)trackedEntity).getSpawnPacket();
 
-                    if (entitytrackerentry2.entityId > 127)
+                    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                    DataOutputStream data = new DataOutputStream(bytes);
+                    try
                     {
-                        packet230modloader.packetType = entitytrackerentry2.entityId - 256;
-                    }
-                    else
-                    {
-                        packet230modloader.packetType = entitytrackerentry2.entityId;
+                        data.writeInt(1); // 1 is our packet type for spawning (others: 75-77 for Thx entity IDs info)
+                        if (entitytrackerentry2.entityId > 127)
+                        {
+                            data.writeInt(entitytrackerentry2.entityId - 256);
+                        }
+                        else
+                        {
+                            data.writeInt(entitytrackerentry2.entityId);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
 
-                    return packet230modloader;
+                    spawnPacket.data = bytes.toByteArray();
+                    spawnPacket.length = spawnPacket.data.length;
+
+                    return spawnPacket;
                 }
 
                 if (!entitytrackerentry2.entityHasOwner)
@@ -383,6 +409,7 @@ public class EntityTrackerEntry
                 return null;
             }
         }
+        */
 
         if (trackedEntity instanceof EntityItem)
         {
