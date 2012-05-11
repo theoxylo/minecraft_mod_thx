@@ -24,6 +24,7 @@ public class mod_Thx extends NetworkMod implements IConnectionHandler, IPacketHa
     {
         log("load() called");
 
+        MinecraftForge.registerConnectionHandler(this);
         ModLoader.setInGameHook(this, true, true);
 
         int distance = 160; // spawn/despawn at this distance from entity
@@ -114,7 +115,6 @@ public class mod_Thx extends NetworkMod implements IConnectionHandler, IPacketHa
                 // try calling applyUpdatePacket(packet);
                 //if (entity instanceof ThxEntity) ((ThxEntity) entity).applyUpdatePacket(packet);
               
-                // TODO: better abstraction; we don't really need to make a packet here to call ourselves
                 Packet250CustomPayload packet = new Packet250CustomPayload();
                 packet.channel = mod_Thx.channelName;
                 packet.data = bytes;

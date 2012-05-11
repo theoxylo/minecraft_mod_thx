@@ -53,6 +53,8 @@ public class mod_Thx extends NetworkMod implements IConnectionHandler, IPacketHa
     {
         log("load() called");
 
+        MinecraftForge.registerConnectionHandler(this);
+
         //ThxConfig.loadProperties();
 
         ModLoader.setInGameHook(this, true, true);
@@ -125,21 +127,19 @@ public class mod_Thx extends NetworkMod implements IConnectionHandler, IPacketHa
         return "Minecraft THX Helicopter Mod - mod_thx-mc125_v018";
     }
 
-    // TODO: register channel!
     public void onPacketData(NetworkManager network, String channel, byte[] bytes)
     {
         EntityPlayer player = ((NetServerHandler)network.getNetHandler()).getPlayerEntity();
 
         if (player.ridingEntity instanceof IClientDriven)
         {
-            // try calling applyUpdatePacket(packet);
-
             // TODO: better abstraction; we don't really need to make a packet here to call ourselves
             Packet250CustomPayload packet = new Packet250CustomPayload();
             packet.channel = mod_Thx.channelName;
             packet.data = bytes;
             packet.length = packet.data.length;
-
+            // try calling applyUpdatePacket(packet);
+ 
             ((ThxEntity) player.ridingEntity).applyUpdatePacket(packet);
             //((ThxEntity) player.ridingEntity).latestUpdatePacket = packet;
         }
