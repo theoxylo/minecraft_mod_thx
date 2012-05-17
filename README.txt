@@ -1,4 +1,4 @@
-Minecraft THX Helicopter Mod, v018 for mcXXX, 20120428, mod_thx-mc125_v018
+Minecraft THX Helicopter Mod, v018 for mc125 with MLMP, 20120517, mod_thx-mc125_v018
 
 
 
