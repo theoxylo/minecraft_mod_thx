@@ -13,29 +13,15 @@ public class ThxEntityRocket extends ThxEntityRocketBase implements ISpawnable
     }
 
     @Override
-    public void onUpdate()
-    {
-        super.onUpdate();
-    }
-    
-    @Override
     ThxEntityHelper createHelper()
     {
-        ThxModel model = new ThxModelMissile();
+        ThxModelMissile model = new ThxModelMissile();
         overrideMissileModel:
         {
 	        model.renderTexture = "/thx/rocket.png";
-	        model.rotationRollSpeed = 90f; // units?
+	        //model.rotationRollSpeed = 90f; // units?
+	        model.rollRadPerSec = -8f;
         }
         return new ThxEntityHelperClient(this, model);
     }
-    
-    @Override
-    public void spawn(Packet230ModLoader packet)
-    {
-        super.spawn(packet);
-       
-        log("*** rocket spawn(): owner: " + owner);
-    }
 }
-

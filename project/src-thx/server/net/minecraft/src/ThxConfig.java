@@ -8,6 +8,17 @@ import java.util.Properties;
 
 public class ThxConfig extends ThxConfigBase
 {
+    ThxConfig()
+    {
+        loadProperties();
+    }
+    
+    @Override
+    String getFilename()
+    {
+        return "mods/mod_thx_options.cfg";
+    }
+    
     @Override
     boolean loadDefaults(Properties props)
     {

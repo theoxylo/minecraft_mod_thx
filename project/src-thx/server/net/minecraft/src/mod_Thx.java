@@ -37,7 +37,8 @@ public class mod_Thx extends BaseModMp
         logger.warning("log warning test");
         */
         
-        log("mod_Thx() called");
+        //log("mod_Thx() called");
+        System.out.println("mod_Thx() called");
         
 		config = new ThxConfig();
 
@@ -120,15 +121,12 @@ public class mod_Thx extends BaseModMp
     public String getVersion()
     {
         // log("getVersion called");
-        return "Minecraft THX Helicopter Mod - mod_thx-mc125_v017";
+        return "Minecraft THX Helicopter Mod - mod_thx-mc125_v018";
     }
 
     @Override
     public void handlePacket(Packet230ModLoader packet, EntityPlayerMP player)
     {
-        // log("Received packet type " + packet.packetType + " from player " + player);
-        // log("player.ridingEntity: " + player.ridingEntity); // TODO: coming up null
-
         if (player.ridingEntity instanceof IClientDriven)
         {
             // try calling applyUpdatePacket(packet);

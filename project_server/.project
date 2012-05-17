@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>xmc_thx_mod_server</name>
+	<name>project_server</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -16,17 +16,30 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>src-thx_common</name>
+			<name>mc_ref</name>
 			<type>2</type>
-			<locationURI>THX_HOME/src-thx/common</locationURI>
+			<locationURI>MC_HOME</locationURI>
 		</link>
 		<link>
-			<name>src-thx_server</name>
+			<name>mcp</name>
 			<type>2</type>
-			<locationURI>THX_HOME/src-thx/server</locationURI>
+			<locationURI>MCP_HOME/jars</locationURI>
+		</link>
+		<link>
+			<name>thx</name>
+			<type>2</type>
+			<locationURI>THX_HOME</locationURI>
 		</link>
 	</linkedResources>
 	<variableList>
+		<variable>
+			<name>MCP_HOME</name>
+			<value>file:/C:/Dropbox/minecraft/mcp62-125</value>
+		</variable>
+		<variable>
+			<name>MC_HOME</name>
+			<value>file:/C:/Dropbox/minecraft/reference_jars/mc_125</value>
+		</variable>
 		<variable>
 			<name>THX_HOME</name>
 			<value>file:/C:/Dropbox/minecraft/workspace_git_mod_thx/project</value>

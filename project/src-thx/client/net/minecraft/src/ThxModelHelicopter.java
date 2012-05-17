@@ -1,30 +1,15 @@
 package net.minecraft.src;
 
-public class ThxModelHelicopter extends ThxModel
+public class ThxModelHelicopter extends ThxModelHelicopterBase
 {
-    boolean bottomVisible = true;
-
-    float scale = 0.0625f;
+    //float scale = 0.0625f;
     float x2scale = 0.125f;
     float centerScale = 1.0f;
     
-    float rotorSpeed = 0f;
-    float lastRotorRad = 0f;
-    float lastTailRotorRad = 0f;
-    float MAX_ROTOR_SPEED = 18f * ((float)mod_Thx.getIntProperty("rotor_speed_percent")) / 100f;
-    
-    float SPIN_UP_TIME = 10f;
-    float timeSpun = 0f;
-
-    boolean ENABLE_ROTOR;
     public ModelRenderer mainRotor;
     public ModelRenderer rotor2;
     public ModelRenderer rotor3;
     
-    //public ModelRenderer cockpit1;
-    //public ModelRenderer cockpit2;
-    //public ModelRenderer cockpit3;
-
     public ModelRenderer windshield;
     public ModelRenderer bottom;
     public ModelRenderer frontWall;
@@ -35,16 +20,11 @@ public class ThxModelHelicopter extends ThxModel
     public ModelRenderer tail;
     public ModelRenderer tailRotor;
     
-    //public ModelRenderer body;
-    
     public ThxModelHelicopter()
     {
         renderTexture = "/thx/helicopter.png";
-
-        ENABLE_ROTOR = mod_Thx.getBoolProperty("enable_rotor");
         
-        // All model boxes are now scaled x2 at rendering time to save texture space
-        // (with the exception of the windsheield which is already min size)
+        // All model boxes are now scaled x2 at rendering time to conserve texture space
 
         bottom:
         {
@@ -156,6 +136,7 @@ public class ThxModelHelicopter extends ThxModel
         }
         windshield:
         {
+            // will be scaled x2 at render
             float length = 9f;
             float height = 7f;
             float width  = 0f;
@@ -168,23 +149,17 @@ public class ThxModelHelicopter extends ThxModel
 
     public void render()
     {
-        update();
-        
-        //System.out.println("Model delta time sec: " + deltaTime);
+        super.render();
         
         if (!visible) return;
         
-        if (bottomVisible) bottom.render(x2scale);
+        bottom.render(x2scale);
 
         frontWall.render(x2scale);
         backWall.render(x2scale);
         leftWall.render(x2scale);
         rightWall.render(x2scale);
         
-        // windshield
-        //cockpit1.render(scale);
-        //cockpit2.render(scale);
-        //cockpit3.render(scale);
         windshield.render(x2scale);
         
         // rotor supports
@@ -193,75 +168,14 @@ public class ThxModelHelicopter extends ThxModel
         
         tail.render(x2scale);
         
-        if (ENABLE_ROTOR && !paused)
-        {
-            if (rotorSpeed > 0f)
-            {
-                if (timeSpun < SPIN_UP_TIME)
-                {
-                    timeSpun += deltaTime * 3f; // spin up faster than spin down
-                    
-                    mainRotor.rotateAngleY += deltaTime * MAX_ROTOR_SPEED * rotorSpeed * timeSpun / SPIN_UP_TIME;
-                    tailRotor.rotateAngleZ -= deltaTime * MAX_ROTOR_SPEED * timeSpun / SPIN_UP_TIME; // not linked to throttle
-                }
-                else
-                {
-                    mainRotor.rotateAngleY += deltaTime * MAX_ROTOR_SPEED * rotorSpeed;
-                    tailRotor.rotateAngleZ -= deltaTime * MAX_ROTOR_SPEED;
-                }
-                
-                if (mainRotor.rotateAngleY > 2*PI) mainRotor.rotateAngleY -= 2*PI;
-                mainRotor.render(x2scale);
-                mainRotor.rotateAngleY += 1.5707f; // add second blade perp
-                mainRotor.render(x2scale);
-
-                if (tailRotor.rotateAngleZ < 2*PI) tailRotor.rotateAngleZ += 2*PI;
-                tailRotor.render(x2scale);
-                tailRotor.rotateAngleZ -= 1.5707f; // add second blade perp
-                tailRotor.render(x2scale);
-            }
-            else
-            {
-                rotorSpeed = 0f;
-                
-                if (timeSpun > 0f)
-                {
-                    timeSpun -= deltaTime;
-                    
-                    mainRotor.rotateAngleY += deltaTime * MAX_ROTOR_SPEED * (1 - MathHelper.cos(timeSpun / SPIN_UP_TIME));
-                    tailRotor.rotateAngleZ += deltaTime * MAX_ROTOR_SPEED * (1 - MathHelper.cos(timeSpun / SPIN_UP_TIME));
-                    
-                    // remember stopping position
-                    lastRotorRad = mainRotor.rotateAngleY;
-                    lastTailRotorRad = tailRotor.rotateAngleZ;
-                }
-                else
-                {
-                    mainRotor.rotateAngleY = lastRotorRad;
-                    tailRotor.rotateAngleZ = lastTailRotorRad;
-                }
-                
-                mainRotor.render(x2scale);
-                mainRotor.rotateAngleY += 1.5707f; // add second blade perp
-                mainRotor.render(x2scale);
-                
-                tailRotor.render(x2scale);
-                tailRotor.rotateAngleZ -= 1.5707f; // add second blade perp
-                tailRotor.render(x2scale);
-            }
-        }
-        else
-        {
-            // show fixed rotor by rendering twice
-            mainRotor.rotateAngleY = 0.7854f;
-            mainRotor.render(x2scale);
-            mainRotor.rotateAngleY += 1.5707f;
-            mainRotor.render(x2scale);
+        mainRotor.rotateAngleY = mainRotorAngle;
+        mainRotor.render(x2scale);
+        mainRotor.rotateAngleY += 1.5707f;
+        mainRotor.render(x2scale);
             
-            tailRotor.rotateAngleZ = 0.7854f;
-            tailRotor.render(x2scale);
-            tailRotor.rotateAngleZ += 1.5707f;
-            tailRotor.render(x2scale);
-        }
+        tailRotor.rotateAngleZ = tailRotorAngle;
+        tailRotor.render(x2scale);
+        tailRotor.rotateAngleZ += 1.5707f;
+        tailRotor.render(x2scale);
     }
 }

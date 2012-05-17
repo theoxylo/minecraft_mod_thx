@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src-thx_common"/>
-	<classpathentry kind="src" path="src-thx_server"/>
+	<classpathentry kind="src" path="thx/src-thx/server"/>
+	<classpathentry kind="src" path="thx/src-thx/common"/>
+	<classpathentry excluding="net/minecraft/src/EntityTrackerEntry.java" kind="src" path="mc_ref/src/minecraft_server"/>
+	<classpathentry kind="lib" path="mcp/minecraft_server.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/Dropbox/minecraft/reference_jars/mc_125/minecraft_server-dev125-mlmp-lib.jar" sourcepath="C:/Dropbox/minecraft/reference_jars/mc_125/minecraft_server-dev125-mlmp-src.zip"/>
 	<classpathentry kind="output" path="temp"/>
 </classpath>

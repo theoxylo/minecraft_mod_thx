@@ -10,7 +10,7 @@ public class mod_Thx extends BaseModMp
 
     public mod_Thx()
     {
-        log("mod_Thx() called");
+        System.out.println("mod_Thx() called");
 		config = new ThxConfig();
         instance = this; // for easy access by static methods and to instance methods
     }
@@ -86,7 +86,7 @@ public class mod_Thx extends BaseModMp
     public String getVersion()
     {
         //log("getVersion called");
-        return "Minecraft THX Helicopter Mod - mod_thx-mc125_v017";
+        return "Minecraft THX Helicopter Mod - mod_thx-mc125_v018";
     }
 
     @Override

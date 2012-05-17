@@ -18,8 +18,6 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     static int KEY_RIGHT = Keyboard.getKeyIndex(mod_Thx.getProperty("key_right"));
     static int KEY_ROTATE_LEFT = Keyboard.getKeyIndex(mod_Thx.getProperty("key_rotate_left"));
     static int KEY_ROTATE_RIGHT = Keyboard.getKeyIndex(mod_Thx.getProperty("key_rotate_right"));
-    static int KEY_FIRE_MISSILE = Keyboard.getKeyIndex(mod_Thx.getProperty("key_fire_missile"));
-    static int KEY_FIRE_ROCKET = Keyboard.getKeyIndex(mod_Thx.getProperty("key_fire_rocket"));
     static int KEY_ROCKET_RELOAD = Keyboard.getKeyIndex(mod_Thx.getProperty("key_rocket_reload"));
     static int KEY_LOOK_PITCH = Keyboard.getKeyIndex(mod_Thx.getProperty("key_look_pitch"));
     static int KEY_AUTO_LEVEL = Keyboard.getKeyIndex(mod_Thx.getProperty("key_auto_level"));
@@ -41,14 +39,23 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     public ThxEntityHelicopter(World world)
     {
         super(world);
-        helper = new ThxEntityHelperClient(this, new ThxModelHelicopter());
 	    minecraft = ModLoader.getMinecraftInstance();
     }
 
     public ThxEntityHelicopter(World world, double x, double y, double z, float yaw)
     {
-        this(world);
-        setPositionAndRotation(x, y + yOffset, z, yaw, 0f);
+        super(world, x, y, z, yaw);
+	    minecraft = ModLoader.getMinecraftInstance();
+    }
+    
+    @Override
+    ThxEntityHelper createHelper()
+    {
+        if (mod_Thx.getBoolProperty("enable_alt_model")) 
+        {
+            return new ThxEntityHelperClient(this, new ThxModelHelicopterAlt());
+        }
+        return new ThxEntityHelperClient(this, new ThxModelHelicopter());
     }
 
     public Entity getPilot()
@@ -98,7 +105,7 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         
 	        // adjust model rotor speed according to throttle
 	        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
-	        ((ThxModelHelicopter) helper.model).rotorSpeed = power / 2f + .75f;
+	        ((ThxModelHelicopterBase) helper.model).rotorSpeed = power / 2f + .75f;
         
             return;
         }
@@ -474,7 +481,7 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         
         // adjust model rotor speed according to throttle
         float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
-        ((ThxModelHelicopter) helper.model).rotorSpeed = power / 2f + .75f;
+        ((ThxModelHelicopterBase) helper.model).rotorSpeed = power / 2f + .75f;
     }
     
     @Override
@@ -486,9 +493,9 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         
         // adjust model rotor speed according to throttle
         float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
-        ((ThxModelHelicopter) helper.model).rotorSpeed = power / 2f + .75f;
+        ((ThxModelHelicopterBase) helper.model).rotorSpeed = power / 2f + .75f;
         
-        float rotorSpeed = ((ThxModelHelicopter) helper.model).rotorSpeed;
+        float rotorSpeed = ((ThxModelHelicopterBase) helper.model).rotorSpeed;
         plog("drone rotorSpeed: " + rotorSpeed);
     }
     
@@ -498,7 +505,7 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         super.onUpdateVacant();
         
         // power down rotor
-        ((ThxModelHelicopter) helper.model).rotorSpeed = 0f;
+        ((ThxModelHelicopterBase) helper.model).rotorSpeed = 0f;
     }
     
     @Override
@@ -556,7 +563,7 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         
         super.pilotExit();
         
-        ThxModelHelicopter model = (ThxModelHelicopter) helper.model;
+        ThxModelHelicopterBase model = (ThxModelHelicopterBase) helper.model;
         model.visible = true;
         model.rotorSpeed = 0f;
     }

@@ -29,6 +29,7 @@ public abstract class ThxEntity extends Entity
 
     Vector3 pos = new Vector3(); // position
     Vector3 vel = new Vector3(); // velocity
+    Vector3 acc = new Vector3(); // velocity
     Vector3 ypr = new Vector3(); // yaw, pitch, roll
     
     // vectors relative to entity orientation
@@ -38,7 +39,6 @@ public abstract class ThxEntity extends Entity
     
     ThxEntityHelper helper;
     
-    int NET_PACKET_TYPE;
     Packet230ModLoader lastUpdatePacket;
     
     int cmd_reload;
@@ -61,7 +61,7 @@ public abstract class ThxEntity extends Entity
     {
         super(world);
 
-        log(world.isRemote ? "Created new MP client entity" : "Created new SP/MP master entity");
+        //log(world.isRemote ? "Created new MP client entity" : "Created new SP/MP master entity");
 
         preventEntitySpawning = true;
 
@@ -75,6 +75,7 @@ public abstract class ThxEntity extends Entity
         
         long time = System.nanoTime();
         deltaTime = ((float) (time - prevTime)) / 1000000000f; // convert to sec
+        if (deltaTime > .05f) deltaTime = .05f; // 20 ticks per second
         prevTime = time;
 
         lastTickPosX = prevPosX = posX;
@@ -345,7 +346,7 @@ public abstract class ThxEntity extends Entity
     @Override
     protected void entityInit()
     {
-        log(this + " entityInit called");
+        log(this + " entityInit");
     }
 
     @Override
@@ -397,7 +398,7 @@ public abstract class ThxEntity extends Entity
         Packet230ModLoader packet = new Packet230ModLoader();
 
         packet.modId = mod_Thx.instance.getId();
-        packet.packetType = NET_PACKET_TYPE;
+        packet.packetType = getPacketTypeId();
 
         packet.dataString = new String[] { "thx update packet for tick " + ticksExisted };
 
@@ -498,4 +499,8 @@ public abstract class ThxEntity extends Entity
 
         return s.toString();
     }
+    
+    abstract int getPacketTypeId();
+    
+    abstract ThxEntityHelper createHelper();
 }
