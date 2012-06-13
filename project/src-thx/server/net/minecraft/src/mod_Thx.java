@@ -113,8 +113,7 @@ public class mod_Thx extends NetworkMod implements IConnectionHandler, IPacketHa
 
             log("Adding recipe for helicopter");
             ItemStack itemStack = new ItemStack(item, 1, 1);
-            Object[] recipe = new Object[] { " X ", "X X", "XXX", Character.valueOf('X'), Block.planks };
-            ModLoader.addRecipe(itemStack, recipe);
+            ModLoader.addRecipe(itemStack, config.CRAFTING_RECIPE);
         }
 
         log("Done loading " + getVersion());
