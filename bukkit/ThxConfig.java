@@ -19,6 +19,9 @@ public class ThxConfig extends ThxConfigBase
         boolean var2 = false;
         var2 = this.ensureDefault(var1, "enable_logging", "false") || var2;
         var2 = this.ensureDefault(var1, "enable_logging_packets_inbound", "false") || var2;
+        var2 = this.ensureDefault(var1, "recipe_format", " a ,a a,aaa") || var2;
+        var2 = this.ensureDefault(var1, "recipe_items", "5") || var2;
+ 
         return var2;
     }
 }

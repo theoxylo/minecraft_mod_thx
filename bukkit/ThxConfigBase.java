@@ -6,11 +6,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.ArrayList;
 
 public abstract class ThxConfigBase
 {
     static boolean ENABLE_LOGGING;
     static boolean LOG_INCOMING_PACKETS;
+    static Object[] CRAFTING_RECIPE;
     Properties props;
 
     abstract boolean loadDefaults(Properties var1);
@@ -108,8 +110,59 @@ public abstract class ThxConfigBase
         this.log("logging enabled: " + ENABLE_LOGGING);
         LOG_INCOMING_PACKETS = this.getBoolProperty("enable_logging_packets_inbound");
         this.log("inbound packet logging enabled: " + LOG_INCOMING_PACKETS);
+
+        loadRecipe();
     }
 
+    void loadRecipe()
+    {
+        final Object[] defaultRecipe = new Object[] { " X ", "X X", "XXX", Character.valueOf('X'), Block.WOOD/*planks*/};
+        ArrayList<Object> recipeArray = new ArrayList<Object>();
+
+        String[] format = getProperty("recipe_format").split(",");
+        String[] itemStrings = getProperty("recipe_items").split(",");
+
+        for (String formatLine: format) {
+            recipeArray.add(formatLine);
+        }
+
+        char code = 'a';
+
+        for (String itemString: itemStrings) {
+            int id, damage;
+            try {
+                if (itemString.contains(":")) {
+                    String[] parts = itemString.split(":", 2);
+                    id = Integer.parseInt(parts[0]);
+                    damage = Integer.parseInt(parts[1]);
+                } else {
+                    id = Integer.parseInt(itemString);
+                    damage = -1;
+                }
+            } catch (Exception e) { 
+                System.out.println("Invalid item specification: " + itemString + ": " + e + ", using default recipe");
+                CRAFTING_RECIPE = defaultRecipe;
+                return;
+            }
+
+            ItemStack item = new ItemStack(id, 1, damage);
+            if (item == null) {
+                System.out.println("No such item for crafting: " + id + ":" + damage + ", using default recipe");
+                CRAFTING_RECIPE = defaultRecipe;
+                return;
+            }
+
+            recipeArray.add(Character.valueOf(code));
+            recipeArray.add(item);
+            
+            code += 1;
+        }
+
+        log("recipeArray = " + recipeArray);
+
+        CRAFTING_RECIPE = recipeArray.toArray();
+    }
+     
     void log(String var1)
     {
         System.out.println("ThxConfig: " + var1);
