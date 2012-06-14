@@ -4,11 +4,11 @@ pushd ..
 
 pushd reobf/minecraft
 cp -r ../../port-thx/project/resources/* .
-zip -r ../../port-thx/mod_thx_helicopter-CLIENT-mc125-v018.1-fml-r1.zip .
+zip -r ../../port-thx/mod_thx_helicopter-CLIENT-mc125-v018-fml-r2.zip .
 popd
 
 pushd reobf/minecraft_server
-zip -r ../../port-thx/mod_thx_helicopter-SERVER-mc125-v018.1-fml-r1.zip .
+zip -r ../../port-thx/mod_thx_helicopter-SERVER-mc125-v018-fml-r2.zip .
 popd
 
 popd
