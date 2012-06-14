@@ -112,7 +112,7 @@ public class mod_Thx extends NetworkMod implements IConnectionHandler, IPacketHa
             }
             item.setItemName("thxHelicopter");
             // ModLoader.AddName(item, "THX Helicopter Prototype");
-            helicopterItemStack = new ItemStack(item, 1, 1);
+            helicopterItemStack = new ItemStack(item, 1);
         }
 
         log("Done loading " + getVersion());
