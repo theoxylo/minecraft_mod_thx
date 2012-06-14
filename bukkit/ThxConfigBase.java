@@ -12,7 +12,6 @@ public abstract class ThxConfigBase
 {
     static boolean ENABLE_LOGGING;
     static boolean LOG_INCOMING_PACKETS;
-    static Object[] CRAFTING_RECIPE;
     Properties props;
 
     abstract boolean loadDefaults(Properties var1);
@@ -110,11 +109,16 @@ public abstract class ThxConfigBase
         this.log("logging enabled: " + ENABLE_LOGGING);
         LOG_INCOMING_PACKETS = this.getBoolProperty("enable_logging_packets_inbound");
         this.log("inbound packet logging enabled: " + LOG_INCOMING_PACKETS);
-
-        loadRecipe();
     }
 
-    void loadRecipe()
+    public void addHelicopterRecipe(ItemStack itemStack)
+    {
+        Object[] recipe = loadHelicopterRecipe();
+        log("Adding recipe for helicopter");
+        ModLoader.addRecipe(itemStack, recipe);
+    }
+
+    private Object[] loadHelicopterRecipe()
     {
         final Object[] defaultRecipe = new Object[] { " X ", "X X", "XXX", Character.valueOf('X'), Block.WOOD/*planks*/};
         ArrayList<Object> recipeArray = new ArrayList<Object>();
@@ -141,15 +145,13 @@ public abstract class ThxConfigBase
                 }
             } catch (Exception e) { 
                 System.out.println("Invalid item specification: " + itemString + ": " + e + ", using default recipe");
-                CRAFTING_RECIPE = defaultRecipe;
-                return;
+                return defaultRecipe;
             }
 
             ItemStack item = new ItemStack(id, 1, damage);
             if (item == null) {
                 System.out.println("No such item for crafting: " + id + ":" + damage + ", using default recipe");
-                CRAFTING_RECIPE = defaultRecipe;
-                return;
+                return defaultRecipe;
             }
 
             recipeArray.add(Character.valueOf(code));
@@ -160,7 +162,7 @@ public abstract class ThxConfigBase
 
         log("recipeArray = " + recipeArray);
 
-        CRAFTING_RECIPE = recipeArray.toArray();
+        return recipeArray.toArray();
     }
      
     void log(String var1)

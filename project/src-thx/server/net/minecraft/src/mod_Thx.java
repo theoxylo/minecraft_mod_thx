@@ -18,6 +18,8 @@ public class mod_Thx extends NetworkMod implements IConnectionHandler, IPacketHa
     public static final String channelName = "mod_Thx";
     public static Logger logger = Logger.getLogger("thxLog"); 
 
+    public static ItemStack helicopterItemStack;
+
     public mod_Thx()
     {
         /* java.util.logging approach...
@@ -110,13 +112,17 @@ public class mod_Thx extends NetworkMod implements IConnectionHandler, IPacketHa
             }
             item.setItemName("thxHelicopter");
             // ModLoader.AddName(item, "THX Helicopter Prototype");
-
-            log("Adding recipe for helicopter");
-            ItemStack itemStack = new ItemStack(item, 1, 1);
-            ModLoader.addRecipe(itemStack, config.CRAFTING_RECIPE);
+            helicopterItemStack = new ItemStack(item, 1, 1);
         }
 
         log("Done loading " + getVersion());
+    }
+
+    @Override
+    public void modsLoaded()
+    {
+        // add the recipe after mods have loaded, so ingredients can refer to other mods
+        config.addHelicopterRecipe(helicopterItemStack);
     }
 
     @Override

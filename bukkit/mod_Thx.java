@@ -14,6 +14,8 @@ public class mod_Thx extends NetworkMod implements IConnectionHandler, IPacketHa
     public static final String channelName = "mod_Thx";
     public static Logger logger = Logger.getLogger("thxLog");
 
+    public static ItemStack helicopterItemStack;
+
     public mod_Thx()
     {
         System.out.println("mod_Thx() called");
@@ -59,11 +61,13 @@ public class mod_Thx extends NetworkMod implements IConnectionHandler, IPacketHa
         }
 
         var9.a("thxHelicopter");
-        log("Adding recipe for helicopter");
-        ItemStack var6 = new ItemStack(var9, 1, 1);
-        Object[] var7 = new Object[] {" X ", "X X", "XXX", 'X', Block.WOOD};
-        ModLoader.addRecipe(var6, var7);
+        helicopterItemStack = new ItemStack(var9, 1, 1);
         log("Done loading " + this.getVersion());
+    }
+
+    public void modsLoaded()
+    {
+        config.addHelicopterRecipe(helicopterItemStack);
     }
 
     public String getVersion()
