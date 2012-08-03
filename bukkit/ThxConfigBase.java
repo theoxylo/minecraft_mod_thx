@@ -148,14 +148,17 @@ public abstract class ThxConfigBase
                 return defaultRecipe;
             }
 
-            ItemStack item = new ItemStack(id, 1, damage);
-            if (item == null) {
-                System.out.println("No such item for crafting: " + id + ":" + damage + ", using default recipe");
+            try {
+                ItemStack item = new ItemStack(id, 1, damage);
+
+                log("adding item "+item);
+
+                recipeArray.add(Character.valueOf(code));
+                recipeArray.add(item);
+            } catch (Exception e) {
+                System.out.println("Error adding item for helicopter crafting recipe: " + id + ":" + damage + ", using default recipe: " + e);
                 return defaultRecipe;
             }
-
-            recipeArray.add(Character.valueOf(code));
-            recipeArray.add(item);
             
             code += 1;
         }
