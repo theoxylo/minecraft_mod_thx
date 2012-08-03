@@ -3,3 +3,6 @@ project_client/temp/
 project_client/debug.log
 project_server/temp/
 project_server/debug.log
+*.swp
+*.zip
+*.jar

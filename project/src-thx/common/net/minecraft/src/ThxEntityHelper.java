@@ -21,7 +21,7 @@ public abstract class ThxEntityHelper
     {
     }
 
-    void sendUpdatePacketToServer(Packet230ModLoader updatePacket)
+    void sendUpdatePacketToServer(Packet250CustomPayload updatePacket)
     {
     }
 
@@ -30,7 +30,7 @@ public abstract class ThxEntityHelper
     // SERVER methods
     
     /*
-    Packet230ModLoader getSpawnPacket()
+    Packet250CustomPayload getSpawnPacket()
     {
         throw new RuntimeException("not implemented");
     }
@@ -40,7 +40,7 @@ public abstract class ThxEntityHelper
     // COMMON methods
     // COMMON methods
     
-    abstract void applyUpdatePacket(Packet230ModLoader updatePacket);
+    abstract void applyUpdatePacket(int ownerId, int packetPilotId, float x, float y, float z);
     
     void log(String s)
     {

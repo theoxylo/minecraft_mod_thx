@@ -7,13 +7,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-public class mod_Thx extends BaseModMp
+import net.minecraft.src.forge.*;
+
+public class mod_Thx extends NetworkMod implements IConnectionHandler, IPacketHandler
 {
     static ThxConfig config;
     
     public static mod_Thx instance;
     
+    public static final String channelName = "mod_Thx";
     public static Logger logger = Logger.getLogger("thxLog"); 
+
+    public static ItemStack helicopterItemStack;
 
     public mod_Thx()
     {
@@ -50,6 +55,8 @@ public class mod_Thx extends BaseModMp
     {
         log("load() called");
 
+        MinecraftForge.registerConnectionHandler(this);
+
         //ThxConfig.loadProperties();
 
         ModLoader.setInGameHook(this, true, true);
@@ -60,12 +67,12 @@ public class mod_Thx extends BaseModMp
 
         int distance = 160; // spawn/despawn at this distance from entity
         int frequency = 1; // ticks per update, 1 to 60 (20 ticks/sec)
+        boolean sendVelocityInfo = true;
         
         // register entity classes
         helicopter:
         {
-            ModLoaderMp.registerEntityTrackerEntry(ThxEntityHelicopter.class, 75);
-            ModLoaderMp.registerEntityTracker(ThxEntityHelicopter.class, distance, frequency);
+            MinecraftForge.registerEntity(ThxEntityHelicopter.class, this, 75, distance, frequency, sendVelocityInfo);
 
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Helicopter with entity id " + entityId);
@@ -74,8 +81,7 @@ public class mod_Thx extends BaseModMp
         rocket:
         {
             boolean hasOwner = true;
-            ModLoaderMp.registerEntityTrackerEntry(ThxEntityRocket.class, hasOwner, 76);
-            ModLoaderMp.registerEntityTracker(ThxEntityRocket.class, /*distance*/ 100, /*frequency*/ 4);
+            MinecraftForge.registerEntity(ThxEntityRocket.class, this, 76, /*distance*/ 100, /*frequency*/ 4, sendVelocityInfo);
             
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Rocket with entity id " + entityId);
@@ -83,8 +89,7 @@ public class mod_Thx extends BaseModMp
         }
         missile:
         {
-            ModLoaderMp.registerEntityTrackerEntry(ThxEntityMissile.class, 77);
-            ModLoaderMp.registerEntityTracker(ThxEntityMissile.class, distance, /*frequency*/ 4);
+            MinecraftForge.registerEntity(ThxEntityMissile.class, this, 77, distance, /*frequency*/ 4, sendVelocityInfo);
             
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Missile with entity id " + entityId);
@@ -107,14 +112,17 @@ public class mod_Thx extends BaseModMp
             }
             item.setItemName("thxHelicopter");
             // ModLoader.AddName(item, "THX Helicopter Prototype");
-
-            log("Adding recipe for helicopter");
-            ItemStack itemStack = new ItemStack(item, 1, 1);
-            Object[] recipe = new Object[] { " X ", "X X", "XXX", Character.valueOf('X'), Block.planks };
-            ModLoader.addRecipe(itemStack, recipe);
+            helicopterItemStack = new ItemStack(item, 1);
         }
 
         log("Done loading " + getVersion());
+    }
+
+    @Override
+    public void modsLoaded()
+    {
+        // add the recipe after mods have loaded, so ingredients can refer to other mods
+        config.addHelicopterRecipe(helicopterItemStack);
     }
 
     @Override
@@ -124,12 +132,19 @@ public class mod_Thx extends BaseModMp
         return "Minecraft THX Helicopter Mod - mod_thx-mc125_v018";
     }
 
-    @Override
-    public void handlePacket(Packet230ModLoader packet, EntityPlayerMP player)
+    public void onPacketData(NetworkManager network, String channel, byte[] bytes)
     {
+        EntityPlayer player = ((NetServerHandler)network.getNetHandler()).getPlayerEntity();
+
         if (player.ridingEntity instanceof IClientDriven)
         {
+            // TODO: better abstraction; we don't really need to make a packet here to call ourselves
+            Packet250CustomPayload packet = new Packet250CustomPayload();
+            packet.channel = mod_Thx.channelName;
+            packet.data = bytes;
+            packet.length = packet.data.length;
             // try calling applyUpdatePacket(packet);
+ 
             ((ThxEntity) player.ridingEntity).applyUpdatePacket(packet);
             //((ThxEntity) player.ridingEntity).latestUpdatePacket = packet;
         }
@@ -165,4 +180,21 @@ public class mod_Thx extends BaseModMp
     {
         return config.getBoolProperty(name);
     }
+
+    public void onLogin(NetworkManager network, Packet1Login login)
+    {
+        MessageManager.getInstance().registerChannel(network, this, channelName);
+    }
+
+    public void onConnect(NetworkManager network){}
+    public void onDisconnect(NetworkManager network, String message, Object[] args) {}
+    public boolean clientSideRequired()
+    {
+        return true;
+    }
+    public boolean serverSideRequired()
+    {
+        return false;
+    }
+
 }

@@ -2,11 +2,17 @@ package net.minecraft.src;
 
 import net.minecraft.client.Minecraft;
 
-public class mod_Thx extends BaseModMp
+import net.minecraft.src.forge.*;
+import java.io.*;
+
+public class mod_Thx extends NetworkMod implements IConnectionHandler, IPacketHandler
 {
     static ThxConfig config;
     
     public static mod_Thx instance;
+    public static final String channelName = "mod_Thx";
+
+    public static ItemStack helicopterItemStack;
 
     public mod_Thx()
     {
@@ -20,12 +26,17 @@ public class mod_Thx extends BaseModMp
     {
         log("load() called");
 
+        MinecraftForge.registerConnectionHandler(this);
         ModLoader.setInGameHook(this, true, true);
+
+        int distance = 160; // spawn/despawn at this distance from entity
+        int frequency = 1; // ticks per update, 1 to 60 (20 ticks/sec)
+        boolean sendVelocityInfo = true;
 
         // register entity classes
         helicopter:
         {
-            ModLoaderMp.registerNetClientHandlerEntity(ThxEntityHelicopter.class, 75);
+            MinecraftForge.registerEntity(ThxEntityHelicopter.class, this, 75, distance, frequency, sendVelocityInfo);
             
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Helicopter with entity id " + entityId);
@@ -33,7 +44,7 @@ public class mod_Thx extends BaseModMp
         }
         rocket:
         {
-            ModLoaderMp.registerNetClientHandlerEntity(ThxEntityRocket.class, 76);
+            MinecraftForge.registerEntity(ThxEntityRocket.class, this, 76, distance, frequency, sendVelocityInfo);
             
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Rocket with entity id " + entityId);
@@ -41,7 +52,7 @@ public class mod_Thx extends BaseModMp
         }
         missile:
         {
-            ModLoaderMp.registerNetClientHandlerEntity(ThxEntityMissile.class, 77);
+            MinecraftForge.registerEntity(ThxEntityMissile.class, this, 77, distance, frequency, sendVelocityInfo);
             
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Missile with entity id " + entityId);
@@ -65,13 +76,17 @@ public class mod_Thx extends BaseModMp
             item.setItemName("thxHelicopter");
             ModLoader.addName(item, "THX Helicopter Prototype");
 
-            log("Adding recipe for helicopter");
-            ItemStack itemStack = new ItemStack(item, 1, 1);
-            Object[] recipe = new Object[] { " X ", "X X", "XXX", Character.valueOf('X'), Block.planks };
-            ModLoader.addRecipe(itemStack, recipe);
+            helicopterItemStack = new ItemStack(item, 1);
         }
 
         log("Done loading " + getVersion());
+    }
+
+    @Override
+    public void modsLoaded()
+    {
+        // add the recipe after mods have loaded, so ingredients can refer to other mods
+        config.addHelicopterRecipe(helicopterItemStack);
     }
 
     @Override
@@ -89,19 +104,32 @@ public class mod_Thx extends BaseModMp
         return "Minecraft THX Helicopter Mod - mod_thx-mc125_v018";
     }
 
-    @Override
-    public void handlePacket(Packet230ModLoader packet)
+    public void onPacketData(NetworkManager network, String channel, byte[] bytes) 
     {
-        int entityId = packet.dataInt[0];
-        if (entityId < 1) log("Received non-entity packet type " + packet.packetType + ": " + packet);
-        else
+        DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(bytes));
+
+        try
         {
-	        Entity entity = ((WorldClient) ModLoader.getMinecraftInstance().theWorld).getEntityByID(entityId);
-	        
-            // try calling applyUpdatePacket(packet);
-	        //if (entity instanceof ThxEntity) ((ThxEntity) entity).applyUpdatePacket(packet);
-	        
-	        if (entity instanceof ThxEntity) ((ThxEntity) entity).lastUpdatePacket = packet;
+            int packetType = dataStream.readInt(); // TODO
+            int entityId = dataStream.readInt();
+            
+            if (entityId < 1) log("Received non-entity packet type " + packetType + ": " + entityId);
+            else
+            {
+                Entity entity = ((WorldClient) ModLoader.getMinecraftInstance().theWorld).getEntityByID(entityId);
+                
+                // try calling applyUpdatePacket(packet);
+                //if (entity instanceof ThxEntity) ((ThxEntity) entity).applyUpdatePacket(packet);
+              
+                Packet250CustomPayload packet = new Packet250CustomPayload();
+                packet.channel = mod_Thx.channelName;
+                packet.data = bytes;
+                packet.length = packet.data.length;
+                if (entity instanceof ThxEntity) ((ThxEntity) entity).lastUpdatePacket = packet;
+            }
+        } catch (IOException e)
+        {
+            e.printStackTrace();
         }
     }
 
@@ -146,5 +174,21 @@ public class mod_Thx extends BaseModMp
             if (ep != null && ep.entityId == id) return ep;
         }
         return null;
+    }
+
+    public void onLogin(NetworkManager network, Packet1Login login)
+    {
+        MessageManager.getInstance().registerChannel(network, this, channelName);
+    }
+
+    public void onConnect(NetworkManager network){}
+    public void onDisconnect(NetworkManager network, String message, Object[] args) {}
+    public boolean clientSideRequired()
+    {
+        return true;
+    }
+    public boolean serverSideRequired()
+    {
+        return false;
     }
 }

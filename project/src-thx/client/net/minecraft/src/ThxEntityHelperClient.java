@@ -49,7 +49,7 @@ public class ThxEntityHelperClient extends ThxEntityHelper
         minecraft.ingameGUI.addChatMessage(s);
     }
 
-    void sendUpdatePacketToServer(Packet230ModLoader packet)
+    void sendUpdatePacketToServer(Packet250CustomPayload packet)
     {
         if (!world.isRemote) return;
 
@@ -60,11 +60,8 @@ public class ThxEntityHelperClient extends ThxEntityHelper
         minecraft.getSendQueue().addToSendQueue(packet);
     }
 
-    void applyUpdatePacket(Packet230ModLoader packet)
+    void applyUpdatePacket(int ownerId, int packetPilotId, float x, float y, float z)
     {
-        if (packet == null) return;
-        
-        int ownerId = packet.dataInt[1];
         if (ownerId > 0)
     	{
             if (entity.owner == null || entity.owner.entityId != ownerId)
@@ -84,7 +81,6 @@ public class ThxEntityHelperClient extends ThxEntityHelper
             }
     	}
 
-        int packetPilotId = packet.dataInt[2];
         // no or wrong current pilot
         if (packetPilotId > 0 && (entity.riddenByEntity == null || entity.riddenByEntity.entityId != packetPilotId))
         {
@@ -102,8 +98,8 @@ public class ThxEntityHelperClient extends ThxEntityHelper
             entity.pilotExit();
         }
         
-        entity.serverPosX = MathHelper.floor_float(packet.dataFloat[0] * 32f);
-        entity.serverPosY = MathHelper.floor_float(packet.dataFloat[1] * 32f);
-        entity.serverPosZ = MathHelper.floor_float(packet.dataFloat[2] * 32f);
+        entity.serverPosX = MathHelper.floor_float(x * 32f);
+        entity.serverPosY = MathHelper.floor_float(y * 32f);
+        entity.serverPosZ = MathHelper.floor_float(z * 32f);
     }
 }
