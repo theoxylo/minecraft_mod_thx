@@ -17,7 +17,8 @@ public class ThxItemHelicopter extends Item
     }
 
     @Override
-    public boolean onItemUse(ItemStack itemstack, EntityPlayer player, World world, int i, int j, int k, int l)
+    //public boolean onItemUse(ItemStack itemstack, EntityPlayer player, World world, int i, int j, int k, int l)
+    public ItemStack onItemRightClick(ItemStack itemstack, World world, EntityPlayer player)
     {
         mod_Thx.log("onItemUse - using helicopter item: " + this);
         
@@ -49,7 +50,7 @@ public class ThxItemHelicopter extends Item
             world.spawnEntityInWorld(newHelicopter);
         }
         
-        return false;
+        return itemstack;
     }
 
 }

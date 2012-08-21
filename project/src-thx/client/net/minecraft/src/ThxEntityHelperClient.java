@@ -38,7 +38,7 @@ public class ThxEntityHelperClient extends ThxEntityHelper
     @Override
     void addChatMessageToAll(String s)
     {
-        minecraft.ingameGUI.addChatMessage(s);
+        minecraft.ingameGUI.getChatGUI().printChatMessage(s);
     }
 
     void addChatMessageToPilot(String s)
@@ -46,7 +46,7 @@ public class ThxEntityHelperClient extends ThxEntityHelper
         // only the pilot player should see this message
         if (!minecraft.thePlayer.equals(entity.riddenByEntity)) return;
 
-        minecraft.ingameGUI.addChatMessage(s);
+        minecraft.ingameGUI.getChatGUI().printChatMessage(s);
     }
 
     void sendUpdatePacketToServer(Packet230ModLoader packet)

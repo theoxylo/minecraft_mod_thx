@@ -250,6 +250,9 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         //if (worldObj.isRemote) return;
         log("creating map");
         
+        // TODO: comming soon for 1.3.2?
+        if (true) return;
+        
         int mapSize = 960; // full size region is 1024, but we want a little bit of overlap
                 
         int mapIdxX = (int)posX / mapSize;
@@ -288,7 +291,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
             mapdata.zCenter = mapZ;                
                 
             mapdata.scale = 3;
-            mapdata.dimension = (byte)worldObj.worldProvider.worldType;
+            //mapdata.dimension = (byte)worldObj.worldProvider.worldType; // worldProvider removed in 1.3.2
             mapdata.markDirty();
         }
 
