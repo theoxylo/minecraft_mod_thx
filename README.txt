@@ -1,30 +1,27 @@
-Minecraft THX Helicopter Mod, v018 for mc125 with MLMP, 20120517, mod_thx-mc125_v018
+Minecraft THX Helicopter Mod, v019 for mc132 with MLMP, 20120517, mod_thx-mc132_v019
 
 
 
 INTRODUCTION
 ------------
-This version is v018 for use with Minecraft and ModLoader/MP 1.2.5 for both single- and multi-player.
+This version is v019 for use with Minecraft and ModLoader/MP 1.3.2 for both single- and multi-player.
 
 You can download the compiled binary zip files from GitHub:
 
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_CLIENT_mc125_v018.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_CLIENT_mc132_v019.zip
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_SERVER_mc125_v018.zip
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_SERVER_mc132_v019.zip
 
 
 And you can download the exact ModLoader and ModLoaderMP files you need from their respective download links (not affiliated with this mod):
 
 
-	ModLoader 1.2.5: http://adf.ly/1849S or
-	http://dl.dropbox.com/u/20629262/Latest/ModLoader.zip
+	ModLoader 1.3.2: http://adf.ly/1849S
 
-	ModLoaderMP Client 1.2.5 v1: http://adf.ly/74Eeb or
-	http://dl.dropbox.com/u/16399537/Releases/1.2.5/ModLoaderMP%201.2.5%20v1.zip
+	ModLoaderMP Client 1.3.2 v1: http://adf.ly/C0rtw
 
-	ModLoaderMP Server 1.2.5 v1: http://adf.ly/74EhX or
-	http://dl.dropbox.com/u/16399537/Releases/1.2.5/ModLoaderMP%20Server%201.2.5%20v1.zip
+	ModLoaderMP Server 1.3.2 v1: http://adf.ly/C0rwC
 
 
 
@@ -144,6 +141,8 @@ Official YouTube playlist:
 
 CHANGELOG
 ---------
+v019: now for use with Minecraft and ModLoader/MP 1.3.2
+
 v018: still for use with Minecraft and ModLoader/MP 1.2.5
 v018: added ower support to missile (e.g. xp)
 v018: added improved projectile hit detection
