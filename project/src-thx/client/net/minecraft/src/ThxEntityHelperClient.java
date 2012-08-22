@@ -18,8 +18,7 @@ public class ThxEntityHelperClient extends ThxEntityHelper
     
     boolean isPaused()
     {
-        if (!world.isRemote) // can only pause in single-player mode
-        {
+        //if (!world.isRemote) // can only pause in single-player mode {
             if (guiScreen != minecraft.currentScreen)
             {
                 // guiScreen has changed
@@ -31,7 +30,7 @@ public class ThxEntityHelperClient extends ThxEntityHelper
                     return true;
                 }
             }
-        }
+        //}
         return false;
     }
     
@@ -51,7 +50,7 @@ public class ThxEntityHelperClient extends ThxEntityHelper
 
     void sendUpdatePacketToServer(Packet230ModLoader packet)
     {
-        if (!world.isRemote) return;
+        // TODO: detect if mp game? if (!world.isRemote) return;
 
         // only the pilot player can send updates to the server
         if (!minecraft.thePlayer.equals(entity.riddenByEntity)) return;

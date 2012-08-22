@@ -129,7 +129,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
 	        helper.addChatMessageToPilot("Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
         }
         
-        if (damage > MAX_HEALTH && !worldObj.isRemote) // helicopter destroyed!
+        if (damage > MAX_HEALTH) // && !worldObj.isRemote) // helicopter destroyed!
         {
             float power = 2.3f;
             boolean flaming = true;
@@ -178,8 +178,8 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         float yaw = rotationYaw;
         float pitch = rotationPitch + 5f;
                 
-        if (!worldObj.isRemote)
-        {
+        //if (!worldObj.isRemote) {
+        
             // pilot is owner to get xp, if no pilot (ai) then helicopter is owner
 	        Entity newOwner = riddenByEntity != null ? riddenByEntity : this;
 	        ThxEntityRocket newRocket = new ThxEntityRocket(newOwner, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
@@ -190,7 +190,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
 	            ThxEntityHelicopter follower = (ThxEntityHelicopter) followerItem;
 	            if (follower.isDroneArmed) follower.fireRocket();
 	        }
-        }
+        //}
         
         if (rocketCount == FULL_ROCKET_COUNT)
         {
@@ -229,8 +229,8 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         float yaw = rotationYaw;
         float pitch = rotationPitch + 5f;
                 
-        if (!worldObj.isRemote)
-        {
+        //if (!worldObj.isRemote) {
+        
             // pilot is owner to get xp, if no pilot (ai) then helicopter is owner
 	        Entity newOwner = riddenByEntity != null ? riddenByEntity : this;
 	        ThxEntityMissile newMissile = new ThxEntityMissile(newOwner, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
@@ -242,7 +242,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
 	            ThxEntityHelicopter follower = (ThxEntityHelicopter) followerItem;
 	            //too much, rockets only? follower.fireMissile(); 
 	        }
-        }
+        //}
     }
 
     void createMap()
@@ -498,7 +498,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         {
             pilotExit();
             setDead();
-            if (this instanceof ThxEntityHelicopter && !worldObj.isRemote)
+            if (this instanceof ThxEntityHelicopter) // && !worldObj.isRemote)
             {
                 dropItemWithOffset(ThxItemHelicopter.shiftedId, 1, 0);
             }
@@ -517,10 +517,12 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
             return;
         }
         
-        if (worldObj.isRemote)
+        /*
+        //if (worldObj.isRemote) // TODO: how to detect server updates?
         {
             return; // applyUpdatePacket will do update for pos, vel, ypr
         }
+        */
         
         float thd = 0f; // thd is targetHelicopter distance
         deltaPosToTarget.set((float)(targetHelicopter.posX - posX), 0f, (float)(targetHelicopter.posZ - posZ));
@@ -683,12 +685,6 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
     
     void attackedByThxEntity(ThxEntity attackingEntity)
     {
-        if (worldObj.isRemote)
-        {
-            //log("smp client ignoring client side attack call, should it even be called?");
-            //return;
-        }
-        
         if (riddenByEntity != null)
         {
             // for piloted helicopter, track attacker? could allow guided missiles, radar, nemesis
@@ -774,7 +770,7 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         
         targetHelicopter = null;
         
-        if (worldObj.isRemote) return;
+        //if (worldObj.isRemote) return;
         
         // not using mountEntity here
         if (riddenByEntity == null) return;

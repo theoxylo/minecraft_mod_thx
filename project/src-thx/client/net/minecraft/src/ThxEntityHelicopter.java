@@ -73,7 +73,7 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         super.onUpdate();
 		
         // try sending update packet in all cases! bandwidth?
-        helper.sendUpdatePacketToServer(getUpdatePacket());
+        // TODO: handle mp server packet: helper.sendUpdatePacketToServer(getUpdatePacket());
             
         // create smoke to indicate damage
         smokeDelay -= deltaTime;
@@ -93,7 +93,7 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         }
         
         riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
-        plog(String.format("finish onUpdate, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
+        //plog(String.format("finish onUpdate, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
     }
     
     @Override
@@ -155,7 +155,8 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         {
             createMapDelay = 10f; // the delay in seconds
                 
-            if (worldObj.isRemote)
+            /*
+            //if (worldObj.isRemote)
             {
                 cmd_create_map = 1;
             }
@@ -163,6 +164,8 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
             {
 	            createMap();
             }
+            */
+            // TODO: createMap();
         }
             
         hudModeToggleDelay -= deltaTime;
@@ -244,14 +247,14 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
         if (Keyboard.isKeyDown(KEY_EXIT) && pilot != null)
         {
             pilotExitDelay = .5f; // the delay in seconds
-            if (worldObj.isRemote) cmd_exit = 1; // queue for server packet
+            //if (worldObj.isRemote) cmd_exit = 1; // queue for server packet
             pilotExit();
         }
 
         // MANUAL ROCKET RELOAD 
         if (Keyboard.isKeyDown(KEY_ROCKET_RELOAD) && rocketCount > 0)
         {
-	        if (worldObj.isRemote) cmd_reload = 1; // queue for server packet
+	        //if (worldObj.isRemote) cmd_reload = 1; // queue for server packet
 	        
             reload();
         }

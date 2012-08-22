@@ -61,9 +61,7 @@ public abstract class ThxEntity extends Entity
     {
         super(world);
 
-        //log(world.isRemote ? "Created new MP client entity" : "Created new SP/MP master entity");
-
-        preventEntitySpawning = true;
+        preventEntitySpawning = true; // keeps other entities from spawning on top of us
 
         prevTime = System.nanoTime();
     }
@@ -86,7 +84,8 @@ public abstract class ThxEntity extends Entity
         prevRotationYaw = rotationYaw;
         prevRotationRoll = rotationRoll;
         
-        if (worldObj.isRemote)
+        //if (world.isRemote)
+        updateClientFromServerPacket:
         {
 	        applyUpdatePacket(lastUpdatePacket);
 	        lastUpdatePacket = null; // only apply once
@@ -260,12 +259,12 @@ public abstract class ThxEntity extends Entity
         }
         
         // new pilot boarding!
-        if (!worldObj.isRemote)
-        {
+        //if (!worldObj.isRemote)
+        //{
 	        log("interact() calling mountEntity on player " + player.entityId);
 	        player.mountEntity(this); // boarding
 	        owner = player;
-        }
+        //}
         
         player.rotationYaw = rotationYaw;
         updateRiderPosition();
@@ -439,13 +438,15 @@ public abstract class ThxEntity extends Entity
         
         if (ThxConfig.LOG_INCOMING_PACKETS) plog("<<< " + packetToString(packet));
         
-        if (!worldObj.isRemote)
+        /* for server-side cmd queue from packet
+        //if (!worldObj.isRemote)
         {
 	        cmd_create_item = packet.dataInt[3];
 	        cmd_reload      = packet.dataInt[4];
 	        cmd_exit        = packet.dataInt[5];
 	        cmd_create_map  = packet.dataInt[6];
         }
+        */
         
         setPositionAndRotation(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2], packet.dataFloat[3], packet.dataFloat[4]);
         

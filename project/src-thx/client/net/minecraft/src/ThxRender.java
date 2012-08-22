@@ -9,7 +9,7 @@ import org.lwjgl.opengl.GL11;
 public class ThxRender extends Render
 {
     @Override
-    public void doRender(Entity entityArg, double x, double y, double z, float yaw, float pitch)
+    public void doRender(Entity entityArg, double x, double y, double z, float yaw, float deltaTime)
     {
         ThxEntity entity = null;
         
