@@ -46,6 +46,8 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     {
         super(world, x, y, z, yaw);
 	    minecraft = ModLoader.getMinecraftInstance();
+	    
+        mod_Thx.log("ThxEntityHelicopter, world.isRemote: " + world.isRemote);
     }
     
     @Override
@@ -69,6 +71,7 @@ public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpa
     {
         int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
         plog(String.format("start  onUpdate, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
+        plog("world.isRemote: " + worldObj.isRemote);
         
         super.onUpdate();
 		

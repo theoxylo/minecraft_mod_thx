@@ -1,37 +1,23 @@
-Minecraft THX Helicopter Mod, v019 for mc132 with MLMP, 20120517, mod_thx-mc132_v019
-
+Minecraft THX Helicopter Mod, v020 for mc145 with ML, 20121203, mod_thx-mc145_v020
 
 
 INTRODUCTION
 ------------
-This version is v019 for use with Minecraft and ModLoader/MP 1.3.2 for both single- and multi-player.
+This version is v020 for use with Minecraft and ModLoader 1.4.5 for single-player ONLY.
 
 You can download the compiled binary zip files from GitHub:
 
+    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_CLIENT_mc145_v020.zip
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_CLIENT_mc132_v019.zip
+And you can download the exact ModLoader archive you need from this download link (not affiliated with this mod):
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_SERVER_mc132_v019.zip
-
-
-And you can download the exact ModLoader and ModLoaderMP files you need from their respective download links (not affiliated with this mod):
-
-
-	ModLoader 1.3.2: http://adf.ly/1849S
-
-	ModLoaderMP Client 1.3.2 v1: http://adf.ly/C0rtw
-
-	ModLoaderMP Server 1.3.2 v1: http://adf.ly/C0rwC
-
-
-
+	http://dl.dropbox.com/u/20629262/Latest/ModLoader.zip
 
 Keep in mind that this is an early release of a mod still under construction. Even though no corruption issues have been reported, please back-up your worlds before using (always a good idea). 
 
 Make sure that Minecraft, ModLoader, and ModLoaderMP are working properly before installing this mod -- see log ouput in .minecraft/ModLoader.txt
 
 Please visit the forum thread to discuss, report issues, leave feedback, etc:
-
 
     http://www.minecraftforum.net/index.php?showtopic=763209
 
@@ -42,42 +28,24 @@ INSTALLATION
 There are 2 types of installation: single player and smp CLIENT, and multiplayer smp SERVER. Please see below for details.
 
 
-
-    SINGLE PLAYER and SMP CLIENT
-    ----------------------------
+    SINGLE PLAYER
+    -------------
 
     1. Install Risugami's ModLoader and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
 
         http://www.minecraftforum.net/index.php?showtopic=75440
 
 
-    2. Install SDK's ModLoaderMp client and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
-
-        http://www.minecraftforum.net/index.php?showtopic=86765
+    2. Then copy the client THX zip file from the above client download to your .minecraft/mods folder.
 
 
-    3. Then copy the client THX zip file from the above client download to your .minecraft/mods folder.
-
-
-    4. After running at least once, check out the options in file '.minecraft/mods/mod_thx.options' for controls and other settings (see below for annotated listing).
-
+    3. After running at least once, check out the options in file '.minecraft/mods/mod_thx.options' for controls and other settings (see below for annotated listing).
 
 
     SERVER INSTALLATION
     -------------------
 
-    1. Install SDK's ModLoaderMp server and test. This involves adding the class files to your minecraft_server.jar file and NOT deleting META-INF. Please visit the official topic for detailed instructions and support:
-
-        http://www.minecraftforum.net/index.php?showtopic=86765
-        
-
-    2. Then add the server THX mod files from the above server download to your minecraft_server.jar. Alternate method: add just the jj.class file to your minecraft_server.jar and then put the zip download file into the server 'mods' folder.
-
-
-    3. After running at least once, check out the options in file '.minecraft/mod_thx_server.options' for controls and other settings (see below for annotated listing).
-    
-
-    NOTE: if using other mods on the server, please add the THX files to your minecraft_server.jar file last (install the other mods first).
+    Coming soon...
 
 
 
@@ -91,7 +59,7 @@ The current crafting recipe is very cheap and simple -- build a boat and add a r
 |P P P|
  ----- 
 
-Where P is wooden planks.
+Where P is any kind of wooden plank.
 
 
 
@@ -141,6 +109,8 @@ Official YouTube playlist:
 
 CHANGELOG
 ---------
+v020: now for use with Minecraft and ModLoader 1.4.5, ModLoaderMP now embedded
+
 v019: now for use with Minecraft and ModLoader/MP 1.3.2
 
 v018: still for use with Minecraft and ModLoader/MP 1.2.5
@@ -355,8 +325,8 @@ GIT CHEATSHEET
 --------------
 To create a new branch:
 cd workspace_git_mod_thx
-git checkout -b vXXX_candidate
-git push origin vXXX_candidate
+git checkout -b vXXX_mcYYY
+git push origin vXXX_mcYYY
 
 To make changes:
 vi README.txt
@@ -366,7 +336,7 @@ git push origin
 
 To merge a branch:
 git checkout master
-git merge vXXX_candidate
+git merge vXXX_mcYYY
 git push origin
 
 To create a tag:
@@ -374,8 +344,8 @@ git tag mod_Thx-beta_YYY_vXXX
 git push origin --tags
 
 To delete a branch, local and remote:
-git branch -d vXXX_candidate
-git push origin :vXXX_candidate
+git branch -d vXXX_mcYYY
+git push origin :vXXX_mcYYY
 
 
 

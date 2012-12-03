@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="src" path="thx/src-mlmp/client"/>
 	<classpathentry kind="src" path="thx/src-thx/client"/>
 	<classpathentry kind="src" path="thx/src-thx/common"/>
-	<classpathentry kind="src" path="mc_ref/src/minecraft"/>
+	<classpathentry excluding="net/minecraft/src/NetClientHandler.java" kind="src" path="mc_ref/src/minecraft"/>
 	<classpathentry kind="lib" path="mcp/bin/jinput.jar"/>
 	<classpathentry kind="lib" path="mcp/bin/lwjgl_util.jar"/>
 	<classpathentry kind="lib" path="mcp/bin/lwjgl.jar">
@@ -10,7 +11,7 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="project_client/mcp/bin/natives"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="mcp/bin/minecraft.jar"/>
+	<classpathentry kind="lib" path="mc_ref/minecraft.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="temp"/>
 </classpath>

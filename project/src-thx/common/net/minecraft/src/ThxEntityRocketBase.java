@@ -37,7 +37,9 @@ public abstract class ThxEntityRocketBase extends ThxEntityProjectile
     @Override
     void onLaunch()
     {
-        worldObj.playSoundAtEntity(this, "random.fizz", 1f, 1f);
+        log("onLaunch");
+        //worldObj.playSoundAtEntity(this, "random.fizz", 1f, 1f);
+        worldObj.provider.worldObj.playSoundAtEntity(this, "random.fizz", 1f, 1f);
     }
     
     @Override

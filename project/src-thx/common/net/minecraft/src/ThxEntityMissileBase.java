@@ -31,7 +31,8 @@ public abstract class ThxEntityMissileBase extends ThxEntityProjectile
     @Override
     void onLaunch()
     {
-        worldObj.playSoundAtEntity(this, "mob.ghast.fireball", 1f, 1f);
+        System.out.println("Missile launch: " + this);
+        worldObj.playSoundAtEntity(this, "mob.irongolem.throw", 1f, 1f);
     }
     
     @Override
@@ -56,7 +57,8 @@ public abstract class ThxEntityMissileBase extends ThxEntityProjectile
             
         float power = 1.1f;
         boolean withFire = false;
-        worldObj.newExplosion(this, posX, posY, posZ, power, withFire);
+        boolean smoking = false;
+        worldObj.newExplosion(this, posX, posY, posZ, power, withFire, smoking);
         
         setDead();
     }

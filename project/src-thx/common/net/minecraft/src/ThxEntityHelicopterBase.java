@@ -133,7 +133,8 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClie
         {
             float power = 2.3f;
             boolean flaming = true;
-            worldObj.newExplosion(this, posX, posY, posZ, power, flaming);
+            boolean smoking = true;
+            worldObj.newExplosion(this, posX, posY, posZ, power, flaming, smoking);
             
             if (riddenByEntity != null) pilotExit();
             

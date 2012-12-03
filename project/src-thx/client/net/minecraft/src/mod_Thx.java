@@ -1,5 +1,8 @@
 package net.minecraft.src;
 
+import java.util.Iterator;
+import java.util.List;
+
 import net.minecraft.client.Minecraft;
 
 public class mod_Thx extends BaseModMp
@@ -86,7 +89,7 @@ public class mod_Thx extends BaseModMp
     public String getVersion()
     {
         //log("getVersion called");
-        return "Minecraft THX Helicopter Mod - mod_thx-mc132_v019";
+        return "Minecraft THX Helicopter Mod - mod_thx-mc145_v020";
     }
 
     @Override

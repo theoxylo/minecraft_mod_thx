@@ -63,13 +63,15 @@ public abstract class ThxEntityProjectile extends ThxEntity
         createParticles();
         
         //Vec3 posStart = Vec3.createVector(posX, posY, posZ); from 1.2.5
-        Vec3 posStart = Vec3.getVec3Pool().getVecFromPool(posX, posY, posZ); // new in 1.3.2
-        Vec3 posEnd = Vec3.getVec3Pool().getVecFromPool(posX + motionX, posY + motionY, posZ + motionZ);
+        //Vec3 posStart = Vec3.getVec3Pool().getVecFromPool(posX, posY, posZ); // new in 1.3.2
+        //Vec3 posEnd = Vec3.getVec3Pool().getVecFromPool(posX + motionX, posY + motionY, posZ + motionZ);
+        Vec3 posStart = Vec3.createVectorHelper(posX, posY, posZ); // new in 1.4.5
+        Vec3 posEnd = Vec3.createVectorHelper(posX + motionX, posY + motionY, posZ + motionZ);
         
         MovingObjectPosition movingobjectposition = worldObj.rayTraceBlocks(posStart, posEnd);
         if(movingobjectposition != null)
         {
-            posEnd = Vec3.getVec3Pool().getVecFromPool(movingobjectposition.hitVec.xCoord, movingobjectposition.hitVec.yCoord, movingobjectposition.hitVec.zCoord);
+            posEnd = Vec3.createVectorHelper(movingobjectposition.hitVec.xCoord, movingobjectposition.hitVec.yCoord, movingobjectposition.hitVec.zCoord);
         }
         
         setPosition(posEnd.xCoord, posEnd.yCoord, posEnd.zCoord);
