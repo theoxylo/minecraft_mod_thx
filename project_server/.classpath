@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<classpath>
-	<classpathentry kind="src" path="thx/src-thx/server"/>
-	<classpathentry kind="src" path="thx/src-thx/common"/>
-	<classpathentry excluding="net/minecraft/src/EntityTrackerEntry.java" kind="src" path="mc_ref/src/minecraft_server"/>
-	<classpathentry kind="lib" path="mcp/minecraft_server.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="output" path="temp"/>
-</classpath>
