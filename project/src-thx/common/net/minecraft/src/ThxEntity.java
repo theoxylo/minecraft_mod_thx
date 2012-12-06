@@ -39,7 +39,7 @@ public abstract class ThxEntity extends Entity
     
     ThxEntityHelper helper;
     
-    Packet230ModLoader lastUpdatePacket;
+    ThxEntityPacket250 lastUpdatePacket;
     
     int cmd_reload;
     int cmd_create_item;
@@ -365,18 +365,7 @@ public abstract class ThxEntity extends Entity
         return d < 128.0 * 128.0;
     }
 
-    /* ISpawnable SERVER interface */
-    public Packet230ModLoader getSpawnPacket()
-    {
-        Packet230ModLoader packet = getUpdatePacket();
-        packet.dataString[0] = "spawn packet for thx entity " + entityId;
-        
-        log("Returning spawn packet: " + packet);
-        return packet;
-    }
-    
-    /* ISpawnable CLIENT interface */
-    public void spawn(Packet230ModLoader packet)
+    public void spawn(ThxEntityPacket250 packet)
     {
         log("Received spawn packet: " + packetToString(packet));
 
@@ -392,12 +381,9 @@ public abstract class ThxEntity extends Entity
         log("spawn(): posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
     }
     
-    public Packet230ModLoader getUpdatePacket()
+    public ThxEntityPacket250 getUpdatePacket()
     {
-        Packet230ModLoader packet = new Packet230ModLoader();
-
-        packet.modId = mod_Thx.instance.getId();
-        packet.packetType = getPacketTypeId();
+        ThxEntityPacket250 packet = new ThxEntityPacket250();
 
         packet.dataString = new String[] { "thx update packet for tick " + ticksExisted };
 
@@ -432,7 +418,7 @@ public abstract class ThxEntity extends Entity
         return packet;
     }
 
-    void applyUpdatePacket(Packet230ModLoader packet)
+    void applyUpdatePacket(ThxEntityPacket250 packet)
     {
         if (packet == null) return;
         
@@ -465,12 +451,10 @@ public abstract class ThxEntity extends Entity
         plog(String.format("end applyPaket, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
     }    
     
-    public String packetToString(Packet230ModLoader p)
+    public String packetToString(ThxEntityPacket250 p)
     {
         StringBuffer s = new StringBuffer();
-        s.append("Packet230 {");
-        s.append("type: ").append(p.packetType).append(", ");
-        s.append("modId: ").append(p.modId).append(", ");
+        s.append("ThxEntityPacket250 {");
 
         for (int i = 0; p.dataInt != null && i < p.dataInt.length; i++)
         {

@@ -3,7 +3,7 @@ package net.minecraft.src;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class ThxEntityHelicopterBase extends ThxEntity implements IClientDriven
+public abstract class ThxEntityHelicopterBase extends ThxEntity implements ThxClientDriven
 {
     List followers = new ArrayList();
     

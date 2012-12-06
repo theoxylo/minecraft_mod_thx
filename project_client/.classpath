@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="thx/src-mlmp/client"/>
 	<classpathentry kind="src" path="thx/src-thx/client"/>
 	<classpathentry kind="src" path="thx/src-thx/common"/>
-	<classpathentry excluding="net/minecraft/src/NetClientHandler.java" kind="src" path="mc_ref/src/minecraft"/>
+	<classpathentry excluding="net/minecraft/src/EntityTrackerEntry.java" kind="src" path="mc_ref/src/minecraft"/>
 	<classpathentry kind="lib" path="mcp/bin/jinput.jar"/>
 	<classpathentry kind="lib" path="mcp/bin/lwjgl_util.jar"/>
 	<classpathentry kind="lib" path="mcp/bin/lwjgl.jar">

@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 
 import org.lwjgl.input.Keyboard;
 
-public class ThxEntityHelicopter extends ThxEntityHelicopterBase implements ISpawnable
+public class ThxEntityHelicopter extends ThxEntityHelicopterBase
 {    
     Minecraft minecraft;
     

@@ -20,7 +20,7 @@ public class ThxItemHelicopter extends Item
     //public boolean onItemUse(ItemStack itemstack, EntityPlayer player, World world, int i, int j, int k, int l)
     public ItemStack onItemRightClick(ItemStack itemstack, World world, EntityPlayer player)
     {
-        mod_Thx.log("onItemUse - using helicopter item: " + this);
+        mod_Thx.log("onItemUse - using helicopter item: " + this + " by player: " + player);
         
         itemstack.stackSize--;
         
@@ -38,19 +38,17 @@ public class ThxItemHelicopter extends Item
         double posZ = player.posZ + f1 * f5 * 3.0;
         float yaw = (player.rotationYaw -45) % 360f;
             
-        /*
-        //if (world.isRemote) // always true as of mc_132!
+        if (world.isRemote)
         {
             mod_Thx.log(this + ".onItemUse: world is remote, so no direct call to spawn");
         }
         else
         {
-        */
             mod_Thx.log(this + ".onItemUse: Spawning new helicopter from item");
             ThxEntityHelicopter newHelicopter = new ThxEntityHelicopter(world, posX, posY, posZ, yaw);
             newHelicopter.owner = player;
             world.spawnEntityInWorld(newHelicopter);
-        //}
+        }
         
         return itemstack;
     }

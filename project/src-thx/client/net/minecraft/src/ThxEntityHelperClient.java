@@ -48,7 +48,7 @@ public class ThxEntityHelperClient extends ThxEntityHelper
         minecraft.ingameGUI.getChatGUI().printChatMessage(s);
     }
 
-    void sendUpdatePacketToServer(Packet230ModLoader packet)
+    void sendUpdatePacketToServer(ThxEntityPacket250 packet)
     {
         // TODO: detect if mp game? if (!world.isRemote) return;
 
@@ -59,7 +59,7 @@ public class ThxEntityHelperClient extends ThxEntityHelper
         minecraft.getSendQueue().addToSendQueue(packet);
     }
 
-    void applyUpdatePacket(Packet230ModLoader packet)
+    void applyUpdatePacket(ThxEntityPacket250 packet)
     {
         if (packet == null) return;
         

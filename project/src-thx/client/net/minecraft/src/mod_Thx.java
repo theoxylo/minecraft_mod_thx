@@ -5,12 +5,14 @@ import java.util.List;
 
 import net.minecraft.client.Minecraft;
 
-public class mod_Thx extends BaseModMp
+public class mod_Thx extends BaseMod
 {
     static ThxConfig config;
     
     public static mod_Thx instance;
 
+    static int HELICOPTER_TYPE_ID = 99;
+    
     public mod_Thx()
     {
         System.out.println("mod_Thx() called");
@@ -24,28 +26,28 @@ public class mod_Thx extends BaseModMp
         log("load() called");
 
         ModLoader.setInGameHook(this, true, true);
+        ModLoader.registerPacketChannel(this, "THX_entity");
 
         // register entity classes
         helicopter:
         {
-            ModLoaderMp.registerNetClientHandlerEntity(ThxEntityHelicopter.class, 75);
-            
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Helicopter with entity id " + entityId);
             ModLoader.registerEntityID(ThxEntityHelicopter.class, "thxHelicopter", entityId);
+            
+            int drawDistance = 8; // typically 160
+            int updateFreq = 1;
+            boolean trackMotion = true;
+            ModLoader.addEntityTracker(this, ThxEntityHelicopter.class, HELICOPTER_TYPE_ID, drawDistance, updateFreq, trackMotion);
         }
         rocket:
         {
-            ModLoaderMp.registerNetClientHandlerEntity(ThxEntityRocket.class, 76);
-            
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Rocket with entity id " + entityId);
             ModLoader.registerEntityID(ThxEntityRocket.class, "thxRocket", entityId);
         }
         missile:
         {
-            ModLoaderMp.registerNetClientHandlerEntity(ThxEntityMissile.class, 77);
-            
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Missile with entity id " + entityId);
             ModLoader.registerEntityID(ThxEntityMissile.class, "thxMissile", entityId);
@@ -92,22 +94,6 @@ public class mod_Thx extends BaseModMp
         return "Minecraft THX Helicopter Mod - mod_thx-mc145_v020";
     }
 
-    @Override
-    public void handlePacket(Packet230ModLoader packet)
-    {
-        int entityId = packet.dataInt[0];
-        if (entityId < 1) log("Received non-entity packet type " + packet.packetType + ": " + packet);
-        else
-        {
-	        Entity entity = ((WorldClient) ModLoader.getMinecraftInstance().theWorld).getEntityByID(entityId);
-	        
-            // try calling applyUpdatePacket(packet);
-	        //if (entity instanceof ThxEntity) ((ThxEntity) entity).applyUpdatePacket(packet);
-	        
-	        if (entity instanceof ThxEntity) ((ThxEntity) entity).lastUpdatePacket = packet;
-        }
-    }
-
     int getNextItemId()
     {
         // return next available id
@@ -150,4 +136,55 @@ public class mod_Thx extends BaseModMp
         }
         return null;
     }
+    
+    @Override
+    public Entity spawnEntity(int type, World world, double posX, double posY, double posZ)
+    {
+        if (type == HELICOPTER_TYPE_ID)
+        {
+            return new ThxEntityHelicopter(world, posX, posY, posZ, 0f);
+        }
+        
+        return null;
+    }
+    
+    @Override
+    public Packet23VehicleSpawn getSpawnPacket(Entity entity, int type)
+    {
+        log("Creating spawn packet for entity: " + entity);
+        return new Packet23VehicleSpawn(entity, type);
+    }
+    
+    @Override
+    public void clientCustomPayload(NetClientHandler netHandler, Packet250CustomPayload packet250)
+    {
+        if (packet250 instanceof ThxEntityPacket250)
+        {
+            ThxEntityPacket250 packet = (ThxEntityPacket250) packet250;
+	        int entityId = packet.dataInt[0];
+	        
+	        Entity entity = ((WorldClient) ModLoader.getMinecraftInstance().theWorld).getEntityByID(entityId);
+	        
+            // try calling applyUpdatePacket(packet);
+	        //if (entity instanceof ThxEntity) ((ThxEntity) entity).applyUpdatePacket(packet);
+	        
+	        if (entity instanceof ThxEntity) ((ThxEntity) entity).lastUpdatePacket = packet;
+        }
+    }
+
+    @Override
+    public void serverCustomPayload(NetServerHandler netHandler, Packet250CustomPayload packet250)
+    {
+        if (packet250 instanceof ThxEntityPacket250)
+        {
+            ThxEntityPacket250 packet = (ThxEntityPacket250) packet250;
+	        if (netHandler.playerEntity.ridingEntity instanceof ThxClientDriven)
+	        {
+	            // try calling applyUpdatePacket(packet);
+	            ((ThxEntity) netHandler.playerEntity.ridingEntity).applyUpdatePacket(packet);
+	            //((ThxEntity) player.ridingEntity).latestUpdatePacket = packet;
+	        }
+        }
+    }
+
 }

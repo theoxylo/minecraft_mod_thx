@@ -21,7 +21,7 @@ public abstract class ThxEntityHelper
     {
     }
 
-    void sendUpdatePacketToServer(Packet230ModLoader updatePacket)
+    void sendUpdatePacketToServer(ThxEntityPacket250 updatePacket)
     {
     }
 
@@ -40,7 +40,7 @@ public abstract class ThxEntityHelper
     // COMMON methods
     // COMMON methods
     
-    abstract void applyUpdatePacket(Packet230ModLoader updatePacket);
+    abstract void applyUpdatePacket(ThxEntityPacket250 updatePacket);
     
     void log(String s)
     {

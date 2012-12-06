@@ -1,6 +1,6 @@
 package net.minecraft.src;
 
-public class ThxEntityRocket extends ThxEntityRocketBase implements ISpawnable
+public class ThxEntityRocket extends ThxEntityRocketBase
 {
     public ThxEntityRocket(World world)
     {
