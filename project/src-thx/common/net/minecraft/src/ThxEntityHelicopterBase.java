@@ -161,6 +161,8 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements ThxCl
     
     void fireRocket()
     {
+        if (worldObj.isRemote) return;
+        
         if (rocketDelay > 0f && riddenByEntity == null) return;
         if (rocketReload > 0f) return;
         
@@ -179,19 +181,16 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements ThxCl
         float yaw = rotationYaw;
         float pitch = rotationPitch + 5f;
                 
-        //if (!worldObj.isRemote) {
+        // pilot is owner to get xp, if no pilot (ai) then helicopter is owner
+        Entity newOwner = riddenByEntity != null ? riddenByEntity : this;
+        ThxEntityRocket newRocket = new ThxEntityRocket(newOwner, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
+        worldObj.spawnEntityInWorld(newRocket);
         
-            // pilot is owner to get xp, if no pilot (ai) then helicopter is owner
-	        Entity newOwner = riddenByEntity != null ? riddenByEntity : this;
-	        ThxEntityRocket newRocket = new ThxEntityRocket(newOwner, posX + offsetX, posY + offsetY, posZ + offsetZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
-	        worldObj.spawnEntityInWorld(newRocket);
-	        
-	        for (Object followerItem : followers)
-	        {
-	            ThxEntityHelicopter follower = (ThxEntityHelicopter) followerItem;
-	            if (follower.isDroneArmed) follower.fireRocket();
-	        }
-        //}
+        for (Object followerItem : followers)
+        {
+            ThxEntityHelicopter follower = (ThxEntityHelicopter) followerItem;
+            if (follower.isDroneArmed) follower.fireRocket();
+        }
         
         if (rocketCount == FULL_ROCKET_COUNT)
         {
@@ -207,6 +206,8 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements ThxCl
     
     void fireMissile()
     {
+        if (worldObj.isRemote) return;
+        
         if (missileDelay > 0f)
         {
             if (lastMissileFired != null && !lastMissileFired.isDead)
@@ -230,20 +231,17 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements ThxCl
         float yaw = rotationYaw;
         float pitch = rotationPitch + 5f;
                 
-        //if (!worldObj.isRemote) {
+        // pilot is owner to get xp, if no pilot (ai) then helicopter is owner
+        Entity newOwner = riddenByEntity != null ? riddenByEntity : this;
+        ThxEntityMissile newMissile = new ThxEntityMissile(newOwner, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
+        lastMissileFired = newMissile;
+        worldObj.spawnEntityInWorld(newMissile);
         
-            // pilot is owner to get xp, if no pilot (ai) then helicopter is owner
-	        Entity newOwner = riddenByEntity != null ? riddenByEntity : this;
-	        ThxEntityMissile newMissile = new ThxEntityMissile(newOwner, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
-	        lastMissileFired = newMissile;
-	        worldObj.spawnEntityInWorld(newMissile);
-	        
-	        for (Object followerItem : followers)
-	        {
-	            ThxEntityHelicopter follower = (ThxEntityHelicopter) followerItem;
-	            //too much, rockets only? follower.fireMissile(); 
-	        }
-        //}
+        for (Object followerItem : followers)
+        {
+            ThxEntityHelicopter follower = (ThxEntityHelicopter) followerItem;
+            //too much, rockets only? follower.fireMissile(); 
+        }
     }
 
     void createMap()
@@ -767,15 +765,25 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements ThxCl
     @Override
     void pilotExit()
     {
-        log("pilotExit called for pilot entity " + (riddenByEntity != null ? riddenByEntity.entityId : 0));
+        if (worldObj.isRemote) 
+        {
+            log("pilotExit() call ignored on client, waiting for server packet with pilotId 0; see ThxEntityHelperClient.applyUpdatePacket(ThxEntityPacket250)");
+            new Exception().printStackTrace();
+            return;
+        }
+        
+        log("pilotExit called for pilot entity :" + riddenByEntity);
+        log("pilotExit called for pilot entity " + (riddenByEntity != null ? (riddenByEntity.toString() + riddenByEntity.entityId) : ("warning, no pilot to exit")));
         
         targetHelicopter = null;
         
-        //if (worldObj.isRemote) return;
-        
         // not using mountEntity here
-        if (riddenByEntity == null) return;
-        if (!equals(riddenByEntity.ridingEntity)) return;
+        //riddenByEntity.mountEntity(this); // riddenByEntity is now null // no more pilot
+
+        if (riddenByEntity == null) return; // no pilot
+        
+        if (!equals(riddenByEntity.ridingEntity)) return; // pilot is somehow flying a different helicopter instance
+        log ("this == riddenByEntity.ridingEntity; //" + (this == riddenByEntity.ridingEntity));
         
         // can't set these private fields as mountEntity does. problem?
         //riddenByEntity.entityRiderPitchDelta = 0.0D;
@@ -789,12 +797,6 @@ public abstract class ThxEntityHelicopterBase extends ThxEntity implements ThxCl
         rotationYawSpeed = 0f;
         rotationPitchSpeed = 0f;
         rotationRollSpeed = 0f;
-        
-        //if (!worldObj.isRemote)
-        //{
-            //log("pilotExit() calling mountEntity on player " + pilot);
-            //riddenByEntity.mountEntity(this); // riddenByEntity is now null // unmount
-        //}
     }
     
     @Override

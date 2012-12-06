@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>thx_universal</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.eclipse.jdt.core.javabuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.eclipse.jdt.core.javanature</nature>
+	</natures>
+	<linkedResources>
+		<link>
+			<name>mc_ref</name>
+			<type>2</type>
+			<locationURI>MC_HOME</locationURI>
+		</link>
+		<link>
+			<name>mcp</name>
+			<type>2</type>
+			<locationURI>MCP_HOME/jars</locationURI>
+		</link>
+	</linkedResources>
+	<variableList>
+		<variable>
+			<name>MCP_HOME</name>
+			<value>file:/C:/Dropbox/minecraft/mcp723-145</value>
+		</variable>
+		<variable>
+			<name>MC_HOME</name>
+			<value>file:/C:/Dropbox/minecraft/reference_jars/mc_145/ml</value>
+		</variable>
+	</variableList>
+</projectDescription>

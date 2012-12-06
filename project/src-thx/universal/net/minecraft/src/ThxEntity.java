@@ -39,6 +39,8 @@ public abstract class ThxEntity extends Entity
     
     ThxEntityHelper helper;
     
+    abstract ThxEntityHelper createHelper();
+    
     ThxEntityPacket250 lastUpdatePacket;
     
     int cmd_reload;
@@ -488,8 +490,4 @@ public abstract class ThxEntity extends Entity
 
         return s.toString();
     }
-    
-    abstract int getPacketTypeId();
-    
-    abstract ThxEntityHelper createHelper();
 }
