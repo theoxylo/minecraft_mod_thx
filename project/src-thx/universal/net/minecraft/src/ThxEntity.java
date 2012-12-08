@@ -1,5 +1,10 @@
 package net.minecraft.src;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 public abstract class ThxEntity extends Entity
@@ -86,11 +91,11 @@ public abstract class ThxEntity extends Entity
         prevRotationYaw = rotationYaw;
         prevRotationRoll = rotationRoll;
         
-        //if (world.isRemote)
-        updateClientFromServerPacket:
+        if (lastUpdatePacket != null)
         {
-	        if (lastUpdatePacket != null) applyUpdatePacket(lastUpdatePacket);
-	        lastUpdatePacket = null; // only apply once
+            if (worldObj.isRemote) applyUpdatePacketFromServer(lastUpdatePacket);
+            else applyUpdatePacketFromClient(lastUpdatePacket);
+            lastUpdatePacket = null; // only apply once
         }
         
         inWater = isInWater();
@@ -102,7 +107,7 @@ public abstract class ThxEntity extends Entity
         updateRotation();
         updateVectors();
         
-        isActive = true; // trigger custom packets updates for ThxClientDriven subclasses
+        isActive = false; // by default, don't trigger custom packets updates from server, will be set true later for drone and piloted helicopters
     }
     
     public boolean isInWater()
@@ -366,6 +371,7 @@ public abstract class ThxEntity extends Entity
         return d < 128.0 * 128.0;
     }
 
+    /*
     public void spawn(ThxEntityPacket250 packet)
     {
         log("Received spawn packet: " + packetToString(packet));
@@ -381,113 +387,174 @@ public abstract class ThxEntity extends Entity
         log("spawn with pos, rot, mot, and id for entity with previous id " + entityIdOrig);
         log("spawn(): posX: " + posX + ", posY: " + posY + ", posZ: " + posZ);
     }
+    */
     
-    public ThxEntityPacket250 getUpdatePacket()
+    public Packet250CustomPayload getUpdatePacketFromClient()
     {
-        ThxEntityPacket250 packet = new ThxEntityPacket250();
-
-        packet.dataString = new String[] { "thx update packet for tick " + ticksExisted };
-
-        packet.dataInt = new int[7];
-        packet.dataInt[0] = entityId;
-        packet.dataInt[1] = owner != null ? owner.entityId : 0;
-        packet.dataInt[2] = riddenByEntity != null ? riddenByEntity.entityId : 0;
-        packet.dataInt[3] = cmd_create_item;
-        packet.dataInt[4] = cmd_reload;
-        packet.dataInt[5] = cmd_exit;
-        packet.dataInt[6] = cmd_create_map;
+        // make sure we are on the client before creating update packet
+        if (!worldObj.isRemote) throw new RuntimeException("server should not be asked to create client packet!");
         
-        // clear cmd flags after setting them in packet
-        cmd_reload = 0;
-        cmd_create_item = 0;
-        cmd_exit = 0;
-		cmd_create_map = 0;
-		
-        packet.dataFloat = new float[11];
-        packet.dataFloat[0] = (float) posX;
-        packet.dataFloat[1] = (float) posY;
-        packet.dataFloat[2] = (float) posZ;
-        packet.dataFloat[3] = rotationYaw;
-        packet.dataFloat[4] = rotationPitch;
-        packet.dataFloat[5] = rotationRoll;
-        packet.dataFloat[6] = (float) motionX;
-        packet.dataFloat[7] = (float) motionY;
-        packet.dataFloat[8] = (float) motionZ;
-        packet.dataFloat[9] = damage;
-        packet.dataFloat[10] = throttle;
+        if (riddenByEntity == null || riddenByEntity.entityId != ModLoader.getMinecraftInstance().thePlayer.entityId)
+        {
+            throw new RuntimeException("Only the pilot player may create entity client packets!");
+        }
         
-        return packet;
+        ThxEntityPacket250 data = new ThxEntityPacket250();
+        
+        data.msg = "client update packet for entity id " + entityId;
+        
+        data.entityId = entityId;
+        data.ownerId = owner != null ? owner.entityId : 0;
+        data.pilotId = riddenByEntity.entityId;
+        
+        serverCommandQueue: // clear cmd flags after setting them in packet to avoid resending them later
+        {
+	        data.cmd_create_item = cmd_create_item;
+		    cmd_create_item = 0;
+		    
+	        data.cmd_reload      = cmd_reload;
+		    cmd_reload = 0;
+		    
+	        data.cmd_exit        = cmd_exit;
+		    cmd_exit = 0;
+		    
+	        data.cmd_create_map  = cmd_create_map;
+		    cmd_create_map = 0;
+        }
+	    
+        data.posX            = (float) posX;
+        data.posY            = (float) posY;
+        data.posZ            = (float) posZ;
+        data.yaw             = rotationYaw;
+        data.pitch           = rotationPitch;
+        data.roll            = rotationRoll;
+        data.motionX         = (float) motionX;
+        data.motionY         = (float) motionY;
+        data.motionZ         = (float) motionZ;
+        data.damage          = damage;
+        data.throttle        = throttle;
+	
+        return data.createPacket250CustomPayload();
     }
 
-    void applyUpdatePacket(ThxEntityPacket250 packet)
+    public Packet250CustomPayload getUpdatePacketFromServer()
     {
-        if (ThxConfig.LOG_INCOMING_PACKETS) plog("<<< " + packetToString(packet));
-        if (packet == null) return;
+        // make sure we are on the server before creating update packet
+        if (worldObj.isRemote) throw new RuntimeException("client should not be asked to create server packet!");
         
-        /* for server-side cmd queue from packet
-        //if (!worldObj.isRemote)
-        {
-	        cmd_create_item = packet.dataInt[3];
-	        cmd_reload      = packet.dataInt[4];
-	        cmd_exit        = packet.dataInt[5];
-	        cmd_create_map  = packet.dataInt[6];
-        }
-        */
+        ThxEntityPacket250 data = new ThxEntityPacket250();
         
-        setPositionAndRotation(packet.dataFloat[0], packet.dataFloat[1], packet.dataFloat[2], packet.dataFloat[3], packet.dataFloat[4]);
+        data.msg = "server update packet for entity id " + entityId;
         
-        rotationRoll = packet.dataFloat[5] % 360f;
+        data.entityId = entityId;
+        data.ownerId = owner != null ? owner.entityId : 0;
+        data.pilotId = riddenByEntity != null ? riddenByEntity.entityId : 0;
+        
+        // don't send any server commands to client as they are not used there
+        data.cmd_create_item = 0;
+        data.cmd_reload      = 0;
+        data.cmd_exit        = 0;
+        data.cmd_create_map  = 0;
+	    
+        data.posX            = (float) posX;
+        data.posY            = (float) posY;
+        data.posZ            = (float) posZ;
+        data.yaw             = rotationYaw;
+        data.pitch           = rotationPitch;
+        data.roll            = rotationRoll;
+        data.motionX         = (float) motionX;
+        data.motionY         = (float) motionY;
+        data.motionZ         = (float) motionZ;
+        data.damage          = damage;
+        data.throttle        = throttle;
+	
+        return data.createPacket250CustomPayload();
+    }
 
-        motionX =  packet.dataFloat[6];
-        motionY =  packet.dataFloat[7];
-        motionZ =  packet.dataFloat[8];
+    public void applyUpdatePacketFromClient(ThxEntityPacket250 packet)
+    {
+        // make sure we are on the server before applying update from client
+        if (worldObj.isRemote) throw new RuntimeException("client should not be asked to apply client packet!");
         
-        damage = packet.dataFloat[9];
-        throttle = packet.dataFloat[10];
+        setPositionAndRotation(packet.posX, packet.posY, packet.posZ, packet.yaw, packet.pitch);
+        
+        rotationRoll = packet.roll % 360f;
 
-        helper.applyUpdatePacket(packet);
+        motionX =  packet.motionX;
+        motionY =  packet.motionY;
+        motionZ =  packet.motionZ;
         
+        damage = packet.damage;
+        throttle = packet.throttle;
+
+        // server command queue
+        cmd_create_item = packet.cmd_create_item;
+        cmd_reload      = packet.cmd_reload;
+        cmd_exit        = packet.cmd_exit;
+        cmd_create_map  = packet.cmd_create_map;
+	        
         int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
         plog(String.format("end applyUpdatePacket, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
     }    
     
-    public String packetToString(ThxEntityPacket250 p)
+    public void applyUpdatePacketFromServer(ThxEntityPacket250 packet)
     {
-        StringBuffer s = new StringBuffer();
-        s.append("ThxEntityPacket250 {");
+        // make sure we are on the client before applying update from server
+        if (!worldObj.isRemote) throw new RuntimeException("server should not be asked to apply server packet!");
         
-        if (p == null)
+        setPositionAndRotation(packet.posX, packet.posY, packet.posZ, packet.yaw, packet.pitch);
+        
+        rotationRoll = packet.roll % 360f;
+
+        motionX =  packet.motionX;
+        motionY =  packet.motionY;
+        motionZ =  packet.motionZ;
+        
+        damage = packet.damage;
+        throttle = packet.throttle;
+
+        // not sure what owner is used for on the client...
+        if (packet.ownerId > 0)
         {
-            s.append(" null }");
-            return s.toString();
+            if (owner == null || owner.entityId != packet.ownerId)
+            {
+                log("*** New entity owner id: " + packet.ownerId);
+                    
+                // first check for owner that is entity (e.g. helicopter)
+                owner = ((WorldClient) worldObj).getEntityByID(packet.ownerId);
+                    
+                if (owner == null)
+                {
+                    // otherwise, check for owner that is a player
+                    owner = mod_Thx.getEntityPlayerById(packet.ownerId);
+                }
+                    
+                log("*** New entity owner: " + owner);
+            }
         }
 
-        for (int i = 0; p.dataInt != null && i < p.dataInt.length; i++)
+        // no or wrong current pilot
+        if (packet.pilotId > 0 && (riddenByEntity == null || riddenByEntity.entityId != packet.pilotId))
         {
-            s.append("dataInt[" + i + "]: ");
-            s.append(p.dataInt[i]);
-            s.append(", ");
+            Entity pilot = ((WorldClient) worldObj).getEntityByID(packet.pilotId);
+            if (pilot != null && !pilot.isDead)
+            {
+                log("*** applyUpdatePacket: pilot " + pilot + " now boarding");
+                pilot.mountEntity(this); // boarding
+            }
         }
-        for (int i = 0; p.dataFloat != null && i < p.dataFloat.length; i++)
+        else if (packet.pilotId == 0 && riddenByEntity != null)
         {
-            s.append("dataFloat[" + i + "]: ");
-            s.append(p.dataFloat[i]);
-            s.append(", ");
+            log("*** current pilot id " + riddenByEntity.entityId + " is exiting");
+            //riddenByEntity.mountEntity(entity); // unmount
+            pilotExit();
         }
-        for (int i = 0; p.dataDouble != null && i < p.dataDouble.length; i++) 
-        {
-            s.append("dataDouble[" + i + "]: "); 
-            s.append(p.dataDouble[i]); 
-            s.append(", "); 
-        }
-        for (int i = 0; p.dataString != null && i < p.dataString.length; i++)
-        {
-            s.append("dataString[" + i + "]: ");
-            s.append(p.dataString[i]);
-            s.append(", ");
-        }
-        s.append("}");
-
-        return s.toString();
-    }
+            
+        serverPosX = MathHelper.floor_float(packet.posX * 32f);
+        serverPosY = MathHelper.floor_float(packet.posY * 32f);
+        serverPosZ = MathHelper.floor_float(packet.posZ * 32f);
+        
+        int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
+        plog(String.format("end applyUpdatePacket, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
+    }    
 }

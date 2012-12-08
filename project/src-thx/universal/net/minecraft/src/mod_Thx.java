@@ -12,6 +12,8 @@ public class mod_Thx extends BaseMod
     public static mod_Thx instance;
 
     static int HELICOPTER_TYPE_ID = 99;
+    static int ROCKET_TYPE_ID     = 100;
+    static int MISSILE_TYPE_ID    = 101;
     
     public mod_Thx()
     {
@@ -65,12 +67,14 @@ public class mod_Thx extends BaseMod
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Rocket with entity id " + entityId);
             ModLoader.registerEntityID(ThxEntityRocket.class, "thxRocket", entityId);
+            ModLoader.addEntityTracker(this, ThxEntityRocket.class, ROCKET_TYPE_ID, 100, 5, true);
         }
         missile:
         {
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Missile with entity id " + entityId);
             ModLoader.registerEntityID(ThxEntityMissile.class, "thxMissile", entityId);
+            ModLoader.addEntityTracker(this, ThxEntityMissile.class, MISSILE_TYPE_ID, 100, 5, true);
         }
 
         helicopterItem:
@@ -130,7 +134,14 @@ public class mod_Thx extends BaseMod
         if (ThxConfig.ENABLE_LOGGING) System.out.println("mod_thx: " + s);
     }
     
-    static String getProperty(String name)
+    void plog(String s) // periodic log
+    {
+        if (ModLoader.getMinecraftInstance().theWorld.getWorldTime() % 60 == 0)
+        {
+            log(s); //
+        }
+    }
+        static String getProperty(String name)
     {
         return config.getProperty(name);
     }
@@ -157,12 +168,29 @@ public class mod_Thx extends BaseMod
         return null;
     }
     
+    /** 
+     * This method is called to spawn new entities on the client based on Packet23VehicleSpawn
+     * packets from the server. 
+     * @param World world - the WorldClient instance for the current client
+     */
     @Override
     public Entity spawnEntity(int type, World world, double posX, double posY, double posZ)
     {
+        if (!(world instanceof WorldClient)) throw new RuntimeException("Expected WorldClient param, but got " + world.getClass());
+        
         if (type == HELICOPTER_TYPE_ID)
         {
             return new ThxEntityHelicopter(world, posX, posY, posZ, 0f);
+        }
+        
+        if (type == ROCKET_TYPE_ID)
+        {
+            //return new ThxEntityRocket(world, posX, posY, posZ, 0f);
+        }
+        
+        if (type == MISSILE_TYPE_ID)
+        {
+            //return new ThxEntityMissile(world, posX, posY, posZ, 0f);
         }
         
         return null;
@@ -176,45 +204,40 @@ public class mod_Thx extends BaseMod
     }
     
     @Override
-    public void clientCustomPayload(NetClientHandler netHandler, Packet250CustomPayload packet250)
+    public void clientCustomPayload(NetClientHandler netHandler, Packet250CustomPayload packet)
     {
-        log("(client) received packet 250: " + packet250);
+        EntityClientPlayerMP thePlayer = ModLoader.getMinecraftInstance().thePlayer;
         
-        if (packet250 instanceof ThxEntityPacket250)
-        {
-            ThxEntityPacket250 packet = (ThxEntityPacket250) packet250;
-	        int entityId = packet.dataInt[0];
+        plog("(client) received server packet 250: " + packet.channel + " for player: " + thePlayer);
+        
+	    if ("THX_entity".equals(packet.channel))
+	    {
+	        ThxEntityPacket250 data = new ThxEntityPacket250(packet);
+	        plog("Client received THX_entity server update packet: " + data);
 	        
-	        Entity entity = ((WorldClient) ModLoader.getMinecraftInstance().theWorld).getEntityByID(entityId);
+	        if (data.pilotId == thePlayer.entityId) throw new RuntimeException("Pilot client should not be receiving updates from server for piloted entity!");
 	        
-	        if (entity instanceof ThxEntity) 
-            {
-	            // try calling applyUpdatePacket(packet);
-		        //((ThxEntity) entity).applyUpdatePacket(packet);
-	        
-	            // save packet to be processed by next entity onUpdate
-	            ((ThxEntity) entity).lastUpdatePacket = packet;
-            }
-        }
+	        ThxEntity entity = (ThxEntity) thePlayer.worldObj.getEntityByID(data.entityId);
+	        entity.lastUpdatePacket = data;
+	    }
     }
 
     @Override
-    public void serverCustomPayload(NetServerHandler netHandler, Packet250CustomPayload packet250)
+    public void serverCustomPayload(NetServerHandler netHandler, Packet250CustomPayload packet)
     {
-        log("(server) received packet 250: " + packet250);
+        EntityPlayerMP thePlayer = netHandler.playerEntity;
         
-        if (packet250 instanceof ThxEntityPacket250)
-        {
-            ThxEntityPacket250 packet = (ThxEntityPacket250) packet250;
-	        if (netHandler.playerEntity.ridingEntity instanceof ThxClientDriven)
-	        {
-	            // try calling applyUpdatePacket(packet);
-	            //((ThxEntity) netHandler.playerEntity.ridingEntity).applyUpdatePacket(packet);
-	            
-	            // save packet to be processed by next entity onUpdate
-	            ((ThxEntity) netHandler.playerEntity.ridingEntity).lastUpdatePacket = packet;
-	        }
-        }
+        plog("(server) received client packet 250 from player: " + thePlayer);
+        
+	    if ("THX_entity".equals(packet.channel))
+	    {
+	        ThxEntityPacket250 data = new ThxEntityPacket250(packet);
+	        plog("Server received THX_entity client update packet: " + data);
+	        
+	        if (data.pilotId != thePlayer.entityId) throw new RuntimeException("Only pilot can send client updates to server for piloted entity!");
+	        
+	        ThxEntity entity = (ThxEntity) thePlayer.worldObj.getEntityByID(data.entityId);
+	        entity.lastUpdatePacket = data;
+	    }
     }
-
 }

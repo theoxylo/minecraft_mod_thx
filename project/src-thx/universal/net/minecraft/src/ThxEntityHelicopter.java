@@ -7,7 +7,7 @@ import net.minecraft.client.Minecraft;
 
 import org.lwjgl.input.Keyboard;
 
-public class ThxEntityHelicopter extends ThxEntity implements ThxClientDriven
+public class ThxEntityHelicopter extends ThxEntity
 {    
     Minecraft minecraft;
     
@@ -119,15 +119,13 @@ public class ThxEntityHelicopter extends ThxEntity implements ThxClientDriven
         this(world);
         
         setPositionAndRotation(x, y + yOffset, z, yaw, 0f);
-
-        mod_Thx.log("ThxEntityHelicopter, world.isRemote: " + world.isRemote);
     }
     
     ThxEntityHelper createHelper()
     {
         if (!worldObj.isRemote)
         {
-            return new ThxEntityHelperServer(this);
+            return null; // no server helper
         }
         
         if (mod_Thx.getBoolProperty("enable_alt_model")) 
@@ -166,7 +164,7 @@ public class ThxEntityHelicopter extends ThxEntity implements ThxClientDriven
         
         if (riddenByEntity != null)
         {
-            onUpdatePilot(); // some pilot, check for current player later
+            onUpdateWithPilot(); // some pilot, check for current player later
             updateMotion(altitudeLock);
         }
         else if (targetHelicopter != null)
@@ -182,10 +180,10 @@ public class ThxEntityHelicopter extends ThxEntity implements ThxClientDriven
         
         if (handleCollisions()) // true if collided with other entity or environment
         {
-            helper.addChatMessageToPilot("Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
+            if (helper != null) helper.addChatMessageToPilot("Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
         }
         
-        if (damage > MAX_HEALTH) // && !worldObj.isRemote) // helicopter destroyed!
+        if (damage > MAX_HEALTH && !worldObj.isRemote) // helicopter destroyed!
         {
             float power = 2.3f;
             boolean flaming = true;
@@ -205,12 +203,9 @@ public class ThxEntityHelicopter extends ThxEntity implements ThxClientDriven
         
         if (damage / MAX_HEALTH > .9f && ticksExisted % 20 == 0)
         {
-            helper.addChatMessageToPilot("Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
+            if (helper != null) helper.addChatMessageToPilot("Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
         }
 		
-        // try sending update packet in all cases! bandwidth?
-        // TODO: handle mp server packet: helper.sendUpdatePacketToServer(getUpdatePacket());
-            
         // create smoke to indicate damage
         smokeDelay -= deltaTime;
         if (smokeDelay < 0f)
@@ -232,9 +227,11 @@ public class ThxEntityHelicopter extends ThxEntity implements ThxClientDriven
         //plog(String.format("finish onUpdate, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
     }
     
-    void onUpdatePilot()
+    void onUpdateWithPilot()
     {
-        if (!worldObj.isRemote)
+        isActive = true; // trigger custom packet updates from server
+        
+        if (!worldObj.isRemote) // on server, just apply any pilot commands from latest client packet and return
         {
 	        int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
 	        plog(String.format("onUpdatePilot, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
@@ -266,26 +263,26 @@ public class ThxEntityHelicopter extends ThxEntity implements ThxClientDriven
 	        return;
         }
         
-        if (!minecraft.thePlayer.equals(riddenByEntity))
+        // client-side updates:
+        
+        if (!minecraft.thePlayer.equals(riddenByEntity)) // piloted by other player mp client, 
         {
-	        // piloted by other player mp client, so already updated by server packet
+            // entity state already updated by server packet
         
 	        // adjust model rotor speed according to throttle
 	        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
-	        ((ThxModelHelicopterBase) helper.model).rotorSpeed = power / 2f + .75f;
+	        
+	        ThxModelHelicopterBase model = (ThxModelHelicopterBase) helper.model;
+	        if (model != null) model.rotorSpeed = power / 2f + .75f;
         
             return;
         }
         
-        // player is the pilot
+        // this player is the pilot, so control helicopter and send update packet to server
+        
         Entity pilot = getPilot();
         
-        //if (!worldObj.isRemote && pilot != null && pilot.isDead)
-        //{
-            //riddenByEntity = null;
-            //pilot.mountEntity(this); // unmount
-        //}
-        if (riddenByEntity.isDead)
+        if (pilot.isDead)
         {
             pilotExit();
             return;
@@ -321,18 +318,7 @@ public class ThxEntityHelicopter extends ThxEntity implements ThxClientDriven
         if (Keyboard.isKeyDown(KEY_CREATE_MAP) && createMapDelay < 0f && pilot != null)
         {
             createMapDelay = 10f; // the delay in seconds
-                
-            /*
-            //if (worldObj.isRemote)
-            {
-                cmd_create_map = 1;
-            }
-            else
-            {
-	            createMap();
-            }
-            */
-            // TODO: createMap();
+            cmd_create_map = 1;
         }
             
         hudModeToggleDelay -= deltaTime;
@@ -414,15 +400,14 @@ public class ThxEntityHelicopter extends ThxEntity implements ThxClientDriven
         if (Keyboard.isKeyDown(KEY_EXIT) && pilot != null)
         {
             pilotExitDelay = .5f; // the delay in seconds
-            //if (worldObj.isRemote) cmd_exit = 1; // queue for server packet
+            cmd_exit = 1; // queue for server packet
             pilotExit();
         }
 
         // MANUAL ROCKET RELOAD 
         if (Keyboard.isKeyDown(KEY_ROCKET_RELOAD) && rocketCount > 0)
         {
-	        //if (worldObj.isRemote) cmd_reload = 1; // queue for server packet
-	        
+	        cmd_reload = 1; // queue for server packet
             reload();
         }
 
@@ -651,12 +636,26 @@ public class ThxEntityHelicopter extends ThxEntity implements ThxClientDriven
         
         // adjust model rotor speed according to throttle
         float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
-        ((ThxModelHelicopterBase) helper.model).rotorSpeed = power / 2f + .75f;
+        
+        ThxModelHelicopterBase model = (ThxModelHelicopterBase) helper.model;
+        if (model != null) model.rotorSpeed = power / 2f + .75f;
+        
+        // sent update packet to server with latest state
+        minecraft.getSendQueue().addToSendQueue(getUpdatePacketFromClient());
     }
     
     void onUpdateDrone()
     {
-        plog("client onUpdateDrone thottle: " + throttle);
+        // applyUpdatePacketFromServer in ThxEntity base class should do client update for pos, vel, ypr, damage, throttle
+        if (worldObj.isRemote)
+        {
+	        // adjust model rotor speed according to throttle
+	        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
+	        ThxModelHelicopterBase model = (ThxModelHelicopterBase) helper.model;
+	        model.rotorSpeed = power / 2f + .75f;
+	        
+            return; 
+        }
         
         if (targetHelicopter == null) return;
         
@@ -666,12 +665,7 @@ public class ThxEntityHelicopter extends ThxEntity implements ThxClientDriven
             return;
         }
         
-        /*
-        //if (worldObj.isRemote) // TODO: how to detect server updates?
-        {
-            return; // applyUpdatePacket will do update for pos, vel, ypr
-        }
-        */
+        isActive = true; // trigger custom packet updates from server
         
         float thd = 0f; // thd is targetHelicopter distance
         deltaPosToTarget.set((float)(targetHelicopter.posX - posX), 0f, (float)(targetHelicopter.posZ - posZ));
@@ -761,19 +755,10 @@ public class ThxEntityHelicopter extends ThxEntity implements ThxClientDriven
         {
             throttle *= .6; // auto zero throttle   
         }
-        
-        // adjust model rotor speed according to throttle
-        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
-        ((ThxModelHelicopterBase) helper.model).rotorSpeed = power / 2f + .75f;
-        
-        float rotorSpeed = ((ThxModelHelicopterBase) helper.model).rotorSpeed;
-        plog("drone rotorSpeed: " + rotorSpeed);
     }
     
     void onUpdateVacant()
     {
-        isActive = false; // skip sending update packet to client, use standard mc packets
-        
         //((ThxModel) helper.model).visible = true; // needed? 
 
         // adjust position height to avoid collisions
@@ -838,8 +823,12 @@ public class ThxEntityHelicopter extends ThxEntity implements ThxClientDriven
             motionZ *= FRICTION;
         }        
         
-        // power down rotor
-        ((ThxModelHelicopterBase) helper.model).rotorSpeed = 0f;
+        // power down rotor spin render effect on client
+        if (worldObj.isRemote)
+        {
+	        ThxModelHelicopterBase model = (ThxModelHelicopterBase) helper.model;
+	        if (model != null) model.rotorSpeed = 0f;
+        }
     }
     
     @Override
@@ -857,7 +846,6 @@ public class ThxEntityHelicopter extends ThxEntity implements ThxClientDriven
         helper.addChatMessageToPilot("Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
 
         //setBeenAttacked(); // this will cause Entity.velocityChanged to be true, so additional Packet28 to jump on hit
-        setBeenAttacked();
 
         return true; // the hit landed
     }
@@ -890,10 +878,14 @@ public class ThxEntityHelicopter extends ThxEntity implements ThxClientDriven
     @Override
     void pilotExit()
     {
+        log("pilotExit() called on " + (worldObj.isRemote ? "client" : "server"));
+        
         if (riddenByEntity == null) return;
         
         if (!worldObj.isRemote)
         {
+            // anything special required on the server?
+            
 	        Packet packet = new Packet39AttachEntity(riddenByEntity, null);
 	        /* notify all players...
 	        List players = ModLoader.getMinecraftServerInstance().configManager.playerEntities;
@@ -922,7 +914,7 @@ public class ThxEntityHelicopter extends ThxEntity implements ThxClientDriven
         targetHelicopter = null;
         
         // not using mountEntity here
-        //riddenByEntity.mountEntity(this); // riddenByEntity is now null // no more pilot
+        riddenByEntity.mountEntity(this); // riddenByEntity is now null // no more pilot
 
         if (riddenByEntity == null) return; // no pilot
         
@@ -941,9 +933,16 @@ public class ThxEntityHelicopter extends ThxEntity implements ThxClientDriven
         rotationYawSpeed = 0f;
         rotationPitchSpeed = 0f;
         rotationRollSpeed = 0f;        
-        ThxModelHelicopterBase model = (ThxModelHelicopterBase) helper.model;
-        model.visible = true;
-        model.rotorSpeed = 0f;
+        
+        if (worldObj.isRemote)
+        {
+	        ThxModelHelicopterBase model = (ThxModelHelicopterBase) helper.model;
+	        if (model != null)
+	        {
+		        model.visible = true;
+		        model.rotorSpeed = 0f;
+	        }
+        }
     }
     
     void reload()

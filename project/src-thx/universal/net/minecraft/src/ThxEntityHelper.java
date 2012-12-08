@@ -15,13 +15,11 @@ public abstract class ThxEntityHelper
         return false;
     }
 
-    abstract void addChatMessageToAll(String string);
-
-    void addChatMessageToPilot(String string)
+    void addChatMessageToAll(String string)
     {
     }
 
-    void sendUpdatePacketToServer(ThxEntityPacket250 updatePacket)
+    void addChatMessageToPilot(String string)
     {
     }
 
@@ -39,8 +37,6 @@ public abstract class ThxEntityHelper
     // COMMON methods
     // COMMON methods
     // COMMON methods
-    
-    abstract void applyUpdatePacket(ThxEntityPacket250 updatePacket);
     
     void log(String s)
     {

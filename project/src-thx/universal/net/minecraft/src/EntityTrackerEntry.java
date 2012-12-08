@@ -81,11 +81,11 @@ public class EntityTrackerEntry
             this.sendEventsToPlayers(par1List);
         }
         
-        if (myEntity instanceof ThxClientDriven && ((ThxEntity) myEntity).isActive)
+        if (myEntity instanceof ThxEntity && ((ThxEntity) myEntity).isActive)
         {
             // isActive true for piloted and drone entities, but not vacant ones
             
-            Packet packet = ((ThxClientDriven) myEntity).getUpdatePacket();
+            Packet packet = ((ThxEntity) myEntity).getUpdatePacketFromServer();
             for (Object player : trackedPlayers)
             {
                 // send update packet to all clients except pilot, if there is one
@@ -338,10 +338,11 @@ public class EntityTrackerEntry
                     Packet var6 = this.getPacketForThisEntity();
                     par1EntityPlayerMP.playerNetServerHandler.sendPacketToPlayer(var6);
                     
-                    if (myEntity instanceof ThxClientDriven)
+			        if (myEntity instanceof ThxEntity)
                     {
                         System.out.println("ETE-THX: Adding player " + par1EntityPlayerMP.entityId + " to trackedPlayers list for trackedEntity " + myEntity.entityId);
-                        return;
+			            
+                        if (((ThxEntity) myEntity).isActive) return; // don't send various packets for pilot and drone
                     }
 
                     if (this.myEntity instanceof EntityItemFrame)
