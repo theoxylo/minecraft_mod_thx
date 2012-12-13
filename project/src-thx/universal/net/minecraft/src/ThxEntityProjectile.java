@@ -34,13 +34,29 @@ public abstract class ThxEntityProjectile extends ThxEntity
         motionX = fwd.x * acceleration + dx;
         motionY = fwd.y * acceleration + dy;
         motionZ = fwd.z * acceleration + dz;
+    }
+
+    public ThxEntityProjectile(World world, double x, double y, double z)
+    {
+        this(world);
         
-        isImmuneToFire();
+        setPositionAndRotation(x, y, z, 0f, 0f);
+        
+        float acceleration = getAcceleration();
+        
+        updateRotation();
+        updateVectors();
+        
+        motionX = fwd.x * acceleration;
+        motionY = fwd.y * acceleration;
+        motionZ = fwd.z * acceleration;
     }
 
     public void onUpdate()
     {
-        super.onUpdate();
+        super.onUpdate(); // this resets isActive back to default 'false'
+        
+        //isActive = true; // enable custom packet updates from server in EntityTrackerEntry
         
         if (owner == null) // should always have owner, but sometimes doesn't during respawn/restart etc
         {
@@ -151,12 +167,23 @@ public abstract class ThxEntityProjectile extends ThxEntity
 	        int j = MathHelper.floor_double(posY - 0.2 -(double)yOffset);
 	        int k = MathHelper.floor_double(posZ);
 	        int blockId = worldObj.getBlockId(i, j, k);
-	        if (blockId > 0)
+	        if (blockId > 0 && false) // disabled for now due to error, see below
 	        {
 		        // kick up some debris if we hit a block, but only works for top surface
 	            for (int k1 = 0; k1 < 4; k1++)
 	            {
-		            worldObj.spawnParticle((new StringBuilder()).append("tilecrack_").append(blockId).toString(), posX + ((double)rand.nextFloat() - 0.5) * (double)width, boundingBox.minY + 0.1, posZ + ((double)rand.nextFloat() - 0.5) * (double)width, 1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5));
+		            //line 159_orig: worldObj.spawnParticle((new StringBuilder()).append("tilecrack_").append(blockId).toString(), posX + ((double)rand.nextFloat() - 0.5) * (double)width, boundingBox.minY + 0.1, posZ + ((double)rand.nextFloat() - 0.5) * (double)width, 1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5));
+	                // currently crashing:
+	                /*
+						Caused by: java.lang.ArrayIndexOutOfBoundsException: 2
+						     at net.minecraft.src.RenderGlobal.func_72726_b(RenderGlobal.java:1991)
+						     at net.minecraft.src.RenderGlobal.spawnParticle(RenderGlobal.java:1790)
+						     at net.minecraft.src.World.spawnParticle(World.java:1386)
+						     at net.minecraft.src.ThxEntityProjectile.onUpdate(ThxEntityProjectile.java:159)
+						     at net.minecraft.src.World.updateEntityWithOptionalForce(World.java:2138)
+						     at net.minecraft.src.World.updateEntity(World.java:2109)
+						     at net.minecraft.src.World.updateEntities(World.java:1960)
+	                 */
 	            }
 	        }
 	        else

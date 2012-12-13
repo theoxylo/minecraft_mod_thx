@@ -15,6 +15,8 @@ public class mod_Thx extends BaseMod
     static int ROCKET_TYPE_ID     = 100;
     static int MISSILE_TYPE_ID    = 101;
     
+    static WorldClient theWorld = null;
+    
     public mod_Thx()
     {
         /* java.util.logging approach...
@@ -40,26 +42,27 @@ public class mod_Thx extends BaseMod
         System.out.println("mod_Thx() called");
 		config = new ThxConfig();
         instance = this; // for easy access by static methods and to instance methods
+        
     }
 
     @Override
     public void load()
     {
-        log("load() called");
+        //log("load() called");
 
         ModLoader.setInGameHook(this, true, true);
         ModLoader.registerPacketChannel(this, "THX_entity");
 
+        int drawDistance = 8; // typically 160, reduced for testing spawn/despawn
+        int updateFreq = 1;
+        boolean trackMotion = false;
+            
         // register entity classes
         helicopter:
         {
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Helicopter with ModLoader entity id " + entityId);
             ModLoader.registerEntityID(ThxEntityHelicopter.class, "thxHelicopter", entityId);
-            
-            int drawDistance = 8; // typically 160
-            int updateFreq = 1;
-            boolean trackMotion = true;
             ModLoader.addEntityTracker(this, ThxEntityHelicopter.class, HELICOPTER_TYPE_ID, drawDistance, updateFreq, trackMotion);
         }
         rocket:
@@ -67,14 +70,14 @@ public class mod_Thx extends BaseMod
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Rocket with entity id " + entityId);
             ModLoader.registerEntityID(ThxEntityRocket.class, "thxRocket", entityId);
-            ModLoader.addEntityTracker(this, ThxEntityRocket.class, ROCKET_TYPE_ID, 100, 5, true);
+            ModLoader.addEntityTracker(this, ThxEntityRocket.class, ROCKET_TYPE_ID, drawDistance, updateFreq, trackMotion);
         }
         missile:
         {
             int entityId = ModLoader.getUniqueEntityId();
             log("Registering entity class for Missile with entity id " + entityId);
             ModLoader.registerEntityID(ThxEntityMissile.class, "thxMissile", entityId);
-            ModLoader.addEntityTracker(this, ThxEntityMissile.class, MISSILE_TYPE_ID, 100, 5, true);
+            ModLoader.addEntityTracker(this, ThxEntityMissile.class, MISSILE_TYPE_ID, drawDistance, updateFreq, trackMotion);
         }
 
         helicopterItem:
@@ -129,19 +132,26 @@ public class mod_Thx extends BaseMod
         throw new RuntimeException("Could not find next available Item ID -- can't continue!");
     }
 
-    public static void log(String s)
+    static void log(String s)
     {
-        if (ThxConfig.ENABLE_LOGGING) System.out.println("mod_thx: " + s);
+        if (!ThxConfig.ENABLE_LOGGING) return;
+        
+        if (theWorld == null) theWorld = ModLoader.getMinecraftInstance().theWorld;
+        
+        System.out.println(String.format("[%5d] mod_thx: ", theWorld != null ? theWorld.getWorldTime() : 0)  + s);
     }
     
-    void plog(String s) // periodic log
+    static void plog(String s) // periodic log
     {
-        if (ModLoader.getMinecraftInstance().theWorld.getWorldTime() % 60 == 0)
+        if (!ThxConfig.ENABLE_LOGGING) return;
+        if (theWorld == null) theWorld = ModLoader.getMinecraftInstance().theWorld;
+        if (theWorld != null && theWorld.getWorldTime() % 60 == 0)
         {
             log(s); //
         }
     }
-        static String getProperty(String name)
+    
+    static String getProperty(String name)
     {
         return config.getProperty(name);
     }
@@ -176,8 +186,6 @@ public class mod_Thx extends BaseMod
     @Override
     public Entity spawnEntity(int type, World world, double posX, double posY, double posZ)
     {
-        if (!(world instanceof WorldClient)) throw new RuntimeException("Expected WorldClient param, but got " + world.getClass());
-        
         if (type == HELICOPTER_TYPE_ID)
         {
             return new ThxEntityHelicopter(world, posX, posY, posZ, 0f);
@@ -185,12 +193,12 @@ public class mod_Thx extends BaseMod
         
         if (type == ROCKET_TYPE_ID)
         {
-            //return new ThxEntityRocket(world, posX, posY, posZ, 0f);
+            return new ThxEntityRocket(world, posX, posY, posZ);
         }
         
         if (type == MISSILE_TYPE_ID)
         {
-            //return new ThxEntityMissile(world, posX, posY, posZ, 0f);
+            return new ThxEntityMissile(world, posX, posY, posZ);
         }
         
         return null;
@@ -200,7 +208,7 @@ public class mod_Thx extends BaseMod
     public Packet23VehicleSpawn getSpawnPacket(Entity entity, int type)
     {
         log("Creating spawn packet for entity: " + entity);
-        return new Packet23VehicleSpawn(entity, type);
+        return new Packet23VehicleSpawn(entity, type, 1); // 1 is the id of the "thrower", it will cause velocity to get updated at spawn
     }
     
     @Override
@@ -208,17 +216,20 @@ public class mod_Thx extends BaseMod
     {
         EntityClientPlayerMP thePlayer = ModLoader.getMinecraftInstance().thePlayer;
         
-        plog("(client) received server packet 250: " + packet.channel + " for player: " + thePlayer);
-        
 	    if ("THX_entity".equals(packet.channel))
 	    {
 	        ThxEntityPacket250 data = new ThxEntityPacket250(packet);
-	        plog("Client received THX_entity server update packet: " + data);
-	        
-	        if (data.pilotId == thePlayer.entityId) throw new RuntimeException("Pilot client should not be receiving updates from server for piloted entity!");
+	        plog("Client received: " + data);
 	        
 	        ThxEntity entity = (ThxEntity) thePlayer.worldObj.getEntityByID(data.entityId);
-	        entity.lastUpdatePacket = data;
+	        if (entity != null)
+            {
+	            entity.lastUpdatePacket = data;
+            }
+	        else
+	        {
+	            log("client received client update packet for unknown entity id " + data.entityId); // probably never happen
+	        }
 	    }
     }
 
@@ -227,17 +238,20 @@ public class mod_Thx extends BaseMod
     {
         EntityPlayerMP thePlayer = netHandler.playerEntity;
         
-        plog("(server) received client packet 250 from player: " + thePlayer);
-        
 	    if ("THX_entity".equals(packet.channel))
 	    {
 	        ThxEntityPacket250 data = new ThxEntityPacket250(packet);
-	        plog("Server received THX_entity client update packet: " + data);
-	        
-	        if (data.pilotId != thePlayer.entityId) throw new RuntimeException("Only pilot can send client updates to server for piloted entity!");
+	        plog("Server received: " + data);
 	        
 	        ThxEntity entity = (ThxEntity) thePlayer.worldObj.getEntityByID(data.entityId);
-	        entity.lastUpdatePacket = data;
+	        if (entity != null)
+            {
+	            entity.lastUpdatePacket = data;
+            }
+	        else
+	        {
+	            log("received client update packet for unknown entity id " + data.entityId);
+	        }
 	    }
     }
 }

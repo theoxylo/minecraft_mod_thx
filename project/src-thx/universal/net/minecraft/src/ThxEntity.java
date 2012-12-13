@@ -108,6 +108,7 @@ public abstract class ThxEntity extends Entity
         updateVectors();
         
         isActive = false; // by default, don't trigger custom packets updates from server, will be set true later for drone and piloted helicopters
+        // also going to try using for missile and rocket entities
     }
     
     public boolean isInWater()
@@ -394,18 +395,13 @@ public abstract class ThxEntity extends Entity
         // make sure we are on the client before creating update packet
         if (!worldObj.isRemote) throw new RuntimeException("server should not be asked to create client packet!");
         
-        if (riddenByEntity == null || riddenByEntity.entityId != ModLoader.getMinecraftInstance().thePlayer.entityId)
-        {
-            throw new RuntimeException("Only the pilot player may create entity client packets!");
-        }
-        
         ThxEntityPacket250 data = new ThxEntityPacket250();
         
-        data.msg = "client update packet for entity id " + entityId;
+        data.msg = "client timestamp: " + worldObj.getWorldTime();
         
         data.entityId = entityId;
         data.ownerId = owner != null ? owner.entityId : 0;
-        data.pilotId = riddenByEntity.entityId;
+        data.pilotId = riddenByEntity != null ? riddenByEntity.entityId : 0;
         
         serverCommandQueue: // clear cmd flags after setting them in packet to avoid resending them later
         {
@@ -444,7 +440,7 @@ public abstract class ThxEntity extends Entity
         
         ThxEntityPacket250 data = new ThxEntityPacket250();
         
-        data.msg = "server update packet for entity id " + entityId;
+        data.msg = "server timestamp: " + worldObj.getWorldTime();
         
         data.entityId = entityId;
         data.ownerId = owner != null ? owner.entityId : 0;
@@ -473,6 +469,8 @@ public abstract class ThxEntity extends Entity
 
     public void applyUpdatePacketFromClient(ThxEntityPacket250 packet)
     {
+        plog("Applying client packet: " + packet);
+        
         // make sure we are on the server before applying update from client
         if (worldObj.isRemote) throw new RuntimeException("client should not be asked to apply client packet!");
         
@@ -492,6 +490,13 @@ public abstract class ThxEntity extends Entity
         cmd_reload      = packet.cmd_reload;
         cmd_exit        = packet.cmd_exit;
         cmd_create_map  = packet.cmd_create_map;
+        
+        if (packet.pilotId == 0 && riddenByEntity != null)
+        {
+            log("*** current pilot " + riddenByEntity.entityId + " is exiting");
+            //riddenByEntity.mountEntity(entity); // unmount
+            pilotExit();
+        }
 	        
         int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
         plog(String.format("end applyUpdatePacket, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
@@ -499,6 +504,8 @@ public abstract class ThxEntity extends Entity
     
     public void applyUpdatePacketFromServer(ThxEntityPacket250 packet)
     {
+        plog("Applying server packet: " + packet);
+        
         // make sure we are on the client before applying update from server
         if (!worldObj.isRemote) throw new RuntimeException("server should not be asked to apply server packet!");
         
@@ -545,7 +552,7 @@ public abstract class ThxEntity extends Entity
         }
         else if (packet.pilotId == 0 && riddenByEntity != null)
         {
-            log("*** current pilot id " + riddenByEntity.entityId + " is exiting");
+            log("*** applyUpdatePacket: current pilot " + riddenByEntity + " is exiting");
             //riddenByEntity.mountEntity(entity); // unmount
             pilotExit();
         }
@@ -555,6 +562,6 @@ public abstract class ThxEntity extends Entity
         serverPosZ = MathHelper.floor_float(packet.posZ * 32f);
         
         int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
-        plog(String.format("end applyUpdatePacket, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
+        plog(String.format("end applyUpdatePacket, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, pitch: %6.3f, roll: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, rotationPitch, rotationRoll, throttle, motionX, motionY, motionZ));
     }    
 }

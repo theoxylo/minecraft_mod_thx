@@ -236,9 +236,16 @@ public class ThxEntityHelicopter extends ThxEntity
 	        int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
 	        plog(String.format("onUpdatePilot, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
 	        
+	        /*
 	        if (cmd_exit > 0 || riddenByEntity.isDead)
 	        {
 	            cmd_exit = 0;
+	            pilotExit();
+	        }
+	        */
+	        
+	        if (riddenByEntity.isDead)
+	        {
 	            pilotExit();
 	        }
 	        
@@ -400,7 +407,7 @@ public class ThxEntityHelicopter extends ThxEntity
         if (Keyboard.isKeyDown(KEY_EXIT) && pilot != null)
         {
             pilotExitDelay = .5f; // the delay in seconds
-            cmd_exit = 1; // queue for server packet
+            //cmd_exit = 1; // queue for server packet
             pilotExit();
         }
 
@@ -882,11 +889,49 @@ public class ThxEntityHelicopter extends ThxEntity
         
         if (riddenByEntity == null) return;
         
-        if (!worldObj.isRemote)
+        Entity pilot = getPilot();
+        riddenByEntity.mountEntity(this); // riddenByEntity is now null // no more pilot
+	        
+        if (worldObj.isRemote) // client
         {
-            // anything special required on the server?
+	        // place pilot to left of helicopter
+	        // (use fwd XZ perp to exit left: x = z, z = -x)
+	        //double exitDist = 1.9;
+	        //riddenByEntity.setPosition(posX + fwd.z * exitDist, posY + riddenByEntity.yOffset, posZ - fwd.x * exitDist);
+        
+	        // shut down model/rotor
+	        ThxModelHelicopterBase model = (ThxModelHelicopterBase) helper.model;
+	        if (model != null)
+	        {
+		        model.visible = true;
+		        model.rotorSpeed = 0f;
+	        }
+	        
+	        // clear rotation speed to prevent judder
+	        rotationYawSpeed = 0f;
+	        rotationPitchSpeed = 0f;
+	        rotationRollSpeed = 0f;        
+        }
+        else // server
+        {
+	        // these should already be null from call to mountEntity above
+	        riddenByEntity = null;
+	        if (pilot != null) pilot.ridingEntity = null; 
+	
+            // place pilot to left of helicopter
+            // (use fwd XZ perp to exit left: x = z, z = -x)
+	        double exitDist = 1.9;
+            ((EntityPlayerMP) pilot).playerNetServerHandler.setPlayerLocation(posX + fwd.z * exitDist, posY + pilot.yOffset, posZ - fwd.x * exitDist, this.rotationYaw, this.rotationPitch);
             
-	        Packet packet = new Packet39AttachEntity(riddenByEntity, null);
+            // causes mountEntity to be called on client
+            //((EntityPlayerMP) pilot).playerNetServerHandler.sendPacketToPlayer(new Packet39AttachEntity(this, this.ridingEntity));
+            
+            /*
+	        Packet packet = new Packet39AttachEntity(pilot, null);
+            ((EntityPlayerMP) pilot).playerNetServerHandler.sendPacketToPlayer(packet);
+            ((EntityPlayerMP) pilot).playerNetServerHandler.setPlayerLocation(posX + fwd.z * exitDist, posY + pilot.yOffset, posZ - fwd.x * exitDist, this.rotationYaw, this.rotationPitch);
+            */
+            
 	        /* notify all players...
 	        List players = ModLoader.getMinecraftServerInstance().configManager.playerEntities;
 	        for (Object player : players)
@@ -894,55 +939,17 @@ public class ThxEntityHelicopter extends ThxEntity
 	            ((EntityPlayerMP) player).playerNetServerHandler.sendPacket(packet);
 	        }
 	
-	        // place pilot to left of helicopter
-	        // (use fwd XZ perp to exit left: x = z, z = -x)
 	        double exitDist = 1.9;
-	        ((EntityPlayerMP) riddenByEntity).playerNetServerHandler.teleportTo(posX + fwd.z * exitDist, posY + riddenByEntity.getYOffset(), posZ - fwd.x * exitDist, rotationYaw, 0f);
+	        ((EntityPlayerMP) pilot).playerNetServerHandler.teleportTo(posX + fwd.z * exitDist, posY + riddenByEntity.getYOffset(), posZ - fwd.x * exitDist, rotationYaw, 0f);
 	        */
         }
-        
-        // place pilot to left of helicopter
-        // (use fwd XZ perp to exit left: x = z, z = -x)
-        double exitDist = 1.9;
-        //Entity pilot = riddenByEntity;
-        //pilot.setPosition(posX + fwd.z * exitDist, posY + pilot.yOffset, posZ - fwd.x * exitDist);
-        riddenByEntity.setPosition(posX + fwd.z * exitDist, posY + riddenByEntity.yOffset, posZ - fwd.x * exitDist);
-        
-        log("pilotExit called for pilot entity :" + riddenByEntity);
-        log("pilotExit called for pilot entity " + (riddenByEntity != null ? (riddenByEntity.toString() + riddenByEntity.entityId) : ("warning, no pilot to exit")));
-        
-        targetHelicopter = null;
-        
-        // not using mountEntity here
-        riddenByEntity.mountEntity(this); // riddenByEntity is now null // no more pilot
-
-        if (riddenByEntity == null) return; // no pilot
-        
-        if (!equals(riddenByEntity.ridingEntity)) return; // pilot is somehow flying a different helicopter instance
-        log ("this == riddenByEntity.ridingEntity; //" + (this == riddenByEntity.ridingEntity));
         
         // can't set these private fields as mountEntity does. problem?
         //riddenByEntity.entityRiderPitchDelta = 0.0D;
         //riddenByEntity.entityRiderYawDelta = 0.0D;
 
-        riddenByEntity.ridingEntity = null;
-        riddenByEntity = null;
-        targetHelicopter = null;
+        targetHelicopter = null; // used on both client and server?
         
-        // clear rotation speed to prevent judder
-        rotationYawSpeed = 0f;
-        rotationPitchSpeed = 0f;
-        rotationRollSpeed = 0f;        
-        
-        if (worldObj.isRemote)
-        {
-	        ThxModelHelicopterBase model = (ThxModelHelicopterBase) helper.model;
-	        if (model != null)
-	        {
-		        model.visible = true;
-		        model.rotorSpeed = 0f;
-	        }
-        }
     }
     
     void reload()
@@ -1003,7 +1010,7 @@ public class ThxEntityHelicopter extends ThxEntity
     
     void fireMissile()
     {
-        if (worldObj.isRemote) return;
+        if (worldObj.isRemote) return; // only on server, then packets will spawn the client entity and synchronize
         
         if (missileDelay > 0f)
         {

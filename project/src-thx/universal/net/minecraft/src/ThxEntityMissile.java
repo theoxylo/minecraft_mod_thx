@@ -14,7 +14,12 @@ public class ThxEntityMissile extends ThxEntityProjectile
     {
         super(owner, x, y, z, dx, dy, dz, yaw, pitch);
     }
-    
+
+    public ThxEntityMissile(World world, double x, double y, double z)
+    {
+        super(world, x, y, z);
+    }
+
     @Override
     ThxEntityHelper createHelper()
     {

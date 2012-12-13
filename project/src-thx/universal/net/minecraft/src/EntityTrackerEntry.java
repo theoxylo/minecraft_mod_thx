@@ -79,8 +79,11 @@ public class EntityTrackerEntry
             this.isDataInitialized = true;
             this.playerEntitiesUpdated = true;
             this.sendEventsToPlayers(par1List);
+            
+            if (myEntity instanceof ThxEntity) ((ThxEntity) myEntity).log("checking for players in range to trigger spawn");
         }
         
+        //if (myEntity instanceof ThxEntity) // testing on vacant -- test failed! client helicopter stuck in landscape, out of sync // && ((ThxEntity) myEntity).isActive)
         if (myEntity instanceof ThxEntity && ((ThxEntity) myEntity).isActive)
         {
             // isActive true for piloted and drone entities, but not vacant ones
@@ -335,12 +338,13 @@ public class EntityTrackerEntry
                 if (!this.trackedPlayers.contains(par1EntityPlayerMP) && this.isPlayerWatchingThisChunk(par1EntityPlayerMP))
                 {
                     this.trackedPlayers.add(par1EntityPlayerMP);
-                    Packet var6 = this.getPacketForThisEntity();
+                    
+                    Packet var6 = this.getPacketForThisEntity(); // will eventually call mod_Thx.getSpawnPacket()
                     par1EntityPlayerMP.playerNetServerHandler.sendPacketToPlayer(var6);
                     
 			        if (myEntity instanceof ThxEntity)
                     {
-                        System.out.println("ETE-THX: Adding player " + par1EntityPlayerMP.entityId + " to trackedPlayers list for trackedEntity " + myEntity.entityId);
+                        ((ThxEntity) myEntity).log("ETE-THX: Adding player " + par1EntityPlayerMP.entityId + " to trackedPlayers list for trackedEntity " + myEntity.entityId);
 			            
                         if (((ThxEntity) myEntity).isActive) return; // don't send various packets for pilot and drone
                     }
