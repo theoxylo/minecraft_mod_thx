@@ -564,4 +564,19 @@ public abstract class ThxEntity extends Entity
         int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
         plog(String.format("end applyUpdatePacket, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, pitch: %6.3f, roll: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, rotationPitch, rotationRoll, throttle, motionX, motionY, motionZ));
     }    
+    
+    @Override
+    public void updateRidden()
+    {
+        log("updateRidden() called, not calling super");
+    }
+    
+    @Override
+    public void setPositionAndRotation2(double posX, double posY, double posZ, float yaw, float pitch, int unused)
+    {
+        // bypassing check for collision in super method which seems to be hitting pilot and causing jumping
+	    if (riddenByEntity != null) setPositionAndRotation(posX, posY, posZ, yaw, pitch);
+	    
+	    else super.setPositionAndRotation2(posX, posY, posZ, yaw, pitch, unused);
+    }
 }

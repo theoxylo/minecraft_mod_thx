@@ -16,6 +16,10 @@ public class ThxConfig
     static boolean ENABLE_LOGGING = false;
     static boolean LOG_INCOMING_PACKETS = false;
     
+    // 'true' will allow client-side master entity, sending update packets to server. server updates its entity and send updates to all clients except the pilot player source client
+    // 'false' for normal mc/ml behavior with no mod to obfuscated files (no modloader minecraft.jar changes, just mods/mod.zip to install)
+    static boolean CLIENT_DRIVEN = false; 
+
     Properties props;
     
     ThxConfig()

@@ -53,9 +53,9 @@ public class mod_Thx extends BaseMod
         ModLoader.setInGameHook(this, true, true);
         ModLoader.registerPacketChannel(this, "THX_entity");
 
-        int drawDistance = 8; // typically 160, reduced for testing spawn/despawn
-        int updateFreq = 1;
-        boolean trackMotion = false;
+        int drawDistance = 64; // typically 160, reduced for testing spawn/despawn
+        int updateFreq = 1; // 20 for 1 second updates
+        boolean trackMotion = true;
             
         // register entity classes
         helicopter:

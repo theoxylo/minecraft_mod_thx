@@ -80,13 +80,16 @@ public class EntityTrackerEntry
             this.playerEntitiesUpdated = true;
             this.sendEventsToPlayers(par1List);
             
+            // called often for fast moving entities
             if (myEntity instanceof ThxEntity) ((ThxEntity) myEntity).log("checking for players in range to trigger spawn");
         }
         
-        //if (myEntity instanceof ThxEntity) // testing on vacant -- test failed! client helicopter stuck in landscape, out of sync // && ((ThxEntity) myEntity).isActive)
-        if (myEntity instanceof ThxEntity && ((ThxEntity) myEntity).isActive)
+        if (mod_Thx.config.CLIENT_DRIVEN && myEntity instanceof ThxEntity && ((ThxEntity) myEntity).isActive) // isActive true for piloted and drone entities, but not vacant ones
         {
-            // isActive true for piloted and drone entities, but not vacant ones
+            // history:
+	        //if (myEntity instanceof ThxEntity) // testing on vacant -- test failed! client helicopter stuck in landscape, out of sync // && ((ThxEntity) myEntity).isActive)
+	        //if (myEntity instanceof ThxEntity && ((ThxEntity) myEntity).isActive /* testing for piloted only */ && myEntity.riddenByEntity != null) // test failed
+        
             
             Packet packet = ((ThxEntity) myEntity).getUpdatePacketFromServer();
             for (Object player : trackedPlayers)
@@ -106,7 +109,7 @@ public class EntityTrackerEntry
             return;
         }
 
-        if (this.field_85178_v != this.myEntity.ridingEntity)
+        if (this.field_85178_v != this.myEntity.ridingEntity) // send Packet39 updates if ridingEntity has changed
         {
             this.field_85178_v = this.myEntity.ridingEntity;
             this.sendPacketToAllTrackingPlayers(new Packet39AttachEntity(this.myEntity, this.myEntity.ridingEntity));
@@ -152,7 +155,7 @@ public class EntityTrackerEntry
             int var2;
             int var3;
 
-            if (this.myEntity.ridingEntity == null)
+            if (this.myEntity.ridingEntity == null) // not a pilot
             {
                 ++this.ticksSinceLastForcedTeleport;
                 var2 = this.myEntity.myEntitySize.multiplyBy32AndRound(this.myEntity.posX);
@@ -205,6 +208,9 @@ public class EntityTrackerEntry
                     }
                 }
 
+                // added to test teleport vs move
+                //var10 = new Packet34EntityTeleport(this.myEntity.entityId, var2, var3, var4, (byte)var5, (byte)var6);
+                
                 if (var10 != null)
                 {
                     this.sendPacketToAllTrackingPlayers((Packet)var10);
@@ -232,8 +238,14 @@ public class EntityTrackerEntry
 
                 this.ridingEntity = false;
             }
-            else
+            else // tracked entity is riding some other entity
             {
+                if (myEntity.ridingEntity instanceof ThxEntity) 
+                {
+                    // e.g. EntityPlayerMP as pilot
+                    //((ThxEntity) myEntity.ridingEntity).log("tracked entity {{{ " + myEntity + " }}} is pilot of ThxEntity: " + myEntity.ridingEntity);
+                }
+                
                 var2 = MathHelper.floor_float(this.myEntity.rotationYaw * 256.0F / 360.0F);
                 var3 = MathHelper.floor_float(this.myEntity.rotationPitch * 256.0F / 360.0F);
                 boolean var25 = Math.abs(var2 - this.lastYaw) >= 4 || Math.abs(var3 - this.lastPitch) >= 4;
@@ -281,6 +293,8 @@ public class EntityTrackerEntry
      */
     public void sendPacketToAllTrackingPlayers(Packet par1Packet)
     {
+        //if (myEntity instanceof ThxEntity) ((ThxEntity) myEntity).log("Server sending" + par1Packet);
+        
         Iterator var2 = this.trackedPlayers.iterator();
 
         while (var2.hasNext())
@@ -346,7 +360,7 @@ public class EntityTrackerEntry
                     {
                         ((ThxEntity) myEntity).log("ETE-THX: Adding player " + par1EntityPlayerMP.entityId + " to trackedPlayers list for trackedEntity " + myEntity.entityId);
 			            
-                        if (((ThxEntity) myEntity).isActive) return; // don't send various packets for pilot and drone
+                        if (mod_Thx.config.CLIENT_DRIVEN && ((ThxEntity) myEntity).isActive) return; // don't send various packets for pilot and drone
                     }
 
                     if (this.myEntity instanceof EntityItemFrame)

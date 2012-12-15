@@ -58,7 +58,7 @@ public class ThxEntityRocket extends ThxEntityProjectile
     float getAcceleration()
     {
         //return 1.2f;
-        return 1.2f;
+        return .1f; // very small for testing
     }
     
     @Override
