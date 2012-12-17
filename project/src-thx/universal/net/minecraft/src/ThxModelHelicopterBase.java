@@ -17,8 +17,6 @@ public class ThxModelHelicopterBase extends ThxModel
     
     public ThxModelHelicopterBase()
     {
-        mod_Thx.log("ThxModelHelicopterBase");
-        
         ENABLE_ROTOR = mod_Thx.getBoolProperty("enable_rotor");
     }
 

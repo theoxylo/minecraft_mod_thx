@@ -54,7 +54,7 @@ public class mod_Thx extends BaseMod
         ModLoader.registerPacketChannel(this, "THX_entity");
 
         int drawDistance = 64; // typically 160, reduced for testing spawn/despawn
-        int updateFreq = 1; // 20 for 1 second updates
+        int updateFreq = 2; // 20 for 1 second updates, 2 for every other tick
         boolean trackMotion = true;
             
         // register entity classes

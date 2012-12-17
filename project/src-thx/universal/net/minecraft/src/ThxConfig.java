@@ -18,7 +18,7 @@ public class ThxConfig
     
     // 'true' will allow client-side master entity, sending update packets to server. server updates its entity and send updates to all clients except the pilot player source client
     // 'false' for normal mc/ml behavior with no mod to obfuscated files (no modloader minecraft.jar changes, just mods/mod.zip to install)
-    static boolean CLIENT_DRIVEN = false; 
+    static boolean CLIENT_DRIVEN = true; 
 
     Properties props;
     
@@ -123,6 +123,9 @@ public class ThxConfig
             catch(IOException e) { log("Error writing default properties file: " + e); }
         }
         
+        CLIENT_DRIVEN  = getBoolProperty("client_driven");
+        log("client_driven: " + CLIENT_DRIVEN );
+        
         ENABLE_LOGGING = getBoolProperty("enable_logging");
         log("logging enabled: " + ENABLE_LOGGING);
         
@@ -135,6 +138,7 @@ public class ThxConfig
         // add any missing properties using default values
         boolean defaultAdded = false;
         
+        defaultAdded = ensureDefault(props, "client_driven", "false") || defaultAdded;
         defaultAdded = ensureDefault(props, "enable_logging", "false") || defaultAdded;
         defaultAdded = ensureDefault(props, "enable_logging_p250_inbound", "false") || defaultAdded;
         
