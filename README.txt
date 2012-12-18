@@ -7,7 +7,7 @@ This is version v020 for use with Minecraft and ModLoader 1.4.5 for single-playe
 
 You can download the installation zip file from GitHub:
 
-    https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_CLIENT_mc145_v020.zip
+    https://github.com/theoxylo/minecraft_mod_thx/blob/v020_mc145/downloads/mod_thx_helicopter_mc145_v020_beta.zip?raw=true
 
 And you can download the exact ModLoader archive you need from this download link (not affiliated with this mod):
 
