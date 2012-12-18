@@ -236,55 +236,43 @@ public class ThxEntityHelicopter extends ThxEntity
         
         isActive = true; // trigger custom packet updates from server
         
-        if (onUpdateWithPilotClientDrivenOnServer()) return; // takes care of (!worldObj.isRemote && CLIENT_DRIVEN) case
-        
-        // ModLoader allows the server entity to access the player client directly
-        // via api call: Minecraft minecraft = ModLoader.getMinecraftInstance();
-        // (would not be possible on remote SMP server)
-        EntityClientPlayerMP thePlayer = minecraft.thePlayer; 
-        //plog("thePlayer: " + thePlayer);
-                    
-        if (!worldObj.isRemote) // we are on embedded server, not client-driven, anything special to do on server-side only?
+        if (!worldObj.isRemote) // we are on embedded server, receiving client update packets
         {
+	        // super.applyUpdatePacketFromClient(ThxEntityPacket250 packet) has been called already
+	        // now, we just apply any commands based on flags (why not do in apply method already)?
+            
+	        if (riddenByEntity.isDead)
 	        {
-	            // not client-driven, still on the embedded server, using server master entity and default mc sync to client
-	            
-                if (riddenByEntity.entityId == thePlayer.entityId) // player is the server pilot
-                {
-                    //plog("player pilot '" + getPilot() + "' is flying on server");
-                    
-	                onUpdateWithPilotPlayerInput();
-	                
-		            // TEST: test of player direct input to server-side entity on embedded server
-                    // do work directly in the server entity update based on player client keyboard input, no packets needed
-		            if (Keyboard.isKeyDown(KEY_FORWARD)) 
-		            {
-	                    //plog("player pilot '" + thePlayer + "' is pressing the forward key"); // yes, it works for host player, but not for other players over lan
-		            }
-                }
-                else // player is not the server pilot, helicopter piloted by a different player in local mp game
-                {
-                    // could still read keyboard, but why?
-		            //if (Keyboard.isKeyDown(KEY_FORWARD)) {}
-                    
-                    //plog("other mp server player pilot '" + getPilot() + "' is flying near player: " + thePlayer);
-                }
-            }
+	            pilotExit();
+	        }
+	        
+	        if (cmd_reload > 0)
+	        {
+	            cmd_reload = 0;
+	            reload();
+	        }
+	        
+	        if (cmd_create_item > 0)
+	        {
+	            cmd_create_item = 0;
+	            //convertToItem();
+	        }
+	        
+	        if (cmd_create_map > 0)
+	        {
+	            cmd_create_map = 0;
+	            createMap();
+	        }
         }
-        else // we are on client, NOT embedded server
+        else // we are on the client
         {
-            if (riddenByEntity.entityId == thePlayer.entityId) // player is the client pilot
+            if (riddenByEntity.entityId == minecraft.thePlayer.entityId) // player is the client pilot
             {
-                //plog("player pilot '" + getPilot() + "' is flying on client");
-                
                 // we still respond to controls on local client (or could depend on server packets only?)
                 onUpdateWithPilotPlayerInput();
                 
-		        if (mod_Thx.config.CLIENT_DRIVEN)
-		        {
-			        // client should send update packet to server with latest client state
-			        minecraft.getSendQueue().addToSendQueue(getUpdatePacketFromClient());
-		        }
+		        // client should send update packet to server with latest client state
+		        minecraft.getSendQueue().addToSendQueue(getUpdatePacketFromClient());
             }
             else // player is not the server pilot, helicopter piloted by a different player in embedded server mp game
             {
@@ -1129,14 +1117,14 @@ public class ThxEntityHelicopter extends ThxEntity
     
     void updateMotion(boolean altitudeLock)
     {
-        // now calculate thrust and velocity based on yaw, pitch, roll, throttle
-        
-        if (mod_Thx.config.CLIENT_DRIVEN && !worldObj.isRemote && riddenByEntity != null) // server motionX,Y,Z are updated by pilot client packet so just move
+        if (!worldObj.isRemote && riddenByEntity != null) // server motionX,Y,Z are updated by pilot client packet so just move
         {
             moveEntity(motionX, motionY, motionZ);
             return;
         }
     
+        // now calculate thrust and velocity based on yaw, pitch, roll, throttle
+        
         ascendDescendLift:
         {
             // as pitch and roll increases, lift decreases by fall-off function.
@@ -1206,7 +1194,6 @@ public class ThxEntityHelicopter extends ThxEntity
             if (motionY < .00001) motionY = .0;
         }
         
-        //if (!worldObj.isRemote) moveEntity(motionX, motionY, motionZ);
         moveEntity(motionX, motionY, motionZ);
     }
     
@@ -1419,54 +1406,6 @@ public class ThxEntityHelicopter extends ThxEntity
                 
             }
         }
-    }
-    
-    boolean onUpdateWithPilotClientDrivenOnServer()
-    {
-        // we are on embedded server, driven by client-side entity with custom thx update packets
-        
-        // super.applyUpdatePacketFromClient(ThxEntityPacket250 packet) has been called already
-        // now, we just apply any commands based on flags (why not do in apply method already)?
-        
-      
-        if (worldObj.isRemote) return false;
-        if (!mod_Thx.config.CLIENT_DRIVEN) return false;
-        
-        // apply any pilot commands from latest client update packet and return
-        int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
-        
-        /*
-        if (cmd_exit > 0 || riddenByEntity.isDead)
-        {
-            cmd_exit = 0;
-            pilotExit();
-        }
-        */
-        
-        if (riddenByEntity.isDead)
-        {
-            pilotExit();
-        }
-        
-        if (cmd_reload > 0)
-        {
-            cmd_reload = 0;
-            reload();
-        }
-        
-        if (cmd_create_item > 0)
-        {
-            cmd_create_item = 0;
-            //convertToItem();
-        }
-        
-        if (cmd_create_map > 0)
-        {
-            cmd_create_map = 0;
-            createMap();
-        }
-        
-        return true;
     }
 }
 

@@ -1,21 +1,23 @@
-Minecraft THX Helicopter Mod, v020 for mc145 with ML, 20121203, mod_thx-mc145_v020
+Minecraft THX Helicopter Mod, v020 for mc145 with ML, 20121218, mod_thx-mc145_v020
 
 
 INTRODUCTION
 ------------
-This version is v020 for use with Minecraft and ModLoader 1.4.5 for single-player ONLY.
+This is version v020 for use with Minecraft and ModLoader 1.4.5 for single-player and LAN MP only.
 
-You can download the compiled binary zip files from GitHub:
+You can download the installation zip file from GitHub:
 
     https://github.com/downloads/theoxylo/minecraft_mod_thx/mod_thx_helicopter_CLIENT_mc145_v020.zip
 
 And you can download the exact ModLoader archive you need from this download link (not affiliated with this mod):
 
-	http://dl.dropbox.com/u/20629262/Latest/ModLoader.zip
+    http://adf.ly/1849S
+        or
+    http://dl.dropbox.com/u/20629262/Latest/ModLoader.zip
 
 Keep in mind that this is an early release of a mod still under construction. Even though no corruption issues have been reported, please back-up your worlds before using (always a good idea). 
 
-Make sure that Minecraft, ModLoader, and ModLoaderMP are working properly before installing this mod -- see log ouput in .minecraft/ModLoader.txt
+Make sure that Minecraft and ModLoader are working properly before installing this mod -- see log ouput in .minecraft/ModLoader.txt
 
 Please visit the forum thread to discuss, report issues, leave feedback, etc:
 
@@ -25,27 +27,13 @@ Please visit the forum thread to discuss, report issues, leave feedback, etc:
 
 INSTALLATION
 ------------
-There are 2 types of installation: single player and smp CLIENT, and multiplayer smp SERVER. Please see below for details.
+1. Install Risugami's ModLoader and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
 
+    http://www.minecraftforum.net/index.php?showtopic=75440
 
-    SINGLE PLAYER
-    -------------
+2. Then extract the files from the THX client zip archive and add them to minecraft.jar (sorry, but placing the zip file in the mods directory is not sufficient for this version).
 
-    1. Install Risugami's ModLoader and test. This involves adding the class files to your minecraft.jar file and deleting META-INF. Please visit the official topic for detailed instructions and support:
-
-        http://www.minecraftforum.net/index.php?showtopic=75440
-
-
-    2. Then copy the client THX zip file from the above client download to your .minecraft/mods folder.
-
-
-    3. After running at least once, check out the options in file '.minecraft/mods/mod_thx.options' for controls and other settings (see below for annotated listing).
-
-
-    SERVER INSTALLATION
-    -------------------
-
-    Coming soon...
+3. After running at least once, check out the options in file '.minecraft/mods/mod_thx_options.txt' for controls and other settings (see below for annotated listing).
 
 
 
@@ -109,7 +97,8 @@ Official YouTube playlist:
 
 CHANGELOG
 ---------
-v020: now for use with Minecraft and ModLoader 1.4.5, ModLoaderMP now embedded
+v020: now for use with Minecraft and ModLoader 1.4.5
+v020: LAN MP now supported
 
 v019: now for use with Minecraft and ModLoader/MP 1.3.2
 

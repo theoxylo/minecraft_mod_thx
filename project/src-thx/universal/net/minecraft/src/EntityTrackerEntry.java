@@ -84,7 +84,7 @@ public class EntityTrackerEntry
             if (myEntity instanceof ThxEntity) ((ThxEntity) myEntity).log("checking for players in range to trigger spawn");
         }
         
-        if (mod_Thx.config.CLIENT_DRIVEN && myEntity instanceof ThxEntity && ((ThxEntity) myEntity).isActive) // isActive true for piloted and drone entities, but not vacant ones
+        if (myEntity instanceof ThxEntity && ((ThxEntity) myEntity).isActive) // isActive true for piloted and drone entities, but not vacant ones
         {
             // history:
 	        //if (myEntity instanceof ThxEntity) // testing on vacant -- test failed! client helicopter stuck in landscape, out of sync // && ((ThxEntity) myEntity).isActive)
@@ -360,7 +360,7 @@ public class EntityTrackerEntry
                     {
                         ((ThxEntity) myEntity).log("ETE-THX: Adding player " + par1EntityPlayerMP.entityId + " to trackedPlayers list for trackedEntity " + myEntity.entityId);
 			            
-                        if (mod_Thx.config.CLIENT_DRIVEN && ((ThxEntity) myEntity).isActive) return; // don't send various packets for pilot and drone
+                        if (((ThxEntity) myEntity).isActive) return; // don't send various packets for pilot and drone
                     }
 
                     if (this.myEntity instanceof EntityItemFrame)
