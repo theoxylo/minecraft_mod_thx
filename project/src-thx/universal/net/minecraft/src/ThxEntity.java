@@ -83,6 +83,7 @@ public abstract class ThxEntity extends Entity
         if (deltaTime > .05f) deltaTime = .05f; // 20 ticks per second
         prevTime = time;
 
+        // 
         lastTickPosX = prevPosX = posX;
         lastTickPosY = prevPosY = posY;
         lastTickPosZ = prevPosZ = posZ;
@@ -238,21 +239,7 @@ public abstract class ThxEntity extends Entity
     @Override
     public boolean interact(EntityPlayer player)
     {
-        if (worldObj.isRemote) return false; // logic only applies on server
-        
         log("interact called with player " + player.entityId);
-        
-        if (player.equals(riddenByEntity))
-        {
-            interactByPilot();
-            return false;
-        }
-        
-        if (player.ridingEntity != null) 
-        {
-            // player is already riding some other entity
-            return false;
-        }
         
         if (riddenByEntity != null)
         {
@@ -268,9 +255,26 @@ public abstract class ThxEntity extends Entity
             }
         }
         
+        if (player.equals(riddenByEntity))
+        {
+            interactByPilot();
+            return false;
+        }
+        
+        if (player.ridingEntity != null) 
+        {
+            // player is already riding some other entity
+            return false;
+        }
+        
+        
         // new pilot boarding!
-        log("interact() calling mountEntity on player " + player.entityId);
-        player.mountEntity(this); // boarding
+        if (!worldObj.isRemote) 
+        {
+	        log("interact() calling mountEntity on player " + player.entityId);
+            player.mountEntity(this); // boarding, server only
+        }
+        
         owner = player;
         
         player.rotationYaw = rotationYaw;
@@ -493,13 +497,18 @@ public abstract class ThxEntity extends Entity
         
         if (packet.pilotId == 0 && riddenByEntity != null)
         {
-            log("*** current pilot " + riddenByEntity.entityId + " is exiting");
+            ////log("*** current pilot " + riddenByEntity.entityId + " is exiting (NOT calling pilotExit on server based on packet, deferring to interact");
+            // must call pilotExit on serveror else pilot will exit helicopter but stay in seated position, no way to move helicoper, bugged!
+            
+            // called by pilotExit below
             //riddenByEntity.mountEntity(entity); // unmount
-            pilotExit();
+            
+            log("*** current pilot " + riddenByEntity.entityId + " is exiting");
+            pilotExit(); 
         }
 	        
         int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
-        plog(String.format("end applyUpdatePacket, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
+        //plog(String.format("end applyUpdatePacket, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
     }    
     
     public void applyUpdatePacketFromServer(ThxEntityPacket250 packet)
@@ -562,7 +571,7 @@ public abstract class ThxEntity extends Entity
         serverPosZ = MathHelper.floor_float(packet.posZ * 32f);
         
         int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
-        plog(String.format("end applyUpdatePacket, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, pitch: %6.3f, roll: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, rotationPitch, rotationRoll, throttle, motionX, motionY, motionZ));
+        //plog(String.format("end applyUpdatePacket, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, pitch: %6.3f, roll: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, rotationPitch, rotationRoll, throttle, motionX, motionY, motionZ));
     }    
     
     @Override

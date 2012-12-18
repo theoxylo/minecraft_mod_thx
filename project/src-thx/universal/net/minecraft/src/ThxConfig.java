@@ -167,4 +167,25 @@ public class ThxConfig
         
         return defaultAdded;
     }
+    
+    /* java.util.logging approach...
+    try
+    {
+        Handler handler = new FileHandler("mods/mod_thx.log");
+        handler.setFormatter(new SimpleFormatter());
+        logger.addHandler(handler);
+        
+        String level = ThxConfig.getProperty("enable_logging_level", "SEVERE");
+        System.out.println("thxLog.level: " + level);
+        logger.setLevel(Level.parse(level));
+    }
+    catch (Exception e)
+    {
+        System.out.println("Could not open log file 'mods/mod_thx.log': " + e);
+    }
+    logger.fine("log fine test");
+    logger.info("log info test");
+    logger.warning("log warning test");
+    */
+    
 }

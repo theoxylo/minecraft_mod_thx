@@ -121,11 +121,13 @@ public class ThxEntityHelicopter extends ThxEntity
         setPositionAndRotation(x, y + yOffset, z, yaw, 0f);
     }
     
+    @Override
     ThxEntityHelper createHelper()
     {
         if (!worldObj.isRemote)
         {
-            return null; // no server helper
+            //return null; // no server helper
+            return new ThxEntityHelper(); // no-op default instance for server
         }
         
         if (mod_Thx.getBoolProperty("enable_alt_model")) 
@@ -147,7 +149,7 @@ public class ThxEntityHelicopter extends ThxEntity
     {
 
         int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
-        plog(String.format("onUpdate, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
+        plog(String.format("onUpdate, pilot %d [posX: %6.2f, posY: %6.2f, posZ: %6.2f, yaw: %6.2f, pitch: %6.2f, roll: %6.2f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f, throttle: %6.3f, damage: %d]", riddenById, posX, posY, posZ, rotationYaw, rotationPitch, rotationRoll, motionX, motionY, motionZ, throttle, (int) damage));
         
         super.onUpdate();
         
@@ -240,7 +242,7 @@ public class ThxEntityHelicopter extends ThxEntity
         // via api call: Minecraft minecraft = ModLoader.getMinecraftInstance();
         // (would not be possible on remote SMP server)
         EntityClientPlayerMP thePlayer = minecraft.thePlayer; 
-        plog("thePlayer: " + thePlayer);
+        //plog("thePlayer: " + thePlayer);
                     
         if (!worldObj.isRemote) // we are on embedded server, not client-driven, anything special to do on server-side only?
         {
@@ -249,7 +251,7 @@ public class ThxEntityHelicopter extends ThxEntity
 	            
                 if (riddenByEntity.entityId == thePlayer.entityId) // player is the server pilot
                 {
-                    plog("player pilot '" + getPilot() + "' is flying on server");
+                    //plog("player pilot '" + getPilot() + "' is flying on server");
                     
 	                onUpdateWithPilotPlayerInput();
 	                
@@ -257,7 +259,7 @@ public class ThxEntityHelicopter extends ThxEntity
                     // do work directly in the server entity update based on player client keyboard input, no packets needed
 		            if (Keyboard.isKeyDown(KEY_FORWARD)) 
 		            {
-	                    //plog("player pilot '" + thePlayer + "' is pressing the forward key");
+	                    //plog("player pilot '" + thePlayer + "' is pressing the forward key"); // yes, it works for host player, but not for other players over lan
 		            }
                 }
                 else // player is not the server pilot, helicopter piloted by a different player in local mp game
@@ -265,7 +267,7 @@ public class ThxEntityHelicopter extends ThxEntity
                     // could still read keyboard, but why?
 		            //if (Keyboard.isKeyDown(KEY_FORWARD)) {}
                     
-                    plog("other mp server player pilot '" + getPilot() + "' is flying near player: " + thePlayer);
+                    //plog("other mp server player pilot '" + getPilot() + "' is flying near player: " + thePlayer);
                 }
             }
         }
@@ -273,7 +275,7 @@ public class ThxEntityHelicopter extends ThxEntity
         {
             if (riddenByEntity.entityId == thePlayer.entityId) // player is the client pilot
             {
-                plog("player pilot '" + getPilot() + "' is flying on client");
+                //plog("player pilot '" + getPilot() + "' is flying on client");
                 
                 // we still respond to controls on local client (or could depend on server packets only?)
                 onUpdateWithPilotPlayerInput();
@@ -286,7 +288,7 @@ public class ThxEntityHelicopter extends ThxEntity
             }
             else // player is not the server pilot, helicopter piloted by a different player in embedded server mp game
             {
-                plog("other mp player pilot '" + getPilot() + "' is flying near player: " + thePlayer);
+                //plog("other mp player pilot '" + getPilot() + "' is flying near player: " + thePlayer);
             }
             
 	        // adjust model rotor speed according to current throttle
@@ -916,9 +918,10 @@ public class ThxEntityHelicopter extends ThxEntity
         if (worldObj.isRemote) // client
         {
 	        // place pilot to left of helicopter
+            // ? not needed on the client, only on the server, then sync?
 	        // (use fwd XZ perp to exit left: x = z, z = -x)
 	        //double exitDist = 1.9;
-	        //riddenByEntity.setPosition(posX + fwd.z * exitDist, posY + riddenByEntity.yOffset, posZ - fwd.x * exitDist);
+	        //pilot.setPosition(posX + fwd.z * exitDist, posY + pilot.yOffset, posZ - fwd.x * exitDist);
         
 	        // shut down model/rotor
 	        ThxModelHelicopterBase model = (ThxModelHelicopterBase) helper.model;
@@ -932,6 +935,11 @@ public class ThxEntityHelicopter extends ThxEntity
 	        rotationYawSpeed = 0f;
 	        rotationPitchSpeed = 0f;
 	        rotationRollSpeed = 0f;        
+	        
+	        // we must update the serverPos because it is used when the helicopter is vacant
+	        serverPosX = MathHelper.floor_double(posX * 32f);
+	        serverPosY = MathHelper.floor_double(posY * 32f);
+	        serverPosZ = MathHelper.floor_double(posZ * 32f);
         }
         else // server
         {
@@ -961,11 +969,11 @@ public class ThxEntityHelicopter extends ThxEntity
 	        */
         }
         
-        // can't set these private fields as mountEntity does. problem?
+        // can't set these private fields if not using mountEntity() as above, might need better defaults
         //riddenByEntity.entityRiderPitchDelta = 0.0D;
         //riddenByEntity.entityRiderYawDelta = 0.0D;
 
-        targetHelicopter = null; // used on both client and server?
+        targetHelicopter = null; // used on both client and server? probably server only
         
     }
     
@@ -1426,7 +1434,6 @@ public class ThxEntityHelicopter extends ThxEntity
         
         // apply any pilot commands from latest client update packet and return
         int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
-        plog(String.format("onUpdatePilot, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
         
         /*
         if (cmd_exit > 0 || riddenByEntity.isDead)
