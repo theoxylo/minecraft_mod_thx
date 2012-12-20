@@ -50,6 +50,8 @@ public class ThxEntityMissile extends ThxEntityProjectile
     @Override
     void strikeEntity(Entity entity)
     {
+        if (worldObj.isRemote) return; // only applies on server
+        
         int attackStrength = 12; // about 2 hearts for other player without armor??;
         entity.attackEntityFrom(new EntityDamageSource("player", owner), attackStrength);
         
@@ -59,11 +61,15 @@ public class ThxEntityMissile extends ThxEntityProjectile
     @Override
     void detonate()
     {
+        if (worldObj.isRemote) return; // only applies on server
+        
         doSplashDamage(3.0, 6); // 1 heart if within range, see explosion impl for more precise way
             
-        float power = 1.1f;
+        //float power = 1.1f; // v018 power to break dirt, sand, wood only and harvest items
+        float power = 1.4f; // break a single stone block?
+        
         boolean withFire = false;
-        boolean smoking = false;
+        boolean smoking = true; // oddly, this flag triggers block interactions
         worldObj.newExplosion(this, posX, posY, posZ, power, withFire, smoking);
         
         setDead();

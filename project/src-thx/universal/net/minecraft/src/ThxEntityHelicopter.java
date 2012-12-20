@@ -147,7 +147,6 @@ public class ThxEntityHelicopter extends ThxEntity
     @Override
     public void onUpdate() // entrypoint; called by minecraft each tick
     {
-
         int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
         plog(String.format("onUpdate, pilot %d [posX: %6.2f, posY: %6.2f, posZ: %6.2f, yaw: %6.2f, pitch: %6.2f, roll: %6.2f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f, throttle: %6.3f, damage: %d]", riddenById, posX, posY, posZ, rotationYaw, rotationPitch, rotationRoll, motionX, motionY, motionZ, throttle, (int) damage));
         
@@ -181,12 +180,15 @@ public class ThxEntityHelicopter extends ThxEntity
             updateMotion(false);
         }
         
-        if (handleCollisions()) // true if collided with other entity or environment
-        {
-            if (helper != null) helper.addChatMessageToPilot("Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
-        }
+        //if (!worldObj.isRemote)
+        //{
+            if (handleCollisions()) // true if collided with other entity or environment
+            {
+                if (helper != null) helper.addChatMessageToPilot("Damage: " + (int) (damage * 100 / MAX_HEALTH) + "%");
+            }
+        //}
         
-        if (damage > MAX_HEALTH && !worldObj.isRemote) // helicopter destroyed!
+        if (damage > MAX_HEALTH && !worldObj.isRemote) // helicopter destroyed! on server
         {
             float power = 2.3f;
             boolean flaming = true;
@@ -855,7 +857,7 @@ public class ThxEntityHelicopter extends ThxEntity
         takeDamage((float) damageAmount * 3f);
         if (helper != null) helper.addChatMessageToPilot("Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
 
-        //setBeenAttacked(); // this will cause Entity.velocityChanged to be true, so additional Packet28 to jump on hit
+        setBeenAttacked(); // this will cause Entity.velocityChanged to be true, so additional Packet28 to jump on hit
 
         return true; // the hit landed
     }
@@ -970,10 +972,7 @@ public class ThxEntityHelicopter extends ThxEntity
         rocketReload = ROCKET_RELOAD_DELAY;
         rocketCount = 0;
         
-        if (worldObj.isRemote) 
-        {
-	        worldObj.playSoundAtEntity(this, "random.click",  .4f, .4f); // volume, pitch
-        }
+        worldObj.playSoundAtEntity(this, "random.click",  .4f, .4f); // volume, pitch
     }
     
     @Override
@@ -1407,5 +1406,15 @@ public class ThxEntityHelicopter extends ThxEntity
             }
         }
     }
+    
+    @Override
+    public void setPositionAndRotation2(double posX, double posY, double posZ, float yaw, float pitch, int unused)
+    {
+        // bypassing check for collision in super method which seems to be hitting pilot and causing jumping
+        // but it is still needed for vacant helicopters to prevent sinking into the ground
+	    if (riddenByEntity != null) setPositionAndRotation(posX, posY, posZ, yaw, pitch);
+	    else super.setPositionAndRotation2(posX, posY, posZ, yaw, pitch, unused);
+    }
+    
 }
 

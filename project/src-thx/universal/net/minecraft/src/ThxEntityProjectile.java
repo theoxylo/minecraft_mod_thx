@@ -54,15 +54,24 @@ public abstract class ThxEntityProjectile extends ThxEntity
 
     public void onUpdate()
     {
+        //log(String.format("onUpdate [posX: %6.2f, posY: %6.2f, posZ: %6.2f, yaw: %6.2f, pitch: %6.2f, roll: %6.2f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", posX, posY, posZ, rotationYaw, rotationPitch, rotationRoll, motionX, motionY, motionZ));
+        
         super.onUpdate(); // this resets isActive back to default 'false'
         
-        //isActive = true; // enable custom packet updates from server in EntityTrackerEntry
+        if (worldObj.isRemote) // most logic only needed on server?
+        {
+	        createParticles();
         
+            return;
+        }
+        
+        /* maybe after we figure out a way to set the owner on the client...
         if (owner == null) // should always have owner, but sometimes doesn't during respawn/restart etc
         {
             setDead();
             return;
         }
+        */
 	        
         if (ticksExisted > 300) // 15 second lifespan
         {
@@ -75,8 +84,6 @@ public abstract class ThxEntityProjectile extends ThxEntity
             launched = true;
             onLaunch();
         }
-        
-        createParticles();
         
         //Vec3 posStart = Vec3.createVector(posX, posY, posZ); from 1.2.5
         //Vec3 posStart = Vec3.getVec3Pool().getVecFromPool(posX, posY, posZ); // new in 1.3.2
@@ -119,6 +126,7 @@ public abstract class ThxEntityProjectile extends ThxEntity
             if (nextEntity == null) continue;
             if (!nextEntity.canBeCollidedWith()) continue;
             
+            /*
             if (nextEntity.equals(owner)) continue;
             
             if (owner == null) log(this + " owner is null");
@@ -128,6 +136,7 @@ public abstract class ThxEntityProjectile extends ThxEntity
                 log("skipping self");
                 continue;
             }
+            */
             
             float f4 = 0.3F;
             AxisAlignedBB axisalignedbb = nextEntity.boundingBox.expand(f4, f4, f4);
@@ -148,17 +157,16 @@ public abstract class ThxEntityProjectile extends ThxEntity
             // we hit an entity!
             movingobjectposition = new MovingObjectPosition(entity);
             
-            if (owner == null || owner.equals(entity.riddenByEntity) || owner.equals(entity))
+            if (owner != null && (owner.equals(entity.riddenByEntity) || owner.equals(entity)))
             {
                 log(owner + " ignoring hit from own rocket");
             }
             else
             {
                 strikeEntity(entity);
-	        
 		        detonate();
-	            return;
             }
+            return;
         }
         
         if (movingobjectposition != null) // we hit something besides an entity
@@ -167,32 +175,36 @@ public abstract class ThxEntityProjectile extends ThxEntity
 	        int j = MathHelper.floor_double(posY - 0.2 -(double)yOffset);
 	        int k = MathHelper.floor_double(posZ);
 	        int blockId = worldObj.getBlockId(i, j, k);
-	        if (blockId > 0 && false) // disabled for now due to error, see below
+	        
+	        if (worldObj.isRemote) // debris particles on client only
 	        {
-		        // kick up some debris if we hit a block, but only works for top surface
-	            for (int k1 = 0; k1 < 4; k1++)
-	            {
-		            //line 159_orig: worldObj.spawnParticle((new StringBuilder()).append("tilecrack_").append(blockId).toString(), posX + ((double)rand.nextFloat() - 0.5) * (double)width, boundingBox.minY + 0.1, posZ + ((double)rand.nextFloat() - 0.5) * (double)width, 1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5));
-	                // currently crashing:
-	                /*
-						Caused by: java.lang.ArrayIndexOutOfBoundsException: 2
-						     at net.minecraft.src.RenderGlobal.func_72726_b(RenderGlobal.java:1991)
-						     at net.minecraft.src.RenderGlobal.spawnParticle(RenderGlobal.java:1790)
-						     at net.minecraft.src.World.spawnParticle(World.java:1386)
-						     at net.minecraft.src.ThxEntityProjectile.onUpdate(ThxEntityProjectile.java:159)
-						     at net.minecraft.src.World.updateEntityWithOptionalForce(World.java:2138)
-						     at net.minecraft.src.World.updateEntity(World.java:2109)
-						     at net.minecraft.src.World.updateEntities(World.java:1960)
-	                 */
-	            }
-	        }
-	        else
-	        {
-	            // create some non-block debris instead
-	            for (int k1 = 0; k1 < 4; k1++)
-	            {
-		            worldObj.spawnParticle("snowballpoof", posX + ((double)rand.nextFloat() - 0.5), boundingBox.minY + 0.1, posZ + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5));
-	            }
+		        if (blockId > 0 && false) // disabled for now due to error, see below
+		        {
+			        // kick up some debris if we hit a block, but only works for top surface
+		            for (int k1 = 0; k1 < 4; k1++)
+		            {
+			            //line 159_orig: worldObj.spawnParticle((new StringBuilder()).append("tilecrack_").append(blockId).toString(), posX + ((double)rand.nextFloat() - 0.5) * (double)width, boundingBox.minY + 0.1, posZ + ((double)rand.nextFloat() - 0.5) * (double)width, 1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5));
+		                // currently crashing:
+		                /*
+							Caused by: java.lang.ArrayIndexOutOfBoundsException: 2
+							     at net.minecraft.src.RenderGlobal.func_72726_b(RenderGlobal.java:1991)
+							     at net.minecraft.src.RenderGlobal.spawnParticle(RenderGlobal.java:1790)
+							     at net.minecraft.src.World.spawnParticle(World.java:1386)
+							     at net.minecraft.src.ThxEntityProjectile.onUpdate(ThxEntityProjectile.java:159)
+							     at net.minecraft.src.World.updateEntityWithOptionalForce(World.java:2138)
+							     at net.minecraft.src.World.updateEntity(World.java:2109)
+							     at net.minecraft.src.World.updateEntities(World.java:1960)
+		                 */
+		            }
+		        }
+		        else
+		        {
+		            // create some non-block debris instead
+		            for (int k1 = 0; k1 < 4; k1++)
+		            {
+			            worldObj.spawnParticle("snowballpoof", posX + ((double)rand.nextFloat() - 0.5), boundingBox.minY + 0.1, posZ + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5));
+		            }
+		        }
 	        }
 	        
 	        detonate();
@@ -202,6 +214,8 @@ public abstract class ThxEntityProjectile extends ThxEntity
     
     void doSplashDamage(double splashSize, int damage)
     {
+        if (worldObj.isRemote) return; // only applies on server
+        
         List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(splashSize, splashSize, splashSize));
         for (int i = 0; i < list.size(); i++)
         {
@@ -211,6 +225,14 @@ public abstract class ThxEntityProjectile extends ThxEntity
 	        entity.attackEntityFrom(new EntityDamageSource("projectile splash damage", owner), damage); // splash damage is same as rocket hit
         }
     }
+    
+    @Override
+    public void setPositionAndRotation2(double posX, double posY, double posZ, float yaw, float pitch, int unused)
+    {
+        // bypassing check for collision in super method which causing entity to shoot up upon impact
+	    setPositionAndRotation(posX, posY, posZ, yaw, pitch);
+    }
+    
     
     abstract float getAcceleration();
     

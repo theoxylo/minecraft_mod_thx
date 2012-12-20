@@ -36,6 +36,8 @@ public class ThxEntityRocket extends ThxEntityProjectile
     @Override
     void strikeEntity(Entity entity)
     {
+        if (worldObj.isRemote) return; // only applies on server
+        
         int attackStrength = 6;
         entity.attackEntityFrom(new EntityDamageSource("player", owner), attackStrength);
     }
@@ -50,20 +52,21 @@ public class ThxEntityRocket extends ThxEntityProjectile
     void onLaunch()
     {
         log("onLaunch");
-        //worldObj.playSoundAtEntity(this, "random.fizz", 1f, 1f);
-        worldObj.provider.worldObj.playSoundAtEntity(this, "random.fizz", 1f, 1f);
+        worldObj.playSoundAtEntity(this, "random.fizz", 1f, 1f);
     }
     
     @Override
     float getAcceleration()
     {
-        //return 1.2f;
-        return .1f; // very small for testing
+        return 1.2f;
+        //return .1f; // very small for testing
     }
     
     @Override
     void detonate()
     {
+        if (worldObj.isRemote) return; // only applies on server
+        
         doSplashDamage(1.0, 2); // very small splash damage
             
         // no explosion, just the sound

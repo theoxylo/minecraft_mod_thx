@@ -241,38 +241,39 @@ public abstract class ThxEntity extends Entity
     {
         log("interact called with player " + player.entityId);
         
-        if (riddenByEntity != null)
-        {
-            // already ridden by some other entity, allow takeover if close
-            if (getDistanceSqToEntity(player) < 3.0)
-            {
-                log("current pilot was ejected");
-                pilotExit();
-            }
-            else
-            {
-	            return false;
-            }
-        }
-        
         if (player.equals(riddenByEntity))
         {
             interactByPilot();
             return false;
         }
         
+        // feature to allow capture of a near helicopter, ejecting the current pilot
+        if (riddenByEntity != null)
+        {
+            // already ridden by some other entity, allow takeover if close
+            if (getDistanceSqToEntity(player) < 3.0)
+            {
+                log("current pilot [" + riddenByEntity + "] was ejected in boarding attempt by [" + player + "]");
+                pilotExit();
+            }
+            else
+            {
+	            return false; // boarding attempt failed
+            }
+        }
+        
         if (player.ridingEntity != null) 
         {
-            // player is already riding some other entity
+            // player is already riding some other entity?
             return false;
         }
         
         
-        // new pilot boarding!
-        if (!worldObj.isRemote) 
+        // new pilot boarding! on server
+		if (!worldObj.isRemote) 
         {
 	        log("interact() calling mountEntity on player " + player.entityId);
-            player.mountEntity(this); // boarding, server only
+            player.mountEntity(this); // boarding, server
         }
         
         owner = player;
@@ -297,6 +298,8 @@ public abstract class ThxEntity extends Entity
     @Override
     public boolean attackEntityFrom(DamageSource damageSource, int damageAmount)
     {
+        if (worldObj.isRemote) return false; // server only
+        
         log("attackEntityFrom called with damageSource: " + damageSource + " with amount " + damageAmount);
 
         if (timeSinceAttacked > 0f || isDead || damageSource == null) return false;
@@ -473,7 +476,7 @@ public abstract class ThxEntity extends Entity
 
     public void applyUpdatePacketFromClient(ThxEntityPacket250 packet)
     {
-        plog("Applying client packet: " + packet);
+        //plog("Applying client packet: " + packet);
         
         // make sure we are on the server before applying update from client
         if (worldObj.isRemote) throw new RuntimeException("client should not be asked to apply client packet!");
@@ -513,7 +516,7 @@ public abstract class ThxEntity extends Entity
     
     public void applyUpdatePacketFromServer(ThxEntityPacket250 packet)
     {
-        plog("Applying server packet: " + packet);
+        //plog("Applying server packet: " + packet);
         
         // make sure we are on the client before applying update from server
         if (!worldObj.isRemote) throw new RuntimeException("server should not be asked to apply server packet!");
@@ -530,6 +533,7 @@ public abstract class ThxEntity extends Entity
         throttle = packet.throttle;
 
         // not sure what owner is used for on the client...
+        /*
         if (packet.ownerId > 0)
         {
             if (owner == null || owner.entityId != packet.ownerId)
@@ -548,18 +552,20 @@ public abstract class ThxEntity extends Entity
                 log("*** New entity owner: " + owner);
             }
         }
+        */
 
         // no or wrong current pilot
-        if (packet.pilotId > 0 && (riddenByEntity == null || riddenByEntity.entityId != packet.pilotId))
+        if (packet.pilotId > 0 && (riddenByEntity == null)) // || riddenByEntity.entityId != packet.pilotId))
         {
             Entity pilot = ((WorldClient) worldObj).getEntityByID(packet.pilotId);
             if (pilot != null && !pilot.isDead)
             {
-                log("*** applyUpdatePacket: pilot " + pilot + " now boarding");
-                pilot.mountEntity(this); // boarding
+                //log("*** applyUpdatePacket: pilot " + pilot + " now boarding");
+                //pilot.mountEntity(this); // boarding
             }
         }
-        else if (packet.pilotId == 0 && riddenByEntity != null)
+        else 
+        if (packet.pilotId == 0 && riddenByEntity != null)
         {
             log("*** applyUpdatePacket: current pilot " + riddenByEntity + " is exiting");
             //riddenByEntity.mountEntity(entity); // unmount
@@ -581,11 +587,8 @@ public abstract class ThxEntity extends Entity
     }
     
     @Override
-    public void setPositionAndRotation2(double posX, double posY, double posZ, float yaw, float pitch, int unused)
+    protected void setBeenAttacked()
     {
-        // bypassing check for collision in super method which seems to be hitting pilot and causing jumping
-	    if (riddenByEntity != null) setPositionAndRotation(posX, posY, posZ, yaw, pitch);
-	    
-	    else super.setPositionAndRotation2(posX, posY, posZ, yaw, pitch, unused);
+        //super.setBeenAttacked(): this.velocityChanged = true; // causes EntityTrackerEntry to send Packet28
     }
 }

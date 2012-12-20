@@ -198,7 +198,7 @@ public class mod_Thx extends BaseMod
 	    if ("THX_entity".equals(packet.channel))
 	    {
 	        ThxEntityPacket250 data = new ThxEntityPacket250(packet);
-	        plog("Client received: " + data);
+	        //plog("Client received: " + data);
 	        
 	        ThxEntity entity = (ThxEntity) thePlayer.worldObj.getEntityByID(data.entityId);
 	        if (entity != null)
@@ -220,7 +220,7 @@ public class mod_Thx extends BaseMod
 	    if ("THX_entity".equals(packet.channel))
 	    {
 	        ThxEntityPacket250 data = new ThxEntityPacket250(packet);
-	        plog("Server received: " + data);
+	        //plog("Server received: " + data);
 	        
 	        ThxEntity entity = (ThxEntity) thePlayer.worldObj.getEntityByID(data.entityId);
 	        if (entity != null)

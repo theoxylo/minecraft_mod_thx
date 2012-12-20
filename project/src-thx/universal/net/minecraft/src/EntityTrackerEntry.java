@@ -78,7 +78,7 @@ public class EntityTrackerEntry
             this.posZ = this.myEntity.posZ;
             this.isDataInitialized = true;
             this.playerEntitiesUpdated = true;
-            this.sendEventsToPlayers(par1List);
+            this.sendEventsToPlayers(par1List); // will add/remove players to tracked list
             
             // called often for fast moving entities
             if (myEntity instanceof ThxEntity) ((ThxEntity) myEntity).log("checking for players in range to trigger spawn");
@@ -86,11 +86,6 @@ public class EntityTrackerEntry
         
         if (myEntity instanceof ThxEntity && ((ThxEntity) myEntity).isActive) // isActive true for piloted and drone entities, but not vacant ones
         {
-            // history:
-	        //if (myEntity instanceof ThxEntity) // testing on vacant -- test failed! client helicopter stuck in landscape, out of sync // && ((ThxEntity) myEntity).isActive)
-	        //if (myEntity instanceof ThxEntity && ((ThxEntity) myEntity).isActive /* testing for piloted only */ && myEntity.riddenByEntity != null) // test failed
-        
-            
             Packet packet = ((ThxEntity) myEntity).getUpdatePacketFromServer();
             for (Object player : trackedPlayers)
             {
@@ -103,6 +98,8 @@ public class EntityTrackerEntry
             lastScaledXPosition = myEntity.myEntitySize.multiplyBy32AndRound(myEntity.posX);
             lastScaledYPosition = MathHelper.floor_double(myEntity.posY * 32.0);
             lastScaledZPosition = myEntity.myEntitySize.multiplyBy32AndRound(myEntity.posZ);
+            
+            // used for anything?
             lastYaw             = MathHelper.floor_float((myEntity.rotationYaw * 256f) / 360f);
             lastPitch           = MathHelper.floor_float((myEntity.rotationPitch * 256f) / 360f);
 
@@ -294,6 +291,7 @@ public class EntityTrackerEntry
     public void sendPacketToAllTrackingPlayers(Packet par1Packet)
     {
         //if (myEntity instanceof ThxEntity) ((ThxEntity) myEntity).log("Server sending" + par1Packet);
+        if (myEntity instanceof ThxEntityMissile) ((ThxEntityMissile) myEntity).log("Server sending" + par1Packet);
         
         Iterator var2 = this.trackedPlayers.iterator();
 
@@ -360,7 +358,12 @@ public class EntityTrackerEntry
                     {
                         ((ThxEntity) myEntity).log("ETE-THX: Adding player " + par1EntityPlayerMP.entityId + " to trackedPlayers list for trackedEntity " + myEntity.entityId);
 			            
-                        if (((ThxEntity) myEntity).isActive) return; // don't send various packets for pilot and drone
+                        //lastYaw = 500; // trigger yaw/pitch update in next sendLocationToAllClients() call
+                        
+                        //if (((ThxEntity) myEntity).isActive) return; // don't send various packets for pilot and drone
+                        
+                        // send yaw and pitch data
+                        par1EntityPlayerMP.playerNetServerHandler.sendPacketToPlayer(new Packet32EntityLook(myEntity.entityId, (byte)lastYaw, (byte)lastPitch));
                     }
 
                     if (this.myEntity instanceof EntityItemFrame)
