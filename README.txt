@@ -7,7 +7,7 @@ This is version v020 for use with Minecraft 1.4.6 and ModLoader for single-playe
 
 You can download the installation zip file from GitHub:
 
-    https://github.com/theoxylo/minecraft_mod_thx/blob/v020_mc146_forge/downloads/mod_thx_helicopter_mc146_v020.zip?raw=true
+    https://github.com/theoxylo/minecraft_mod_thx/blob/v020_mc146/downloads/mod_thx_helicopter_mc146_v020.zip?raw=true
 
 And you can download the exact 1.4.6 ModLoader archive you need from this download link:
 
