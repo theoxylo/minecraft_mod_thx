@@ -222,7 +222,12 @@ public abstract class ThxEntityProjectile extends ThxEntity
             Entity entity = (Entity) list.get(i);
             if (!entity.canBeCollidedWith()) continue;
             
-	        entity.attackEntityFrom(new EntityDamageSource("projectile splash damage", owner), damage); // splash damage is same as rocket hit
+            //String idMsg =  "[Pilot " + owner.entityId + "] hit [Entity " + entity.entityId + "]";
+            String idMsg =  "[Pilot " + owner + "] hit [Entity " + entity + "]";
+            log(idMsg);
+            
+	        //entity.attackEntityFrom(new EntityDamageSource("projectile splash damage", owner), damage); // splash damage is same as rocket hit
+	        entity.attackEntityFrom(new EntityDamageSource(idMsg, owner), damage); // splash damage is same as rocket hit
         }
     }
     

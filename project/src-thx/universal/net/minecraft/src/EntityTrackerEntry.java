@@ -366,7 +366,7 @@ public class EntityTrackerEntry
                         par1EntityPlayerMP.playerNetServerHandler.sendPacketToPlayer(new Packet32EntityLook(myEntity.entityId, (byte)lastYaw, (byte)lastPitch));
                     }
 
-                    if (this.myEntity instanceof EntityItemFrame)
+                    if (!this.myEntity.getDataWatcher().func_92085_d())
                     {
                         par1EntityPlayerMP.playerNetServerHandler.sendPacketToPlayer(new Packet40EntityMetadata(this.myEntity.entityId, this.myEntity.getDataWatcher(), true));
                     }
@@ -451,12 +451,7 @@ public class EntityTrackerEntry
 
         if (this.myEntity instanceof EntityItem)
         {
-            EntityItem var12 = (EntityItem)this.myEntity;
-            Packet21PickupSpawn var10 = new Packet21PickupSpawn(var12);
-            var12.posX = (double)var10.xPosition / 32.0D;
-            var12.posY = (double)var10.yPosition / 32.0D;
-            var12.posZ = (double)var10.zPosition / 32.0D;
-            return var10;
+            return new Packet23VehicleSpawn(this.myEntity, 2, 1);
         }
         else if (this.myEntity instanceof EntityPlayerMP)
         {
@@ -521,6 +516,10 @@ public class EntityTrackerEntry
                 else if (this.myEntity instanceof EntityEnderEye)
                 {
                     return new Packet23VehicleSpawn(this.myEntity, 72);
+                }
+                else if (this.myEntity instanceof EntityFireworkRocket)
+                {
+                    return new Packet23VehicleSpawn(this.myEntity, 76);
                 }
                 else
                 {
