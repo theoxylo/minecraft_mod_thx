@@ -3,42 +3,15 @@ package net.minecraft.src;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.client.Minecraft;
-
 import org.lwjgl.input.Keyboard;
 
 public class ThxEntityHelicopter extends ThxEntity
 {    
-    Minecraft minecraft;
-    
-    // controls and options
-    // set from mod_thx.properties
-    static int KEY_ASCEND = Keyboard.getKeyIndex(mod_Thx.getProperty("key_ascend"));
-    static int KEY_DESCEND = Keyboard.getKeyIndex(mod_Thx.getProperty("key_descend"));
-    static int KEY_FORWARD = Keyboard.getKeyIndex(mod_Thx.getProperty("key_forward"));
-    static int KEY_BACK = Keyboard.getKeyIndex(mod_Thx.getProperty("key_back"));
-    static int KEY_LEFT = Keyboard.getKeyIndex(mod_Thx.getProperty("key_left"));
-    static int KEY_RIGHT = Keyboard.getKeyIndex(mod_Thx.getProperty("key_right"));
-    static int KEY_ROTATE_LEFT = Keyboard.getKeyIndex(mod_Thx.getProperty("key_rotate_left"));
-    static int KEY_ROTATE_RIGHT = Keyboard.getKeyIndex(mod_Thx.getProperty("key_rotate_right"));
-    static int KEY_ROCKET_RELOAD = Keyboard.getKeyIndex(mod_Thx.getProperty("key_rocket_reload"));
-    static int KEY_LOOK_PITCH = Keyboard.getKeyIndex(mod_Thx.getProperty("key_look_pitch"));
-    static int KEY_AUTO_LEVEL = Keyboard.getKeyIndex(mod_Thx.getProperty("key_auto_level"));
-    static int KEY_EXIT = Keyboard.getKeyIndex(mod_Thx.getProperty("key_exit"));
-    static int KEY_LOOK_BACK = Keyboard.getKeyIndex(mod_Thx.getProperty("key_look_back"));
-    static int KEY_CREATE_MAP = Keyboard.getKeyIndex(mod_Thx.getProperty("key_create_map"));
-    static int KEY_HUD_MODE = Keyboard.getKeyIndex(mod_Thx.getProperty("key_hud_mode"));
-    static int KEY_LOCK_ALT = Keyboard.getKeyIndex(mod_Thx.getProperty("key_lock_alt"));
-        
-    static boolean ENABLE_AUTO_LEVEL = mod_Thx.getBoolProperty("enable_auto_level");
-    static boolean ENABLE_AUTO_THROTTLE_ZERO = mod_Thx.getBoolProperty("enable_auto_throttle_zero");
-    static boolean ENABLE_LOOK_YAW = mod_Thx.getBoolProperty("enable_look_yaw");
-        
     int prevViewMode; // = 2; // 2 is looking back
     
     float smokeDelay;
     
-    List followers = new ArrayList();
+    List<ThxEntity> followers = new ArrayList<ThxEntity>(); // list of ai entities led by this one
     
     int rocketCount;
     
@@ -110,14 +83,11 @@ public class ThxEntityHelicopter extends ThxEntity
         //yOffset = .7f;
         
         helper = createHelper();
-        
-        minecraft = ModLoader.getMinecraftInstance();
     }
 
     public ThxEntityHelicopter(World world, double x, double y, double z, float yaw)
     {
         this(world);
-        
         setPositionAndRotation(x, y + yOffset, z, yaw, 0f);
     }
     
@@ -130,7 +100,7 @@ public class ThxEntityHelicopter extends ThxEntity
             return new ThxEntityHelper(); // no-op default instance for server
         }
         
-        if (mod_Thx.getBoolProperty("enable_alt_model")) 
+        if (ThxConfig.getBoolProperty("enable_alt_model")) 
         {
             return new ThxEntityHelperClient(this, new ThxModelHelicopterAlt());
         }
@@ -147,8 +117,8 @@ public class ThxEntityHelicopter extends ThxEntity
     @Override
     public void onUpdate() // entrypoint; called by minecraft each tick
     {
-        int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
-        plog(String.format("onUpdate, pilot %d [posX: %6.2f, posY: %6.2f, posZ: %6.2f, yaw: %6.2f, pitch: %6.2f, roll: %6.2f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f, throttle: %6.3f, damage: %d]", riddenById, posX, posY, posZ, rotationYaw, rotationPitch, rotationRoll, motionX, motionY, motionZ, throttle, (int) damage));
+        //int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
+        //plog(String.format("onUpdate, pilot %d [posX: %6.2f, posY: %6.2f, posZ: %6.2f, yaw: %6.2f, pitch: %6.2f, roll: %6.2f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f, throttle: %6.3f, damage: %d]", riddenById, posX, posY, posZ, rotationYaw, rotationPitch, rotationRoll, motionX, motionY, motionZ, throttle, (int) damage));
         
         super.onUpdate();
         
@@ -228,15 +198,13 @@ public class ThxEntityHelicopter extends ThxEntity
             if (damage / MAX_HEALTH > .75f) worldObj.spawnParticle("flame", posX -.5f + Math.random(), posY -.5f + Math.random(), posZ -.5f + Math.random(), 0.0, 0.0, 0.0);
         }
         
-        riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
+        //riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
         //plog(String.format("finish onUpdate, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
     }
     
     void onUpdateWithPilot()
     {
         if (riddenByEntity == null) return; 
-        
-        isActive = true; // trigger custom packet updates from server
         
         if (!worldObj.isRemote) // we are on embedded server, receiving client update packets
         {
@@ -265,6 +233,8 @@ public class ThxEntityHelicopter extends ThxEntity
 	            cmd_create_map = 0;
 	            createMap();
 	        }
+	        
+	        sendUpdatePacketFromServer();
         }
         else // we are on the client
         {
@@ -273,8 +243,11 @@ public class ThxEntityHelicopter extends ThxEntity
                 // we still respond to controls on local client (or could depend on server packets only?)
                 onUpdateWithPilotPlayerInput();
                 
-		        // client should send update packet to server with latest client state
-		        minecraft.getSendQueue().addToSendQueue(getUpdatePacketFromClient());
+                serverPosX = MathHelper.floor_double(posX * 32f);
+                serverPosY = MathHelper.floor_double(posY * 32f);
+                serverPosZ = MathHelper.floor_double(posZ * 32f);
+                
+		        sendUpdatePacketFromClient();
             }
             else // player is not the server pilot, helicopter piloted by a different player in embedded server mp game
             {
@@ -329,7 +302,7 @@ public class ThxEntityHelicopter extends ThxEntity
         if (minecraft.currentScreen != null) return;
         
         createMapDelay -= deltaTime;
-        if (Keyboard.isKeyDown(KEY_CREATE_MAP) && createMapDelay < 0f && pilot != null)
+        if (Keyboard.isKeyDown(ThxConfig.KEY_CREATE_MAP) && createMapDelay < 0f && pilot != null)
         {
             createMapDelay = 10f; // the delay in seconds
             cmd_create_map = 1;
@@ -338,7 +311,7 @@ public class ThxEntityHelicopter extends ThxEntity
         hudModeToggleDelay -= deltaTime;
         lookPitchToggleDelay -= deltaTime;
             
-        if (Keyboard.isKeyDown(KEY_LOOK_BACK)) // look back while key is HELD (not toggle), switch to 3rd-person REVERSE view
+        if (Keyboard.isKeyDown(ThxConfig.KEY_LOOK_BACK)) // look back while key is HELD (not toggle), switch to 3rd-person REVERSE view
         {
             //view modes: 0 = 1st-person, 1 = 3rd-person chase, 2 = looking back in third person (RE style)
             
@@ -356,7 +329,7 @@ public class ThxEntityHelicopter extends ThxEntity
             minecraft.gameSettings.thirdPersonView = prevViewMode;
             prevViewMode = 2;
         }
-        else if (Keyboard.isKeyDown(KEY_LOOK_PITCH) && lookPitchToggleDelay < 0f)
+        else if (Keyboard.isKeyDown(ThxConfig.KEY_LOOK_PITCH) && lookPitchToggleDelay < 0f)
         {
             lookPitchToggleDelay = .5f;
                 
@@ -377,7 +350,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 if (helper != null) helper.addChatMessageToPilot("Look-Pitch: OFF, PosX: " + (int)posX + ", PosZ: " + (int)posZ + ", Alt: " + (int)posY + ", Damage: " + (int)(damage * 100 / MAX_HEALTH) + "%");
             }
         }
-        else if (Keyboard.isKeyDown(KEY_HUD_MODE) && hudModeToggleDelay < 0f && pilot != null)
+        else if (Keyboard.isKeyDown(ThxConfig.KEY_HUD_MODE) && hudModeToggleDelay < 0f && pilot != null)
         {
             hudModeToggleDelay = .5f;
                 
@@ -403,13 +376,16 @@ public class ThxEntityHelicopter extends ThxEntity
         }
             
         // view could be switched by player using F5
-        if (helper != null)
+        if (worldObj.isRemote)
         {
-	        if (minecraft.gameSettings.thirdPersonView != 0) ((ThxModel) helper.model).visible = true;
+            if (helper != null)
+            {
+                if (minecraft.gameSettings.thirdPersonView != 0) ((ThxModel) helper.model).visible = true;
+            }
         }
 
         altitudeLockToggleDelay -= deltaTime;
-        if (Keyboard.isKeyDown(KEY_LOCK_ALT) && altitudeLockToggleDelay < 0f && pilot != null)
+        if (Keyboard.isKeyDown(ThxConfig.KEY_LOCK_ALT) && altitudeLockToggleDelay < 0f && pilot != null)
         {
             altitudeLockToggleDelay = .5f;
             altitudeLock = !altitudeLock;
@@ -417,7 +393,7 @@ public class ThxEntityHelicopter extends ThxEntity
 
         // PILOT EXIT
         pilotExitDelay -= deltaTime;
-        if (Keyboard.isKeyDown(KEY_EXIT) && pilot != null)
+        if (Keyboard.isKeyDown(ThxConfig.KEY_EXIT) && pilot != null)
         {
             pilotExitDelay = .5f; // the delay in seconds
             //cmd_exit = 1; // queue for server packet
@@ -425,13 +401,13 @@ public class ThxEntityHelicopter extends ThxEntity
         }
 
         // MANUAL ROCKET RELOAD 
-        if (Keyboard.isKeyDown(KEY_ROCKET_RELOAD) && rocketCount > 0)
+        if (Keyboard.isKeyDown(ThxConfig.KEY_ROCKET_RELOAD) && rocketCount > 0)
         {
 	        cmd_reload = 1; // queue for server packet
             reload();
         }
 
-        if (ENABLE_LOOK_YAW && pilot != null)
+        if (ThxConfig.ENABLE_LOOK_YAW && pilot != null)
         {
             // input from look control (mouse or analog stick)
             float deltaYawDeg = pilot.rotationYaw - rotationYaw;
@@ -448,11 +424,11 @@ public class ThxEntityHelicopter extends ThxEntity
         // buttonYaw:
         {
             // button yaw
-            if (Keyboard.isKeyDown(KEY_ROTATE_LEFT)) // g, rotate left
+            if (Keyboard.isKeyDown(ThxConfig.KEY_ROTATE_LEFT)) // g, rotate left
             {
                 rotationYawSpeed -= 8f;
             }
-            else if (Keyboard.isKeyDown(KEY_ROTATE_RIGHT)) // h, rotate right
+            else if (Keyboard.isKeyDown(ThxConfig.KEY_ROTATE_RIGHT)) // h, rotate right
             {
                 rotationYawSpeed += 8f;
             }
@@ -475,7 +451,7 @@ public class ThxEntityHelicopter extends ThxEntity
             
         if (lookPitch) // helicopter follows player look pitch
         {
-            if (Keyboard.isKeyDown(KEY_AUTO_LEVEL))
+            if (Keyboard.isKeyDown(ThxConfig.KEY_AUTO_LEVEL))
             {
                 lookPitchZeroLevel = pilot.rotationPitch;
             }
@@ -516,12 +492,12 @@ public class ThxEntityHelicopter extends ThxEntity
         else // normal button pitch and roll by player
         {
             // check for auto-level command, will be applied later if no other pitch key pressed
-            if (Keyboard.isKeyDown(KEY_AUTO_LEVEL))
+            if (Keyboard.isKeyDown(ThxConfig.KEY_AUTO_LEVEL))
             {
                 autoLevelDelay = 1.5f; // effect lasts a short time after key is released, but overriden by key presses
             }
                 
-            if (Keyboard.isKeyDown(KEY_FORWARD))
+            if (Keyboard.isKeyDown(ThxConfig.KEY_FORWARD))
             {
                 if (rotationPitch > MAX_PITCH)
                 {
@@ -540,7 +516,7 @@ public class ThxEntityHelicopter extends ThxEntity
                     rotationPitchSpeed = 0f;
                 }
             }
-            else if (Keyboard.isKeyDown(KEY_BACK))
+            else if (Keyboard.isKeyDown(ThxConfig.KEY_BACK))
             {
                 if (rotationPitch < -MAX_PITCH / 1.5f)
                 {
@@ -567,7 +543,7 @@ public class ThxEntityHelicopter extends ThxEntity
             }
             else
             {
-                if (ENABLE_AUTO_LEVEL) // this is always-on auto-level, if enabled
+                if (ThxConfig.ENABLE_AUTO_LEVEL) // this is always-on auto-level, if enabled
                 {
 	                rotationPitchSpeed = -rotationPitch * .5f;
 	                rotationPitch += rotationPitchSpeed * deltaTime;
@@ -580,7 +556,7 @@ public class ThxEntityHelicopter extends ThxEntity
         }
 
         // ROLL
-        if (Keyboard.isKeyDown(KEY_LEFT) && pilot != null)
+        if (Keyboard.isKeyDown(ThxConfig.KEY_LEFT) && pilot != null)
         {
             if (rotationRoll > MAX_ROLL)
             {
@@ -598,7 +574,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 rotationRollSpeed = 0f;
             }
         }
-        else if (Keyboard.isKeyDown(KEY_RIGHT) && pilot != null)
+        else if (Keyboard.isKeyDown(ThxConfig.KEY_RIGHT) && pilot != null)
         {
             if (rotationRoll < -MAX_ROLL) 
             {
@@ -632,14 +608,14 @@ public class ThxEntityHelicopter extends ThxEntity
         // collective (throttle) control
         // default space, increase throttle
             
-        if (Keyboard.isKeyDown(KEY_ASCEND) || (Keyboard.isKeyDown(KEY_FORWARD) && lookPitch)) // player
+        if (Keyboard.isKeyDown(ThxConfig.KEY_ASCEND) || (Keyboard.isKeyDown(ThxConfig.KEY_FORWARD) && lookPitch)) // player
         {
 	        altitudeLock = false;
             if (throttle < THROTTLE_MAX) throttle += THROTTLE_INC;
             if (throttle > THROTTLE_MAX) throttle = THROTTLE_MAX;
             // throttle = THROTTLE_MAX;
         }
-        else if (Keyboard.isKeyDown(KEY_DESCEND) || (Keyboard.isKeyDown(KEY_BACK) && lookPitch)) 
+        else if (Keyboard.isKeyDown(ThxConfig.KEY_DESCEND) || (Keyboard.isKeyDown(ThxConfig.KEY_BACK) && lookPitch)) 
         {
 	        altitudeLock = false;
             if (throttle > THROTTLE_MIN) throttle -= THROTTLE_INC;
@@ -649,7 +625,7 @@ public class ThxEntityHelicopter extends ThxEntity
         else
         {
             // zero throttle
-            if (ENABLE_AUTO_THROTTLE_ZERO) throttle *= .6; // quickly zero throttle
+            if (ThxConfig.ENABLE_AUTO_THROTTLE_ZERO) throttle *= .6; // quickly zero throttle
             
 	        //altitudeLock = true; // no falling during pitch/roll -- beginner mode 
         }
@@ -676,8 +652,6 @@ public class ThxEntityHelicopter extends ThxEntity
             targetHelicopter = null;
             return;
         }
-        
-        isActive = true; // trigger custom packet updates from server
         
         float thd = 0f; // thd is targetHelicopter distance
         deltaPosToTarget.set((float)(targetHelicopter.posX - posX), 0f, (float)(targetHelicopter.posZ - posZ));
@@ -771,6 +745,16 @@ public class ThxEntityHelicopter extends ThxEntity
     
     void onUpdateVacant()
     {
+        if (worldObj.isRemote)
+        {
+            rotationRoll = getWatchedData_Roll(); // client will update from dataWatcher
+        }
+        else
+        {
+            setWatchedData_Roll(); // server will set the data
+        }
+        plog("roll: " + rotationRoll);
+        
         //((ThxModel) helper.model).visible = true; // needed? 
 
         // adjust position height to avoid collisions
@@ -1052,12 +1036,6 @@ public class ThxEntityHelicopter extends ThxEntity
         ThxEntityMissile newMissile = new ThxEntityMissile(newOwner, posX + offX, posY + offY, posZ + offZ, motionX * MOMENTUM, motionY * MOMENTUM, motionZ * MOMENTUM, yaw, pitch);
         lastMissileFired = newMissile;
         worldObj.spawnEntityInWorld(newMissile);
-        
-        for (Object followerItem : followers)
-        {
-            ThxEntityHelicopter follower = (ThxEntityHelicopter) followerItem;
-            //too much, rockets only? follower.fireMissile(); 
-        }
     }
 
     void createMap()
@@ -1410,10 +1388,27 @@ public class ThxEntityHelicopter extends ThxEntity
     @Override
     public void setPositionAndRotation2(double posX, double posY, double posZ, float yaw, float pitch, int unused)
     {
+        if (!worldObj.isRemote) 
+        {
+            log("setPositionAndRotation2() called on server");
+            super.setPositionAndRotation2(posX, posY, posZ, yaw, pitch, unused);
+            return;
+        }
+            
         // bypassing check for collision in super method which seems to be hitting pilot and causing jumping
         // but it is still needed for vacant helicopters to prevent sinking into the ground
-	    if (riddenByEntity != null) setPositionAndRotation(posX, posY, posZ, yaw, pitch);
-	    else super.setPositionAndRotation2(posX, posY, posZ, yaw, pitch, unused);
+	    //if (riddenByEntity != null && riddenByEntity.entityId == minecraft.thePlayer.entityId) // player is the client pilot
+        
+	    if (riddenByEntity != null)
+        {
+
+	        // already sending position to server, so ignore server position updates
+            //setPositionAndRotation(posX, posY, posZ, yaw, pitch);
+        }
+        else
+        {
+            super.setPositionAndRotation2(posX, posY, posZ, yaw, pitch, unused);
+        }
     }
     
 }

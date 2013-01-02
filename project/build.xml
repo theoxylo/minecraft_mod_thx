@@ -1,22 +1,19 @@
 <?xml version="1.0"?>
-<project name="thx_mod_CLIENT" default="copy_to_mcp" basedir="..">
+<project name="thx_mod" default="copy_to_mcp" basedir="..">
 
-	<property environment="env" />
-	<property name="MCP_HOME" value="../mcp723-145" />
-	<!--<property name="MCP_HOME" value="${env.MCP_HOME}" />-->
-	<echo message="MCP_HOME: ${MCP_HOME}" />
-	<echo message="COMPUTERNAME: ${env.COMPUTERNAME}" />
+	<property name="MCP_DIR" value="../mcp725-146" />
+	<echo message="MCP_DIR: ${MCP_DIR}" />
 
 	<target name="copy_to_mcp">
 
 		<echo message="Copying modified resource files..." />
-		<copy todir="${MCP_HOME}/jars/mods/thx.zip/thx" verbose="true">
+		<copy todir="${MCP_DIR}/jars/mods/thx.zip/thx" verbose="true">
 			<fileset dir="project/resources/thx" includes="*.png" />
 		</copy>
 
 		<echo message="Copying modified java files..." />
-		<copy todir="${MCP_HOME}/src/minecraft" verbose="true">
-			<fileset dir="project/src-thx/universal" includes="**/*.java" />
+		<copy todir="${MCP_DIR}/src/minecraft" verbose="true">
+			<fileset dir="project/src" includes="**/*.java" />
 		</copy>
 
 	</target>

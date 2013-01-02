@@ -1,4 +1,5 @@
 package net.minecraft.src;
+
 import org.lwjgl.opengl.GL11;
 
 public abstract class ThxModel extends ModelBase

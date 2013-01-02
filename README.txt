@@ -1,21 +1,24 @@
-Minecraft THX Helicopter Mod, v020 for mc146 with ModLoader, 20121221, mod_thx-mc146_v020
+Minecraft THX Helicopter Mod, v020 for mc146 with ModLoader OR Forge, 20130102, mod_thx-mc146_v020
 
 
 INTRODUCTION
 ------------
-This is version v020 for use with Minecraft 1.4.6 and ModLoader for single-player and LAN MP.
+This is version v020 for use with Minecraft 1.4.6 and ModLoader OR Forge for single-player and LAN MP.
 
 You can download the installation zip file from GitHub:
 
-    https://github.com/theoxylo/minecraft_mod_thx/blob/v020_mc146/downloads/mod_thx_helicopter_mc146_v020.zip?raw=true
+    https://github.com/theoxylo/minecraft_mod_thx/blob/v020_mc146/downloads/mod_thx_helicopter_mc146_v020_client.zip?raw=true
 
 And you can download the exact 1.4.6 ModLoader archive you need from this download link:
 
     http://dl.dropbox.com/u/20629262/Latest/ModLoader.zip
 
-This is an early release of a mod still under construction. No corruption issues are known, but please back-up your worlds often.
+Or, to use Forge instead, download the universal client, version 6.5.0 build 471:
 
-Make sure that Minecraft and ModLoader are working properly before installing this mod -- see log ouput in .minecraft/ModLoader.txt
+    http://files.minecraftforge.net/minecraftforge/minecraftforge-universal-1.4.6-6.5.0.471.zip    
+
+
+Make sure that Minecraft and ModLoader (or Forge) are working properly.
 
 Please visit the forum thread to discuss, report issues, leave feedback, etc:
 
@@ -25,11 +28,9 @@ Please visit the forum thread to discuss, report issues, leave feedback, etc:
 
 INSTALLATION
 ------------
-1. Install ModLoader and test. This involves adding the files from the ModLoader zip archive to your minecraft.jar file and deleting META-INF. Please visit the official ModLoader forum thread for details:
+1. Install ModLoader OR Forge and test. This involves adding the files from the ModLoader OF Forge zip archive to your minecraft.jar file and deleting META-INF.
 
-    http://www.minecraftforum.net/topic/75440-v146-risugamis-mods-updated
-
-2. Then extract the files from the THX client zip archive and add them to minecraft.jar (just adding the zip file to your mods directory is not sufficient for this version).
+2. Then copy the THX download zip to your .minecraft/mods directory and restart the game. There is no need to make any further changes to minecraft.jar!
 
 3. After running at least once, check out the options in file '.minecraft/mods/mod_thx_options.txt' for controls and other settings (see below for annotated listing).
 
@@ -60,7 +61,7 @@ Welcome to the Minecraft mod_thx Helicopter project! If you are still reading th
 
 1. Minecraft (full version): http://www.minecraft.net
 
-2. Forge: http://www.minecraftforge.net/forum
+2. Risugami's ModLoader (http://www.minecraftforum.net/topic/75440-v146-risugamis-mods-updated) or Forge (http://www.minecraftforge.net)
 
 3. MCP: http://mcp.ocean-labs.de/index.php/Main_Page
 

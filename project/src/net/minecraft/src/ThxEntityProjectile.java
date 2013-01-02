@@ -1,7 +1,6 @@
 package net.minecraft.src;
 
 import java.util.List;
-import java.util.Random;
 
 public abstract class ThxEntityProjectile extends ThxEntity
 {
@@ -18,6 +17,12 @@ public abstract class ThxEntityProjectile extends ThxEntity
         setSize(.5f, .5f);
     }
 
+    public ThxEntityProjectile(World world, double x, double y, double z)
+    {
+        this (world);
+        setPositionAndRotation(x, y, z, 0f, 0f);
+    }
+    
     public ThxEntityProjectile(Entity owner, double x, double y, double z, double dx, double dy, double dz, float yaw, float pitch)
     {
         this(owner.worldObj);
@@ -36,6 +41,7 @@ public abstract class ThxEntityProjectile extends ThxEntity
         motionZ = fwd.z * acceleration + dz;
     }
 
+    /*
     public ThxEntityProjectile(World world, double x, double y, double z)
     {
         this(world);
@@ -51,12 +57,13 @@ public abstract class ThxEntityProjectile extends ThxEntity
         motionY = fwd.y * acceleration;
         motionZ = fwd.z * acceleration;
     }
+    */
 
     public void onUpdate()
     {
         //log(String.format("onUpdate [posX: %6.2f, posY: %6.2f, posZ: %6.2f, yaw: %6.2f, pitch: %6.2f, roll: %6.2f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", posX, posY, posZ, rotationYaw, rotationPitch, rotationRoll, motionX, motionY, motionZ));
         
-        super.onUpdate(); // this resets isActive back to default 'false'
+        super.onUpdate();
         
         if (worldObj.isRemote) // most logic only needed on server?
         {
@@ -178,12 +185,12 @@ public abstract class ThxEntityProjectile extends ThxEntity
 	        
 	        if (worldObj.isRemote) // debris particles on client only
 	        {
-		        if (blockId > 0 && false) // disabled for now due to error, see below
+		        if (blockId > 0) // && false) // disabled for now due to error, see below
 		        {
 			        // kick up some debris if we hit a block, but only works for top surface
 		            for (int k1 = 0; k1 < 4; k1++)
 		            {
-			            //line 159_orig: worldObj.spawnParticle((new StringBuilder()).append("tilecrack_").append(blockId).toString(), posX + ((double)rand.nextFloat() - 0.5) * (double)width, boundingBox.minY + 0.1, posZ + ((double)rand.nextFloat() - 0.5) * (double)width, 1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5));
+			            worldObj.spawnParticle((new StringBuilder()).append("tilecrack_").append(blockId).toString(), posX + ((double)rand.nextFloat() - 0.5) * (double)width, boundingBox.minY + 0.1, posZ + ((double)rand.nextFloat() - 0.5) * (double)width, 1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5),  1.0 + ((double)rand.nextFloat() - 0.5));
 		                // currently crashing:
 		                /*
 							Caused by: java.lang.ArrayIndexOutOfBoundsException: 2
@@ -222,12 +229,7 @@ public abstract class ThxEntityProjectile extends ThxEntity
             Entity entity = (Entity) list.get(i);
             if (!entity.canBeCollidedWith()) continue;
             
-            //String idMsg =  "[Pilot " + owner.entityId + "] hit [Entity " + entity.entityId + "]";
-            String idMsg =  "[Pilot " + owner + "] hit [Entity " + entity + "]";
-            log(idMsg);
-            
-	        //entity.attackEntityFrom(new EntityDamageSource("projectile splash damage", owner), damage); // splash damage is same as rocket hit
-	        entity.attackEntityFrom(new EntityDamageSource(idMsg, owner), damage); // splash damage is same as rocket hit
+	        entity.attackEntityFrom(new EntityDamageSource("projectile splash damage", owner), damage); // splash damage is same as rocket hit
         }
     }
     
@@ -241,7 +243,13 @@ public abstract class ThxEntityProjectile extends ThxEntity
     
     abstract float getAcceleration();
     
-    abstract void onLaunch();
+    void onLaunch()
+    {
+        if (!worldObj.isRemote) // send initial server update packet to all clients
+        {
+	        sendUpdatePacketFromServer();
+        }
+    }
     
     abstract void createParticles();
     

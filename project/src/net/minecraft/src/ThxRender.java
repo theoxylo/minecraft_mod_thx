@@ -1,9 +1,5 @@
 package net.minecraft.src;
 
-import java.util.Date;
-
-import net.minecraft.client.Minecraft;
-
 import org.lwjgl.opengl.GL11;
 
 public class ThxRender extends Render
@@ -55,8 +51,9 @@ public class ThxRender extends Render
         }
         
         
-        int texture = renderManager.renderEngine.getTexture(model.renderTexture);
-        renderManager.renderEngine.bindTexture(texture);
+        //int texture = renderManager.renderEngine.getTexture(model.renderTexture);
+        //renderManager.renderEngine.bindTexture(texture);
+        loadTexture(model.renderTexture);
 
         model.render();
         

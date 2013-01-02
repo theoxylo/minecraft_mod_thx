@@ -1,5 +1,6 @@
 package net.minecraft.src;
 
+
 public class ThxModelHelicopter extends ThxModelHelicopterBase
 {
     //float scale = 0.0625f;

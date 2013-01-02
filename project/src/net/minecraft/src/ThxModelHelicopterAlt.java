@@ -1,5 +1,6 @@
 package net.minecraft.src;
 
+
 public class ThxModelHelicopterAlt extends ThxModelHelicopterBase
 {
     public ModelRenderer body;

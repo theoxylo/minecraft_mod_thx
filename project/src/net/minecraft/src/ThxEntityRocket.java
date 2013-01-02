@@ -1,7 +1,5 @@
 package net.minecraft.src;
 
-import java.util.List;
-import java.util.Random;
 
 public class ThxEntityRocket extends ThxEntityProjectile
 {
@@ -10,16 +8,16 @@ public class ThxEntityRocket extends ThxEntityProjectile
         super(world);
     }
 
+    public ThxEntityRocket(World world, double x, double y, double z)
+    {
+        super(world, x, y, z);
+    }
+    
     public ThxEntityRocket(Entity owner, double x, double y, double z, double dx, double dy, double dz, float yaw, float pitch)
     {
         super(owner, x, y, z, dx, dy, dz, yaw, pitch);
     }
     
-    public ThxEntityRocket(World world, double x, double y, double z)
-    {
-        super(world, x, y, z);
-    }
-
     @Override
     ThxEntityHelper createHelper()
     {
@@ -53,6 +51,8 @@ public class ThxEntityRocket extends ThxEntityProjectile
     {
         log("onLaunch");
         worldObj.playSoundAtEntity(this, "random.fizz", 1f, 1f);
+        
+        super.onLaunch();
     }
     
     @Override

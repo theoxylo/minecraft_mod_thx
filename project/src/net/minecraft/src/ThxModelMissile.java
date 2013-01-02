@@ -1,5 +1,6 @@
 package net.minecraft.src;
 
+
 public class ThxModelMissile extends ThxModel
 {
     public ModelRenderer missile;

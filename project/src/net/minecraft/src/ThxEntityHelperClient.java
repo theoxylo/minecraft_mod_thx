@@ -1,11 +1,10 @@
 package net.minecraft.src;
 
-import net.minecraft.client.Minecraft;
 
 public class ThxEntityHelperClient extends ThxEntityHelper
 {
     World world;
-    Minecraft minecraft;
+    //Minecraft minecraft;
     GuiScreen guiScreen;
     
     ThxEntityHelperClient(ThxEntity entity, ThxModel model)
@@ -13,15 +12,15 @@ public class ThxEntityHelperClient extends ThxEntityHelper
         this.model = model;
         this.entity = entity;
         world = entity.worldObj;
-        minecraft = ModLoader.getMinecraftInstance();
+        //minecraft = FMLClientHandler.instance().getClient();
     }
     
     boolean isPaused()
     {
-        if (guiScreen != minecraft.currentScreen)
+        if (guiScreen != entity.minecraft.currentScreen)
         {
             // guiScreen has changed
-            guiScreen = minecraft.currentScreen;
+            guiScreen = entity.minecraft.currentScreen;
 
             if (guiScreen != null && guiScreen.doesGuiPauseGame())
             {
@@ -35,14 +34,14 @@ public class ThxEntityHelperClient extends ThxEntityHelper
     @Override
     void addChatMessageToAll(String s)
     {
-        minecraft.ingameGUI.getChatGUI().printChatMessage(s);
+        entity.minecraft.ingameGUI.getChatGUI().printChatMessage(s);
     }
 
     void addChatMessageToPilot(String s)
     {
         // only the pilot player should see this message
-        if (!minecraft.thePlayer.equals(entity.riddenByEntity)) return;
+        if (!entity.minecraft.thePlayer.equals(entity.riddenByEntity)) return;
 
-        minecraft.ingameGUI.getChatGUI().printChatMessage(s);
+        entity.minecraft.ingameGUI.getChatGUI().printChatMessage(s);
     }
 }
