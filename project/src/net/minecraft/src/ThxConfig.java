@@ -165,11 +165,6 @@ public class ThxConfig
         defaultAdded = ensureDefault("enable_auto_level", "true") || defaultAdded;
         defaultAdded = ensureDefault("enable_auto_throttle_zero", "true") || defaultAdded;
         
-        //defaultAdded = ensureDefault("thx_entity_id_helicopter", "100") || defaultAdded;
-        //defaultAdded = ensureDefault("thx_entity_id_rocket",     "101") || defaultAdded;
-        //defaultAdded = ensureDefault("thx_entity_id_missile",    "102") || defaultAdded;
-        //defaultAdded = ensureDefault("thx_item_id_helicopter",   "24100") || defaultAdded;
-        
         return defaultAdded;
     }
     

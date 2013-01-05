@@ -66,7 +66,6 @@ public class ThxEntityHelicopter extends ThxEntity
     Vector3 velocity = new Vector3();
     
     // enemy AI helicopter or friend?
-    public ThxEntityHelicopter targetHelicopter;
     public boolean isTargetHelicopterFriendly;
     public boolean isDroneArmed;
     Vector3 deltaPosToTarget = new Vector3();
@@ -119,6 +118,7 @@ public class ThxEntityHelicopter extends ThxEntity
     {
         //int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
         //plog(String.format("onUpdate, pilot %d [posX: %6.2f, posY: %6.2f, posZ: %6.2f, yaw: %6.2f, pitch: %6.2f, roll: %6.2f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f, throttle: %6.3f, damage: %d]", riddenById, posX, posY, posZ, rotationYaw, rotationPitch, rotationRoll, motionX, motionY, motionZ, throttle, (int) damage));
+        plog("*** target helicopter: " + targetEntity);
         
         super.onUpdate();
         
@@ -139,7 +139,7 @@ public class ThxEntityHelicopter extends ThxEntity
             onUpdateWithPilot(); // some pilot, check for current player later
             updateMotion(altitudeLock);
         }
-        else if (targetHelicopter != null)
+        else if (targetEntity != null)
         {
             onUpdateDrone(); // drone ai
             updateMotion(false);
@@ -209,7 +209,7 @@ public class ThxEntityHelicopter extends ThxEntity
         if (!worldObj.isRemote) // we are on embedded server, receiving client update packets
         {
 	        // super.applyUpdatePacketFromClient(ThxEntityPacket250 packet) has been called already
-	        // now, we just apply any commands based on flags (why not do in apply method already)?
+	        // now, we just apply any commands based on flags (why not do in apply method already?)
             
 	        if (riddenByEntity.isDead)
 	        {
@@ -633,17 +633,23 @@ public class ThxEntityHelicopter extends ThxEntity
     
     void onUpdateDrone()
     {
-        if (worldObj.isRemote)
+        if (worldObj.isRemote) // client-side drone receives standard mc update packets, no 250 custom
         {
-	        // applyUpdatePacketFromServer in ThxEntity base class should do client update for pos, vel, ypr, damage, throttle
+	        // OLD: applyUpdatePacketFromServer in ThxEntity base class should do client update for pos, vel, ypr, damage, throttle
+            
+            // read from dataWatcher
+            throttle = getWatched_Throttle();
+            rotationRoll = getWatched_Roll();
             
 	        // adjust model rotor speed according to throttle
 	        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
 	        ThxModelHelicopterBase model = (ThxModelHelicopterBase) helper.model;
 	        model.rotorSpeed = power / 2f + .75f;
 	        
-            return; 
+            return; // position and velocity updates are handled by 
         }
+        
+        ThxEntityHelicopter targetHelicopter = (ThxEntityHelicopter) targetEntity;
         
         if (targetHelicopter == null) return;
         
@@ -659,7 +665,7 @@ public class ThxEntityHelicopter extends ThxEntity
             
         if (isTargetHelicopterFriendly)
         {
-            // TODO: defend targer helicopter somehow?
+            // TODO: defend or help friendly target helicopter somehow?
         }
         else // not friendly, attack target
         {
@@ -741,20 +747,14 @@ public class ThxEntityHelicopter extends ThxEntity
         {
             throttle *= .6; // auto zero throttle   
         }
+        
+        // record values in dataWatcher
+        setWatched_Throttle(throttle);
+        setWatched_Roll(rotationRoll);
     }
     
     void onUpdateVacant()
     {
-        if (worldObj.isRemote)
-        {
-            rotationRoll = getWatchedData_Roll(); // client will update from dataWatcher
-        }
-        else
-        {
-            setWatchedData_Roll(); // server will set the data
-        }
-        plog("roll: " + rotationRoll);
-        
         //((ThxModel) helper.model).visible = true; // needed? 
 
         // adjust position height to avoid collisions
@@ -852,7 +852,7 @@ public class ThxEntityHelicopter extends ThxEntity
         // super.interact returns true if player boards and becomes new pilot
         if (!super.interact(player)) return true; // return true to handle interact() -- prevents currently held item from being used
         
-        targetHelicopter = null; // inactivate ai
+        targetEntity = null; // inactivate ai
         
         altitudeLock = false;
         
@@ -947,8 +947,7 @@ public class ThxEntityHelicopter extends ThxEntity
         //riddenByEntity.entityRiderPitchDelta = 0.0D;
         //riddenByEntity.entityRiderYawDelta = 0.0D;
 
-        targetHelicopter = null; // used on both client and server? probably server only
-        
+        targetEntity = null;
     }
     
     void reload()
@@ -1319,26 +1318,26 @@ public class ThxEntityHelicopter extends ThxEntity
         {
             log("attacked by " + attackingEntity + " with pilot: " + attackingEntity.riddenByEntity);
             
-            if (targetHelicopter == null) // first attack by another helo, begin tracking as friendly
+            if (targetEntity == null) // first attack by another helo, begin tracking as friendly
             {
-                targetHelicopter = (ThxEntityHelicopter) attackingEntity;
-                targetHelicopter.followers.add(this);
+                targetEntity = (ThxEntityHelicopter) attackingEntity;
+                //targetEntity.followers.add(this);
                 
                 isTargetHelicopterFriendly = true;
                 isDroneArmed = false;
                 
                 worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
                 
-                log("new targetHelicopter: " + targetHelicopter);
+                log("new targetEntity: " + targetEntity);
             }
-            else if (targetHelicopter.equals(attackingEntity)) // already tracking
+            else if (targetEntity.equals(attackingEntity)) // already tracking
             {
                 if (isTargetHelicopterFriendly) // friendly fire
                 {
                     if (!isDroneArmed)
                     {
                         isDroneArmed = true; // now armed, still friendly, earn xp!
-                        owner = targetHelicopter.owner;
+                        owner = targetEntity.owner;
                         
                         worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
                     }
@@ -1346,7 +1345,7 @@ public class ThxEntityHelicopter extends ThxEntity
                     {
                         isTargetHelicopterFriendly = false;
                         
-                        targetHelicopter.followers.remove(this);
+                        //targetHelicopter.followers.remove(this);
                         
                         owner = this; // no more xp
                         
@@ -1370,16 +1369,15 @@ public class ThxEntityHelicopter extends ThxEntity
             {
                 // hit by a helicopter other than the one we are following, so attack it
                 
-                // prevTargetHelicopter = targetHelicopter; // TODO: switch back to original target if friendly?
+                //targetHelicopter.followers.remove(this);
                 
-                targetHelicopter.followers.remove(this);
-                targetHelicopter = (ThxEntityHelicopter) attackingEntity;
+                targetEntity = (ThxEntity) attackingEntity;
                 
                 isTargetHelicopterFriendly = false;
                 
                 worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
                 
-                log("new enemy targetHelicopter: " + targetHelicopter);
+                log("new enemy targetEntity: " + targetEntity);
                 
             }
         }

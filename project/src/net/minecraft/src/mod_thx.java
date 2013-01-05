@@ -12,14 +12,11 @@ public class mod_thx extends BaseMod
     //@SidedProxy(clientSide = "thx.ThxProxyClient", serverSide = "thx.ThxProxyServer")
     //public static ThxProxy proxy;
 
-	public static Item thxHelicopterItem;
-	
     static WorldClient theWorld = null;
     
     static int HELICOPTER_ENTITY_ID = 0;
     static int ROCKET_ENTITY_ID     = 0;
     static int MISSILE_ENTITY_ID    = 0;
-    static int HELICOPTER_ITEM_ID   = 0;
 
     public mod_thx()
     {
@@ -33,9 +30,6 @@ public class mod_thx extends BaseMod
     {
         System.out.println("mod_thx - load() called");
         
-	    HELICOPTER_ITEM_ID   = ThxConfig.getIntProperty("thx_item_id_helicopter");
-	    //HELICOPTER_ENTITY_ID = ThxConfig.getIntProperty("thx_entity_id_helicopter");
-	    //ROCKET_ENTITY_ID     = ThxConfig.getIntProperty("thx_entity_id_rocket");
 	    //MISSILE_ENTITY_ID    = ThxConfig.getIntProperty("thx_entity_id_missile");
         
         //log("isClient: " + isClient());
@@ -44,46 +38,35 @@ public class mod_thx extends BaseMod
         //log("proxy class: " + proxy.getClass());
         
 
-        ModLoader.setInGameHook(this, true, true);
-        // Currently causing:
-        //java.lang.ClassCastException: cpw.mods.fml.common.FMLModContainer cannot be cast to cpw.mods.fml.common.modloader.ModLoaderModContainer
-        //at cpw.mods.fml.common.modloader.ModLoaderHelper.updateStandardTicks(ModLoaderHelper.java:67)
-        //at net.minecraft.src.ModLoader.setInGameHook(ModLoader.java:850)
-        
+        //needed? //ModLoader.setInGameHook(this, true, true);
         
         ModLoader.registerPacketChannel(this, "THX_entity");
 
-        int drawDistance = 64; // typically 160, reduced for testing spawn/despawn
+        int drawDistance = 20; // typically 160, reduced for testing spawn/despawn
         int updateFreq = 2; // 20 for 1 second updates, 2 for every other tick
         boolean trackMotion = true;
             
         // register entity classes
         helicopter:
         {
-            //log("Registering entity class for Helicopter with ModLoader entity id " + HELICOPTER_ENTITY_ID);
-            //EntityRegistry.registerModEntity(ThxEntityHelicopter.class, "thxHelicopter", HELICOPTER_ENTITY_ID, instance, drawDistance, updateFreq, trackMotion);
-            
-            HELICOPTER_ENTITY_ID = ModLoader.getUniqueEntityId();
+		    HELICOPTER_ENTITY_ID = ThxConfig.getIntProperty("thx_id_entity_helicopter"); // can be overridden in prop file only if needed
+		    if (HELICOPTER_ENTITY_ID == 0) HELICOPTER_ENTITY_ID = ModLoader.getUniqueEntityId();
             log("Registering entity class for Helicopter with ModLoader entity id " + HELICOPTER_ENTITY_ID);
             ModLoader.registerEntityID(ThxEntityHelicopter.class, "thxHelicopter", HELICOPTER_ENTITY_ID);
             ModLoader.addEntityTracker(this, ThxEntityHelicopter.class, HELICOPTER_ENTITY_ID, drawDistance, updateFreq, trackMotion);
         }
         rocket:
         {
-            //log("Registering entity class for Rocket with entity id " + ROCKET_ENTITY_ID);
-            //EntityRegistry.registerModEntity(ThxEntityRocket.class, "thxRocket", ROCKET_ENTITY_ID, instance, drawDistance, updateFreq, trackMotion);
-            
-            ROCKET_ENTITY_ID = ModLoader.getUniqueEntityId();
+		    ROCKET_ENTITY_ID = ThxConfig.getIntProperty("thx_id_entity_rocket"); // can be overridden in prop file only if needed
+		    if (ROCKET_ENTITY_ID == 0) ROCKET_ENTITY_ID = ModLoader.getUniqueEntityId();
             log("Registering entity class for Rocket with entity id " + ROCKET_ENTITY_ID);
             ModLoader.registerEntityID(ThxEntityRocket.class, "thxRocket", ROCKET_ENTITY_ID);
             ModLoader.addEntityTracker(this, ThxEntityRocket.class, ROCKET_ENTITY_ID, drawDistance, updateFreq, trackMotion);
         }
         missile:
         {
-            //log("Registering entity class for Missile with entity id " + MISSILE_ENTITY_ID);
-            //EntityRegistry.registerModEntity(ThxEntityMissile.class, "thxMissile", MISSILE_ENTITY_ID, instance, drawDistance, updateFreq, trackMotion);
-            
-            MISSILE_ENTITY_ID = ModLoader.getUniqueEntityId();
+		    MISSILE_ENTITY_ID = ThxConfig.getIntProperty("thx_id_entity_missile"); // can be overridden in prop file only if needed
+		    if (MISSILE_ENTITY_ID == 0) MISSILE_ENTITY_ID = ModLoader.getUniqueEntityId();
             log("Registering entity class for Missile with entity id " + MISSILE_ENTITY_ID);
             ModLoader.registerEntityID(ThxEntityMissile.class, "thxMissile", MISSILE_ENTITY_ID);
             ModLoader.addEntityTracker(this, ThxEntityMissile.class, MISSILE_ENTITY_ID, drawDistance, updateFreq, trackMotion);
@@ -91,26 +74,15 @@ public class mod_thx extends BaseMod
 
         helicopterItem:
         {
-		    if (HELICOPTER_ITEM_ID == 0) HELICOPTER_ITEM_ID = getNextItemId();
-            log("Setting up inventory item for helicopter with item id " + HELICOPTER_ITEM_ID);
-	        thxHelicopterItem = new ThxItemHelicopter(HELICOPTER_ITEM_ID);
-	        /* chained method approach:
-	            .setItemName("thxHelicopterItem")
-                .setMaxStackSize(16)
-		        .setTextureFile("/thx/helicopter_icon.png")
-		        .setIconIndex(0)
-		        .setMaxDamage(0)
-		        .setCreativeTab(CreativeTabs.tabTransport)
-	            ;
-            */
-	        //LanguageRegistry.addName(thxHelicopterItem, "THX Helicopter Prototype");
+		    int itemId = ThxConfig.getIntProperty("thx_id_item_helicopter");
+		    if (itemId == 0) itemId = getNextItemId(); // not defined in prop file
+            log("Setting up inventory item for helicopter with item id " + itemId);
+	        Item thxHelicopterItem = new ThxItemHelicopter(itemId);
 	        ModLoader.addName(thxHelicopterItem, "THX Helicopter Prototype");
 
-            log("Adding recipe for helicopter");
-	        //ItemStack itemStack = new ItemStack(thxHelicopterItem.shiftedIndex, 1, -1);
+            log("Adding recipe for helicopter item");
 	        ItemStack itemStack = new ItemStack(thxHelicopterItem);
             Object[] recipe = new Object[] { " X ", "X X", "XXX", Character.valueOf('X'), Block.planks };
-            //GameRegistry.addRecipe(itemStack, recipe);
             ModLoader.addRecipe(itemStack, recipe);
         }
 
@@ -132,15 +104,19 @@ public class mod_thx extends BaseMod
     public String getVersion()
     {
         //log("getVersion called");
-        return "Minecraft THX Helicopter Mod - mod_thx-mc146_v020_f";
+        return "Minecraft THX Helicopter Mod - mod_thx-mc146_v020_g";
     }
     
     int getNextItemId()
     {
         // return next available id
-        for (int idx = 24100; idx + 256 < Item.itemsList.length; idx++)
+        for (int idx = 2000; idx + 256 < Item.itemsList.length; idx++)
         {
-            if (Item.itemsList[idx + 256] == null) return idx;
+            if (Item.itemsList[idx + 256] == null)
+            {
+                log("Next available item id: " + idx);
+                return idx;
+            }
         }
         // error:
         throw new RuntimeException("Could not autofind next available Item ID -- please set manually in options file and restart");
@@ -247,5 +223,10 @@ public class mod_thx extends BaseMod
             log("ERROR: server received update packet for unknown entity id " + data.entityId);
 	    }
     }
-
+    
+    @Override
+    public void keyboardEvent(KeyBinding kb) 
+    {
+        log("keyboardEvent: " + kb);
+    }
 }

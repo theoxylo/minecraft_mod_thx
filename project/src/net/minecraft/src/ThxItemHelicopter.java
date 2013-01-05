@@ -13,13 +13,17 @@ public class ThxItemHelicopter extends Item
         super(id);
         shiftedId = shiftedIndex;
         
-        // not working in Forge
-        //setTextureFile("/thx/helicopter_icon.png");
-        
         setItemName("thxHelicopterItem");
         setMaxStackSize(16);
-        //setIconIndex(0);
-        setIconIndex(ModLoader.addOverride("/gui/items.png", "/thx/helicopter_icon.png"));
+        
+        if (ThxConfig.getBoolProperty("disable_helicopter_item_image"))
+        {
+            setIconIndex(92); // hard-code to cookie icon for compatibility
+        }
+        else
+        {
+	        setIconIndex(ModLoader.addOverride("/gui/items.png", "/thx/helicopter_icon.png"));
+        }
         setMaxDamage(0);
         setCreativeTab(CreativeTabs.tabTransport);
         

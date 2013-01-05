@@ -4,6 +4,9 @@ import net.minecraft.client.Minecraft;
 
 public abstract class ThxEntity extends Entity
 {
+    ThxEntity targetEntity; // e.g. helicopter for ai to follow/attack
+    int prevTargetEntityId = 0;
+    
     Minecraft minecraft;
     
     final float RAD_PER_DEG = 00.01745329f;
@@ -75,17 +78,37 @@ public abstract class ThxEntity extends Entity
     protected void entityInit()
     {
         //log("entityInit() called");
-        dataWatcher.addObject(22, new Integer(0));
+        dataWatcher.addObject(22, new Integer(0)); // roll
+        dataWatcher.addObject(23, new Integer(0)); // throttle
+        dataWatcher.addObject(24, new Integer(0)); // targetHelicopter id
     }
     
-    public void setWatchedData_Roll() // test: setting on server for vacant helicopters
+    public void setWatched_Roll(float roll) // test: setting on server for vacant helicopters
     {
-        dataWatcher.updateObject(22, Integer.valueOf((int) rotationRoll));
+        assertServerSideOnly();
+        dataWatcher.updateObject(22, Integer.valueOf((int) (roll * 1000f)));
     }
     
-    public float getWatchedData_Roll() // test: and calling on client to sync current state 
+    public float getWatched_Roll() // test: and calling on client to sync current state 
     {
-        return (float) dataWatcher.getWatchableObjectInt(22);
+        assertClientSideOnly();
+        return ((float) dataWatcher.getWatchableObjectInt(22)) / 1000f;
+    }
+
+    public void setWatched_Throttle(float f) // test: setting on server for drone helicopters
+    {
+        plog("setWatched_Throttle: " + f);
+        
+        assertServerSideOnly();
+        dataWatcher.updateObject(23, Integer.valueOf((int) (f * 1000f)));
+    }
+    
+    public float getWatched_Throttle() // test: and calling on client to sync current state 
+    {
+        assertClientSideOnly();
+        float f = ((float) dataWatcher.getWatchableObjectInt(23)) / 1000f;
+        plog("getWatched_Throttle: " + f);
+        return f;
     }
 
     @Override
@@ -107,11 +130,51 @@ public abstract class ThxEntity extends Entity
         prevRotationYaw = rotationYaw;
         prevRotationRoll = rotationRoll;
         
+        // apply custom update packet 250 if any
         if (lastUpdatePacket != null)
         {
             if (worldObj.isRemote) applyUpdatePacketFromServer(lastUpdatePacket);
             else applyUpdatePacketFromClient(lastUpdatePacket);
             lastUpdatePacket = null; // only apply once
+        }
+        
+        // apply dataWatcher changes for target entity 
+        if (worldObj.isRemote)
+        {
+            // read data and apply if changed on client
+	        int id = dataWatcher.getWatchableObjectInt(24);
+	        
+	        if (id != prevTargetEntityId)
+	        {
+                prevTargetEntityId = id;
+                
+                if (id > 0)
+                {
+		            Entity target = ((WorldClient) worldObj).getEntityByID(id);
+		            if (target != null && !target.isDead && target instanceof ThxEntity)
+		            {
+		                targetEntity = (ThxEntity) target;
+		            }
+                }
+                else
+                {
+                    targetEntity = null;
+                }
+	        }
+        }
+        else
+        {
+            // set data if changed on server
+	        if (targetEntity != null && targetEntity.entityId != prevTargetEntityId)
+	        {
+		        dataWatcher.updateObject(24, Integer.valueOf(targetEntity.entityId));
+                prevTargetEntityId = targetEntity.entityId;
+	        }
+	        else if (targetEntity == null && prevTargetEntityId > 0)
+            {
+		        dataWatcher.updateObject(24, Integer.valueOf(0));
+	            prevTargetEntityId = 0;
+            }
         }
         
         inWater = isInWater();
@@ -203,6 +266,17 @@ public abstract class ThxEntity extends Entity
         log("setDead called");
         super.setDead();
     }
+    
+    /*
+    @Override
+    public void setVelocity(double dx, double dy, double dz)
+    {
+        //assertClientSideOnly();
+        
+        //log("setVelocity called");
+        super.setVelocity(dx, dy, dz);
+    }
+    */
 
     @Override
     protected void fall(float f)
@@ -385,24 +459,21 @@ public abstract class ThxEntity extends Entity
         return d < 128.0 * 128.0;
     }
 
-    public Packet250CustomPayload createUpdatePacket()
+    private Packet250CustomPayload createUpdatePacket()
     {
         return new ThxEntityPacket250Data(this).createPacket250();
     }
     
     public void sendUpdatePacketFromClient()
     {
-        if (!worldObj.isRemote) throw new RuntimeException("server should not be asked to send client packet!");
+        assertClientSideOnly();
         
         minecraft.getSendQueue().addToSendQueue(createUpdatePacket());
     }
     
     public void applyUpdatePacketFromClient(ThxEntityPacket250Data packet)
     {
-        //plog("Applying client packet: " + packet);
-        
-        // make sure we are on the server before applying update from client
-        if (worldObj.isRemote) throw new RuntimeException("client should not be asked to apply client packet!");
+        assertServerSideOnly();
         
         setPositionAndRotation(packet.posX, packet.posY, packet.posZ, packet.yaw, packet.pitch);
         
@@ -439,8 +510,7 @@ public abstract class ThxEntity extends Entity
     
     public void sendUpdatePacketFromServer()
     {
-        // make sure we are on the server before applying update from client
-        if (worldObj.isRemote) throw new RuntimeException("client should not be asked to send server packet!");
+        assertServerSideOnly();
         
         Packet250CustomPayload packet = createUpdatePacket();
         
@@ -454,10 +524,7 @@ public abstract class ThxEntity extends Entity
     
     public void applyUpdatePacketFromServer(ThxEntityPacket250Data packet)
     {
-        //plog("Applying server packet: " + packet);
-        
-        // make sure we are on the client before applying update from server
-        if (!worldObj.isRemote) throw new RuntimeException("server should not be asked to apply server packet!");
+        assertClientSideOnly();
         
         setPositionAndRotation(packet.posX, packet.posY, packet.posZ, packet.yaw, packet.pitch);
         
@@ -502,8 +569,7 @@ public abstract class ThxEntity extends Entity
                 //pilot.mountEntity(this); // boarding
             }
         }
-        else 
-        if (packet.pilotId == 0 && riddenByEntity != null)
+        else if (packet.pilotId == 0 && riddenByEntity != null)
         {
             log("*** applyUpdatePacket: current pilot " + riddenByEntity + " is exiting");
             //riddenByEntity.mountEntity(entity); // unmount
@@ -528,5 +594,19 @@ public abstract class ThxEntity extends Entity
     protected void setBeenAttacked()
     {
         //super.setBeenAttacked(): this.velocityChanged = true; // causes EntityTrackerEntry to send Packet28 "knock-back"
+    }
+    
+    void assertClientSideOnly()
+    {
+        if (worldObj.isRemote) return; // OK, we are on client as expected
+        
+        throw new RuntimeException("Client-side method was called on Server");
+    }
+    
+    void assertServerSideOnly()
+    {
+        if (!worldObj.isRemote) return; // OK, we are on server as expected
+            
+        throw new RuntimeException("Server-side method was called on client");
     }
 }
