@@ -16,14 +16,6 @@ public class ThxItemHelicopter extends Item
         setItemName("thxHelicopterItem");
         setMaxStackSize(16);
         
-        if (ThxConfig.getBoolProperty("disable_helicopter_item_image"))
-        {
-            setIconIndex(92); // hard-code to cookie icon for compatibility
-        }
-        else
-        {
-	        setIconIndex(ModLoader.addOverride("/gui/items.png", "/thx/helicopter_icon.png"));
-        }
         setMaxDamage(0);
         setCreativeTab(CreativeTabs.tabTransport);
         

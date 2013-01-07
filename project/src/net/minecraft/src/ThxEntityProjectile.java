@@ -245,8 +245,9 @@ public abstract class ThxEntityProjectile extends ThxEntity
     
     void onLaunch()
     {
-        if (!worldObj.isRemote) // send initial server update packet to all clients
+        if (!worldObj.isRemote) // send initial server update packet to all clients to set pitch and yaw
         {
+            //to be replaced by dataWatcher
 	        sendUpdatePacketFromServer();
         }
     }

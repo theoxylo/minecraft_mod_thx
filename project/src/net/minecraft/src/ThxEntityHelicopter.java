@@ -150,13 +150,10 @@ public class ThxEntityHelicopter extends ThxEntity
             updateMotion(false);
         }
         
-        //if (!worldObj.isRemote)
-        //{
-            if (handleCollisions()) // true if collided with other entity or environment
-            {
-                if (helper != null) helper.addChatMessageToPilot("Damage: " + (int) (damage * 100 / MAX_HEALTH) + "%");
-            }
-        //}
+        if (handleCollisions()) // true if collided with other entity or environment
+        {
+            if (helper != null) helper.addChatMessageToPilot("Damage: " + (int) (damage * 100 / MAX_HEALTH) + "%");
+        }
         
         if (damage > MAX_HEALTH && !worldObj.isRemote) // helicopter destroyed! on server
         {
@@ -198,6 +195,25 @@ public class ThxEntityHelicopter extends ThxEntity
             if (damage / MAX_HEALTH > .75f) worldObj.spawnParticle("flame", posX -.5f + Math.random(), posY -.5f + Math.random(), posZ -.5f + Math.random(), 0.0, 0.0, 0.0);
         }
         
+        
+        // adjust rotor spin rate
+        if (worldObj.isRemote)
+        {
+	        ThxModelHelicopterBase model = (ThxModelHelicopterBase) helper.model;
+	        
+            if (riddenByEntity != null || targetEntity != null)
+            {
+		        // adjust according to throttle (0 is idle speed, not stopped)
+		        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
+		        model.rotorSpeed = power / 2f + .75f;
+            }
+            else
+            {
+                // spin down to complete stop
+		        if (model != null) model.rotorSpeed = 0f; // spin down rotor on vacant helicopters
+            }
+        }
+        
         //riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
         //plog(String.format("finish onUpdate, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
     }
@@ -209,7 +225,7 @@ public class ThxEntityHelicopter extends ThxEntity
         if (!worldObj.isRemote) // we are on embedded server, receiving client update packets
         {
 	        // super.applyUpdatePacketFromClient(ThxEntityPacket250 packet) has been called already
-	        // now, we just apply any commands based on flags (why not do in apply method already?)
+	        // now, we just apply any commands based on flags (why not do in subclass apply method already?)
             
 	        if (riddenByEntity.isDead)
 	        {
@@ -234,7 +250,10 @@ public class ThxEntityHelicopter extends ThxEntity
 	            createMap();
 	        }
 	        
-	        sendUpdatePacketFromServer();
+	        sendUpdatePacketFromServer(); // send update packet to all clients except pilot
+	        
+	        // let mc packets/dataWatcher do all updates?
+	        updateDataWatcher();
         }
         else // we are on the client
         {
@@ -252,12 +271,8 @@ public class ThxEntityHelicopter extends ThxEntity
             else // player is not the server pilot, helicopter piloted by a different player in embedded server mp game
             {
                 //plog("other mp player pilot '" + getPilot() + "' is flying near player: " + thePlayer);
+	            readDataWatcher();
             }
-            
-	        // adjust model rotor speed according to current throttle
-	        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
-	        ThxModelHelicopterBase model = (ThxModelHelicopterBase) helper.model;
-	        if (model != null) model.rotorSpeed = power / 2f + .75f;
         }
     }
     
@@ -635,17 +650,7 @@ public class ThxEntityHelicopter extends ThxEntity
     {
         if (worldObj.isRemote) // client-side drone receives standard mc update packets, no 250 custom
         {
-	        // OLD: applyUpdatePacketFromServer in ThxEntity base class should do client update for pos, vel, ypr, damage, throttle
-            
-            // read from dataWatcher
-            throttle = getWatched_Throttle();
-            rotationRoll = getWatched_Roll();
-            
-	        // adjust model rotor speed according to throttle
-	        float power = (throttle - THROTTLE_MIN) / (THROTTLE_MAX - THROTTLE_MIN);
-	        ThxModelHelicopterBase model = (ThxModelHelicopterBase) helper.model;
-	        model.rotorSpeed = power / 2f + .75f;
-	        
+            readDataWatcher();
             return; // position and velocity updates are handled by 
         }
         
@@ -748,9 +753,7 @@ public class ThxEntityHelicopter extends ThxEntity
             throttle *= .6; // auto zero throttle   
         }
         
-        // record values in dataWatcher
-        setWatched_Throttle(throttle);
-        setWatched_Roll(rotationRoll);
+        updateDataWatcher();
     }
     
     void onUpdateVacant()
@@ -818,13 +821,6 @@ public class ThxEntityHelicopter extends ThxEntity
             //motionY -= (GRAVITY / 2f) * deltaTime; // weakened gravity since no thrust
             motionZ *= FRICTION;
         }        
-        
-        // power down rotor spin render effect on client
-        if (worldObj.isRemote)
-        {
-	        ThxModelHelicopterBase model = (ThxModelHelicopterBase) helper.model;
-	        if (model != null) model.rotorSpeed = 0f;
-        }
     }
     
     @Override
@@ -1409,5 +1405,18 @@ public class ThxEntityHelicopter extends ThxEntity
         }
     }
     
+    void readDataWatcher()
+    {
+        // read from dataWatcher
+        throttle = getWatched_Throttle();
+        rotationRoll = getWatched_Roll();
+    }
+    
+    void updateDataWatcher()
+    {
+        // record values in dataWatcher
+        setWatched_Throttle(throttle);
+        setWatched_Roll(rotationRoll);
+    }
 }
 
