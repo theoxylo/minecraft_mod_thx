@@ -1,10 +1,13 @@
 package net.minecraft.src;
 
-public class ThxEntityHelper
+public abstract class ThxEntityHelper
 {
     ThxEntity entity;
     
-    Object model; // for client rendering
+    Object getModel()
+    {
+        return null;
+    }
     
     boolean isPaused()
     {
@@ -16,6 +19,18 @@ public class ThxEntityHelper
     }
 
     void addChatMessageToPilot(String string)
+    {
+    }
+    
+    void updateAnimation()
+    {
+    }
+    
+    void pilotExit(Entity pilot)
+    {
+    }
+    
+    void onUpdateWithPilot()
     {
     }
 }

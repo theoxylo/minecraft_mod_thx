@@ -24,8 +24,8 @@ public class mod_thx extends BaseMod
         ModLoader.setInGameHook(this, true, true);
         ModLoader.registerPacketChannel(this, "THX_entity");
 
-        int drawDistance = 20; // typically 160, reduced for testing spawn/despawn
-        int updateFreq = 2; // 20 for 1 second updates, 2 for every other tick
+        int drawDistance = 160; // typically 160, reduce to 20 for testing spawn/despawn
+        int updateFreq = 1; // 20 for 1 second updates, 2 for every other tick
         boolean trackMotion = true;
             
         // register entity classes
@@ -102,13 +102,13 @@ public class mod_thx extends BaseMod
     public String getVersion()
     {
         //log("getVersion called");
-        return "Minecraft THX Helicopter Mod - mod_thx-mc146_v020_g";
+        return "Minecraft THX Helicopter Mod - mod_thx-mc146_v020_h";
     }
 
     int getNextItemId()
     {
         // return next available id
-        for (int idx = 2000; idx + 256 < Item.itemsList.length; idx++)
+        for (int idx = 2200; idx + 256 < Item.itemsList.length; idx++)
         {
             if (Item.itemsList[idx + 256] == null) return idx;
         }

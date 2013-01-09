@@ -40,9 +40,9 @@ public abstract class ThxEntity extends Entity
     Vector3 side = new Vector3(); // left side perp
     Vector3 up   = new Vector3(); // up
     
-    ThxEntityHelper helper;
+    ThxEntityHelper sidedHelper;
     
-    abstract ThxEntityHelper createHelper();
+    abstract ThxEntityHelper createEntityHelper();
     
     public ThxEntityPacket250Data lastUpdatePacket;
     
@@ -68,10 +68,11 @@ public abstract class ThxEntity extends Entity
 
         prevTime = System.nanoTime();
         
-        //minecraft = FMLClientHandler.instance().getClient();
         minecraft = ModLoader.getMinecraftInstance();
         
         log("ThxEntity() called with world: " + world);
+        
+        sidedHelper = createEntityHelper();
     }
     
     @Override
@@ -454,6 +455,7 @@ public abstract class ThxEntity extends Entity
         return entity.boundingBox;
     }
 
+    @Override
     public boolean isInRangeToRenderDist(double d)
     {
         return d < 128.0 * 128.0;
@@ -476,6 +478,7 @@ public abstract class ThxEntity extends Entity
         assertServerSideOnly();
         
         setPositionAndRotation(packet.posX, packet.posY, packet.posZ, packet.yaw, packet.pitch);
+        //setRotation(packet.yaw, packet.pitch);
         
         rotationRoll = packet.roll % 360f;
 

@@ -1,0 +1,21 @@
+{
+  "modinfoversion": 2,
+  "modlist": [{
+    "modid": "mod_thx",
+    "name": "THX Helicopter Mod",
+    "description": "Adds a craftable helicopter",
+    "version": "0.0.20",
+    "mcversion": "1.4.6",
+    "url": "https://github.com/theoxylo/minecraft_mod_thx",
+    "updateUrl": "",
+    "authors": [ "Theoxylo <theoxylo@yahoo.com>" ],
+    "credits": "",
+    "logoFile": "/thx/helicopter_icon.png",
+    "screenshots": [],
+    "parent": "",
+    "requiredMods": [],
+    "dependencies": [],
+    "dependants": [],
+    "useDependencyInformation": "true"
+  }]
+}

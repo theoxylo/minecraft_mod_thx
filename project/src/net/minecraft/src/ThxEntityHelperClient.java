@@ -1,20 +1,24 @@
 package net.minecraft.src;
 
-
 public class ThxEntityHelperClient extends ThxEntityHelper
 {
-    World world;
-    //Minecraft minecraft;
     GuiScreen guiScreen;
     
-    ThxEntityHelperClient(ThxEntity entity, ThxModel model)
+    ThxModel model; // for client rendering
+    
+    ThxEntityHelperClient(ThxEntity e, ThxModel m)
     {
-        this.model = model;
-        this.entity = entity;
-        world = entity.worldObj;
-        //minecraft = FMLClientHandler.instance().getClient();
+        entity = e;
+        model = m;
     }
     
+    @Override
+    Object getModel()
+    {
+        return model;
+    }
+    
+    @Override
     boolean isPaused()
     {
         if (guiScreen != entity.minecraft.currentScreen)
@@ -34,14 +38,6 @@ public class ThxEntityHelperClient extends ThxEntityHelper
     @Override
     void addChatMessageToAll(String s)
     {
-        entity.minecraft.ingameGUI.getChatGUI().printChatMessage(s);
-    }
-
-    void addChatMessageToPilot(String s)
-    {
-        // only the pilot player should see this message
-        if (!entity.minecraft.thePlayer.equals(entity.riddenByEntity)) return;
-
         entity.minecraft.ingameGUI.getChatGUI().printChatMessage(s);
     }
 }

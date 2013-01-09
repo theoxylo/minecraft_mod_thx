@@ -1,19 +1,19 @@
 <?xml version="1.0"?>
-<project name="thx_mod" default="copy_to_mcp" basedir="..">
+<project name="thx_mod" default="copy_to_mcp">
 
-	<property name="MCP_DIR" value="../mcp725-146" />
+	<property name="MCP_DIR" value="../../mcp725_146" />
 	<echo message="MCP_DIR: ${MCP_DIR}" />
 
 	<target name="copy_to_mcp">
 
 		<echo message="Copying modified resource files..." />
-		<copy todir="${MCP_DIR}/jars/mods/thx.zip/thx" verbose="true">
-			<fileset dir="project/resources/thx" includes="*.png" />
+		<copy todir="${MCP_DIR}/jars/mods/thx.zip" verbose="true">
+			<fileset dir="resources" includes="**/*.*" />
 		</copy>
 
 		<echo message="Copying modified java files..." />
 		<copy todir="${MCP_DIR}/src/minecraft" verbose="true">
-			<fileset dir="project/src" includes="**/*.java" />
+			<fileset dir="src" includes="**/*.java" />
 		</copy>
 
 	</target>

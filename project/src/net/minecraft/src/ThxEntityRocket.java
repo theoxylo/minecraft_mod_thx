@@ -19,7 +19,7 @@ public class ThxEntityRocket extends ThxEntityProjectile
     }
     
     @Override
-    ThxEntityHelper createHelper()
+    ThxEntityHelper createEntityHelper()
     {
         ThxModelMissile model = new ThxModelMissile();
         overrideMissileModel:

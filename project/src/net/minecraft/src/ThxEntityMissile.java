@@ -19,7 +19,7 @@ public class ThxEntityMissile extends ThxEntityProjectile
     }
 
     @Override
-    ThxEntityHelper createHelper()
+    ThxEntityHelper createEntityHelper()
     {
         log("createHelper()");
         return new ThxEntityHelperClient(this, new ThxModelMissile());

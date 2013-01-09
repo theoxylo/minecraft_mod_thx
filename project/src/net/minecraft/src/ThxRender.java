@@ -7,18 +7,9 @@ public class ThxRender extends Render
     @Override
     public void doRender(Entity entityArg, double x, double y, double z, float yaw, float deltaTime)
     {
-        ThxEntity entity = null;
+        ThxEntity entity = (ThxEntity) entityArg;
         
-        try
-        {
-            entity = (ThxEntity) entityArg;
-        }
-        catch (ClassCastException e)
-        {
-            return;
-        }
-        
-        ThxModel model = (ThxModel) entity.helper.model;
+        ThxModel model = (ThxModel) entity.sidedHelper.getModel();
         
         GL11.glPushMatrix();
         
@@ -26,7 +17,7 @@ public class ThxRender extends Render
         GL11.glTranslatef((float)x, (float)y, (float)z);
         
         
-        model.paused = entity.helper.isPaused();
+        model.paused = entity.sidedHelper.isPaused();
         
         if (entity.prevTime > model.entityPrevTime)
         {
@@ -50,9 +41,6 @@ public class ThxRender extends Render
 	        model.rotationRollSpeed = 0f;
         }
         
-        
-        //int texture = renderManager.renderEngine.getTexture(model.renderTexture);
-        //renderManager.renderEngine.bindTexture(texture);
         loadTexture(model.renderTexture);
 
         model.render();

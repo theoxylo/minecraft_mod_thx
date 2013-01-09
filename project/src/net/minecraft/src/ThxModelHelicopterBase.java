@@ -11,7 +11,7 @@ public class ThxModelHelicopterBase extends ThxModel
     float tailRotorAnglePrev = 0f;
     
     float rotorSpeed = 0f;
-    float MAX_ROTOR_SPEED = 18f * ((float)ThxConfig.getIntProperty("rotor_speed_percent")) / 100f;
+    float MAX_ROTOR_SPEED = 18f * ((float) ThxConfig.getIntProperty("rotor_speed_percent")) / 100f;
     
     float timeSpun = 0f;
     float SPIN_UP_TIME = 10f;
