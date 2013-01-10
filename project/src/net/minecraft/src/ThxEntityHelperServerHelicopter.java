@@ -12,6 +12,7 @@ public class ThxEntityHelperServerHelicopter extends ThxEntityHelperServer
     
     void pilotExit(Entity pilot)
     {
+        System.out.println("*** ThxEntityHelperServerHelicopter.pilotExit()");
         // place pilot to left of helicopter
         // (use fwd XZ perp to exit left: x = z, z = -x)
         double exitDist = 1.9;
@@ -69,6 +70,5 @@ public class ThxEntityHelperServerHelicopter extends ThxEntityHelperServer
         //sendUpdatePacketFromServer(); // send update packet to all clients except pilot
         
         // let mc packets/dataWatcher do all updates
-        entity.updateDataWatcher();
     }
 }

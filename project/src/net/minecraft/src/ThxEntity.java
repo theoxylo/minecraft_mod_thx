@@ -98,7 +98,7 @@ public abstract class ThxEntity extends Entity
 
     public void setWatched_Throttle(float f) // test: setting on server for drone helicopters
     {
-        plog("setWatched_Throttle: " + f);
+        //plog("setWatched_Throttle: " + f);
         
         assertServerSideOnly();
         dataWatcher.updateObject(23, Integer.valueOf((int) (f * 1000f)));
@@ -108,7 +108,7 @@ public abstract class ThxEntity extends Entity
     {
         assertClientSideOnly();
         float f = ((float) dataWatcher.getWatchableObjectInt(23)) / 1000f;
-        plog("getWatched_Throttle: " + f);
+        //plog("getWatched_Throttle: " + f);
         return f;
     }
 
@@ -270,15 +270,13 @@ public abstract class ThxEntity extends Entity
     
     /*
     @Override
-    public void setVelocity(double dx, double dy, double dz)
+    public void setPosition(double x, double y, double z)
     {
-        //assertClientSideOnly();
-        
-        //log("setVelocity called");
-        super.setVelocity(dx, dy, dz);
+        // called on both client and server
+        super.setPosition(x, y, z);
     }
     */
-
+    
     @Override
     protected void fall(float f)
     {
@@ -495,6 +493,8 @@ public abstract class ThxEntity extends Entity
         cmd_exit        = packet.cmd_exit;
         cmd_create_map  = packet.cmd_create_map;
         
+        updateDataWatcher(); // this will send roll and throttle to clients
+        
         if (packet.pilotId == 0 && riddenByEntity != null)
         {
             ////log("*** current pilot " + riddenByEntity.entityId + " is exiting (NOT calling pilotExit on server based on packet, deferring to interact");
@@ -503,6 +503,9 @@ public abstract class ThxEntity extends Entity
             // called by pilotExit below
             //riddenByEntity.mountEntity(entity); // unmount
             
+            // yes, it happens. should we ignore client update packets with no pilot?
+            //if (true) throw new RuntimeException("does this happen?");
+            
             log("*** current pilot " + riddenByEntity.entityId + " is exiting");
             pilotExit(); 
         }
@@ -510,6 +513,20 @@ public abstract class ThxEntity extends Entity
         //int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
         //plog(String.format("end applyUpdatePacket, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
     }    
+    
+    void readDataWatcher()
+    {
+        // read from dataWatcher
+        throttle = getWatched_Throttle();
+        rotationRoll = getWatched_Roll();
+    }
+    
+    void updateDataWatcher()
+    {
+        // record values in dataWatcher
+        setWatched_Throttle(throttle);
+        setWatched_Roll(rotationRoll);
+    }
     
     public void sendUpdatePacketFromServer()
     {
@@ -527,6 +544,8 @@ public abstract class ThxEntity extends Entity
     
     public void applyUpdatePacketFromServer(ThxEntityPacket250Data packet)
     {
+        log("applyUpdatePacketFromServer: " + packet);
+        
         assertClientSideOnly();
         
         setPositionAndRotation(packet.posX, packet.posY, packet.posZ, packet.yaw, packet.pitch);

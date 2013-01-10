@@ -113,6 +113,10 @@ public class ThxEntityHelicopter extends ThxEntity
         
         super.onUpdate();
         
+        // all helicopters should have exhaust smoke as a test in lan mp: do particles spawn on client from server call?
+        // try spawning smoke on server only:
+        if (!worldObj.isRemote) worldObj.spawnParticle("smoke", posX -.5f + Math.random(), posY -.5f + Math.random(), posZ -.5f + Math.random(), 0.0, 0.0, 0.0);
+        
         // decrement cooldown timers
         missileDelay -= deltaTime;
         rocketDelay  -= deltaTime;
@@ -128,25 +132,17 @@ public class ThxEntityHelicopter extends ThxEntity
         if (riddenByEntity != null)
         {
             sidedHelper.onUpdateWithPilot();
-            //updateMotion(altitudeLock);
         }
         else if (targetEntity != null)
         {
             onUpdateDrone(); // drone ai
-            //updateMotion(false);
-	        if (!worldObj.isRemote) 
-            {
-	            updateMotion(false);
-		        moveEntity(motionX, motionY, motionZ);
-            }
+	        if (!worldObj.isRemote) updateMotion(false);
+	        moveEntity(motionX, motionY, motionZ);
         }
         else
         {
-            onUpdateVacant(); // empty
-            //updateMotion(false);
+            onUpdateVacant(); // vacant helicopter, no pilot or ai
 	        if (!worldObj.isRemote) updateMotion(false);
-	        
-	        // move on both client and server for smoothness
 	        moveEntity(motionX, motionY, motionZ);
         }
         
@@ -1273,6 +1269,20 @@ public class ThxEntityHelicopter extends ThxEntity
     }
 
     @Override
+    public void setVelocity(double dx, double dy, double dz)
+    {
+        assertClientSideOnly();
+        
+	    if (riddenByEntity != null && riddenByEntity.entityId == minecraft.thePlayer.entityId) // player is the client pilot
+        {
+	        // already sending velocity to server, so ignore server updates
+	        return;
+        }
+	    
+        super.setVelocity(dx, dy, dz);
+    }
+
+    @Override
     public void setPositionAndRotation2(double posX, double posY, double posZ, float yaw, float pitch, int unused)
     {
         assertClientSideOnly();
@@ -1282,25 +1292,11 @@ public class ThxEntityHelicopter extends ThxEntity
         
 	    if (riddenByEntity != null && riddenByEntity.entityId == minecraft.thePlayer.entityId) // player is the client pilot
         {
-	        // already sending position to server, so ignore server position updates
+	        // already sending position to server, so ignore server updates
 	        return;
         }
 	    
 	    super.setPositionAndRotation2(posX, posY, posZ, yaw, pitch, unused);
-    }
-    
-    void readDataWatcher()
-    {
-        // read from dataWatcher
-        throttle = getWatched_Throttle();
-        rotationRoll = getWatched_Roll();
-    }
-    
-    void updateDataWatcher()
-    {
-        // record values in dataWatcher
-        setWatched_Throttle(throttle);
-        setWatched_Roll(rotationRoll);
     }
 }
 

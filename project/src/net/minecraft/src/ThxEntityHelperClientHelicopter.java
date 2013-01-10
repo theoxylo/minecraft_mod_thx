@@ -57,9 +57,11 @@ public class ThxEntityHelperClientHelicopter extends ThxEntityHelperClient
         entity.rotationRollSpeed = 0f;        
         
         // we must update the serverPos because it is used when the helicopter is vacant
+        /*
         entity.serverPosX = MathHelper.floor_double(entity.posX * 32f);
         entity.serverPosY = MathHelper.floor_double(entity.posY * 32f);
         entity.serverPosZ = MathHelper.floor_double(entity.posZ * 32f);
+        */
     }
     
     @Override
@@ -70,6 +72,7 @@ public class ThxEntityHelperClientHelicopter extends ThxEntityHelperClient
             entity.onUpdateWithPilotPlayerInput();
             entity.updateMotion(entity.altitudeLock);
 	        entity.moveEntity(entity.motionX, entity.motionY, entity.motionZ);
+            //entity.setPosition(entity.posX + entity.motionX, entity.posY + entity.motionY, entity.posZ + entity.motionZ);
                 
             /*
 	        entity.serverPosX = MathHelper.floor_double(entity.posX * 32f);
@@ -82,11 +85,16 @@ public class ThxEntityHelperClientHelicopter extends ThxEntityHelperClient
         else // pilot is a different player, not using this client
         {
             entity.readDataWatcher();
-	        //entity.moveEntity(entity.motionX, entity.motionY, entity.motionZ); // causing drift on client
             
+            // either of the following approaches causes drift and entity de-sync:
+	        //entity.moveEntity(entity.motionX, entity.motionY, entity.motionZ); // causing drift on client
+            //entity.setPosition(entity.posX + entity.motionX, entity.posY + entity.motionY, entity.posZ + entity.motionZ);
+            
+            /*
 	        entity.serverPosX = MathHelper.floor_double(entity.posX * 32f);
 	        entity.serverPosY = MathHelper.floor_double(entity.posY * 32f);
 	        entity.serverPosZ = MathHelper.floor_double(entity.posZ * 32f);
+	        */
         }
     }
 }
