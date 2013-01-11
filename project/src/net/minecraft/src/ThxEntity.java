@@ -4,8 +4,7 @@ import net.minecraft.client.Minecraft;
 
 public abstract class ThxEntity extends Entity
 {
-    ThxEntity targetEntity; // e.g. helicopter for ai to follow/attack
-    int prevTargetEntityId = 0;
+    ThxEntity targetEntity; // e.g. helicopter for ai to follow/attack, populated from above id if > 0
     
     Minecraft minecraft;
     
@@ -82,36 +81,50 @@ public abstract class ThxEntity extends Entity
         dataWatcher.addObject(22, new Integer(0)); // roll
         dataWatcher.addObject(23, new Integer(0)); // throttle
         dataWatcher.addObject(24, new Integer(0)); // targetHelicopter id
+        dataWatcher.addObject(25, new Integer(0)); // damage
     }
     
-    public void setWatched_Roll(float roll) // test: setting on server for vacant helicopters
+    void readDataWatcher()
     {
-        assertServerSideOnly();
-        dataWatcher.updateObject(22, Integer.valueOf((int) (roll * 1000f)));
-    }
-    
-    public float getWatched_Roll() // test: and calling on client to sync current state 
-    {
+        // on client, read updated values most recently sent from server at beginning of update
         assertClientSideOnly();
-        return ((float) dataWatcher.getWatchableObjectInt(22)) / 1000f;
-    }
-
-    public void setWatched_Throttle(float f) // test: setting on server for drone helicopters
-    {
-        //plog("setWatched_Throttle: " + f);
         
-        assertServerSideOnly();
-        dataWatcher.updateObject(23, Integer.valueOf((int) (f * 1000f)));
+        if (riddenByEntity != null && riddenByEntity.entityId == minecraft.thePlayer.entityId) return; // player is the client pilot
+            
+        rotationRoll   = ((float) dataWatcher.getWatchableObjectInt(22)) / 1000f;
+        throttle       = ((float) dataWatcher.getWatchableObjectInt(23)) / 1000f;
+        
+        int targetEntityId =          dataWatcher.getWatchableObjectInt(24);
+        checkForTargetEntityChange:
+        {
+            if (targetEntityId == 0)
+            {
+                targetEntity = null;
+            }
+            else if (targetEntity == null || targetEntity.entityId != targetEntityId)
+            {
+	            Entity target = ((WorldClient) worldObj).getEntityByID(targetEntityId);
+	            if (target != null && !target.isDead && target instanceof ThxEntity)
+	            {
+	                targetEntity = (ThxEntity) target;
+	            }
+            }
+        }
+        
+        damage         = ((float) dataWatcher.getWatchableObjectInt(25)) / 1000f;
     }
     
-    public float getWatched_Throttle() // test: and calling on client to sync current state 
+    void updateDataWatcher()
     {
-        assertClientSideOnly();
-        float f = ((float) dataWatcher.getWatchableObjectInt(23)) / 1000f;
-        //plog("getWatched_Throttle: " + f);
-        return f;
+        // on server, record modified values in dataWatcher at end of update
+        assertServerSideOnly();
+        
+        dataWatcher.updateObject(22, Integer.valueOf((int) (rotationRoll * 1000f)));
+        dataWatcher.updateObject(23, Integer.valueOf((int) (throttle     * 1000f)));
+        dataWatcher.updateObject(24, Integer.valueOf(targetEntity != null ? targetEntity.entityId : 0));
+        dataWatcher.updateObject(25, Integer.valueOf((int) (damage       * 1000f)));
     }
-
+    
     @Override
     public void onUpdate()
     {
@@ -119,6 +132,7 @@ public abstract class ThxEntity extends Entity
         
         long time = System.nanoTime();
         deltaTime = ((float) (time - prevTime)) / 1000000000f; // convert to sec
+        //log(String.format("delta time: %6.4f", deltaTime));
         if (deltaTime > .05f) deltaTime = .05f; // 20 ticks per second
         prevTime = time;
 
@@ -139,44 +153,8 @@ public abstract class ThxEntity extends Entity
             lastUpdatePacket = null; // only apply once
         }
         
-        // apply dataWatcher changes for target entity 
-        if (worldObj.isRemote)
-        {
-            // read data and apply if changed on client
-	        int id = dataWatcher.getWatchableObjectInt(24);
-	        
-	        if (id != prevTargetEntityId)
-	        {
-                prevTargetEntityId = id;
-                
-                if (id > 0)
-                {
-		            Entity target = ((WorldClient) worldObj).getEntityByID(id);
-		            if (target != null && !target.isDead && target instanceof ThxEntity)
-		            {
-		                targetEntity = (ThxEntity) target;
-		            }
-                }
-                else
-                {
-                    targetEntity = null;
-                }
-	        }
-        }
-        else
-        {
-            // set data if changed on server
-	        if (targetEntity != null && targetEntity.entityId != prevTargetEntityId)
-	        {
-		        dataWatcher.updateObject(24, Integer.valueOf(targetEntity.entityId));
-                prevTargetEntityId = targetEntity.entityId;
-	        }
-	        else if (targetEntity == null && prevTargetEntityId > 0)
-            {
-		        dataWatcher.updateObject(24, Integer.valueOf(0));
-	            prevTargetEntityId = 0;
-            }
-        }
+        // read updated values from server on client
+        if (worldObj.isRemote) readDataWatcher();
         
         inWater = isInWater();
         
@@ -493,7 +471,7 @@ public abstract class ThxEntity extends Entity
         cmd_exit        = packet.cmd_exit;
         cmd_create_map  = packet.cmd_create_map;
         
-        updateDataWatcher(); // this will send roll and throttle to clients
+        //updateDataWatcher(); // this will send roll and throttle to clients // now called at the end of onUpdate instead
         
         if (packet.pilotId == 0 && riddenByEntity != null)
         {
@@ -513,20 +491,6 @@ public abstract class ThxEntity extends Entity
         //int riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
         //plog(String.format("end applyUpdatePacket, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
     }    
-    
-    void readDataWatcher()
-    {
-        // read from dataWatcher
-        throttle = getWatched_Throttle();
-        rotationRoll = getWatched_Roll();
-    }
-    
-    void updateDataWatcher()
-    {
-        // record values in dataWatcher
-        setWatched_Throttle(throttle);
-        setWatched_Roll(rotationRoll);
-    }
     
     public void sendUpdatePacketFromServer()
     {

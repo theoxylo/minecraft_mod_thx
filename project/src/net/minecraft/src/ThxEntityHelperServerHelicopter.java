@@ -66,9 +66,5 @@ public class ThxEntityHelperServerHelicopter extends ThxEntityHelperServer
             entity.cmd_create_map = 0;
             entity.createMap();
         }
-        
-        //sendUpdatePacketFromServer(); // send update packet to all clients except pilot
-        
-        // let mc packets/dataWatcher do all updates
     }
 }

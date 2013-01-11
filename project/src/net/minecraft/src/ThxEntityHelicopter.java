@@ -113,9 +113,8 @@ public class ThxEntityHelicopter extends ThxEntity
         
         super.onUpdate();
         
-        // all helicopters should have exhaust smoke as a test in lan mp: do particles spawn on client from server call?
-        // try spawning smoke on server only:
-        if (!worldObj.isRemote) worldObj.spawnParticle("smoke", posX -.5f + Math.random(), posY -.5f + Math.random(), posZ -.5f + Math.random(), 0.0, 0.0, 0.0);
+        // all helicopters should have exhaust smoke as a test in lan mp: particles must be spawned by client, no effect on server
+        if (worldObj.isRemote) worldObj.spawnParticle("smoke", posX -.5f + Math.random(), posY -.5f + Math.random(), posZ -.5f + Math.random(), 0.0, 0.0, 0.0);
         
         // decrement cooldown timers
         missileDelay -= deltaTime;
@@ -193,6 +192,9 @@ public class ThxEntityHelicopter extends ThxEntity
         
         
         sidedHelper.updateAnimation(); // adjust rotor spin rate
+        
+        // on server, update watched values for all cases
+        if (!worldObj.isRemote) updateDataWatcher();
         
         //riddenById = riddenByEntity != null ? riddenByEntity.entityId : 0;
         //plog(String.format("finish onUpdate, pilot %d [posX: %6.3f, posY: %6.3f, posZ: %6.3f, yaw: %6.3f, throttle: %6.3f, motionX: %6.3f, motionY: %6.3f, motionZ: %6.3f]", riddenById, posX, posY, posZ, rotationYaw, throttle, motionX, motionY, motionZ));
@@ -566,8 +568,9 @@ public class ThxEntityHelicopter extends ThxEntity
     {
         if (worldObj.isRemote) // client-side drone receives standard mc update packets, no 250 custom
         {
-            readDataWatcher();
-            return; // position and velocity updates are handled by 
+            //already called in super.onUpdate: 
+            //readDataWatcher();
+            return; // position and velocity updates are handled by mc
         }
         
         ThxEntityHelicopter targetHelicopter = (ThxEntityHelicopter) targetEntity;
@@ -629,7 +632,6 @@ public class ThxEntityHelicopter extends ThxEntity
             }
         }
         
-        // PITCH
         if (thd > 10f)
         {
             rotationPitch = 45f * (thd - 10f) / 20f;
@@ -641,6 +643,7 @@ public class ThxEntityHelicopter extends ThxEntity
         rotationPitchSpeed = 0f;
         
         
+        // friendly PITCH and ROLL control
         if (isTargetHelicopterFriendly && thd < 10f)
         {
             rotationPitch = targetHelicopter.rotationPitch;
@@ -668,8 +671,6 @@ public class ThxEntityHelicopter extends ThxEntity
         {
             throttle *= .6; // auto zero throttle   
         }
-        
-        updateDataWatcher();
     }
     
     void onUpdateVacant()
@@ -951,29 +952,10 @@ public class ThxEntityHelicopter extends ThxEntity
         entityDropItem(mapStack, .5f);
     }
     
-    void updateMotion(boolean altitudeLock)
+    // calculate thrust based on pitch, roll, throttle, and gravity
+    // used on SERVER for drone ai, used on CLIENT by player pilots
+    void updateThrust()
     {
-        /*
-        // other player pilot on client
-        if (worldObj.isRemote && riddenByEntity != null && riddenByEntity.entityId != minecraft.thePlayer.entityId) 
-        {
-            // don't apply physics to other pilot helicopter in lan mp client, just move
-            moveEntity(motionX, motionY, motionZ);
-            return;
-        }
-        
-        // player pilot on server
-        if (!worldObj.isRemote && riddenByEntity != null) // server motionX,Y,Z are updated by pilot client packet so just move
-        {
-            moveEntity(motionX, motionY, motionZ);
-            return;
-        }
-        */
-    
-        // now calculate thrust and velocity based on yaw, pitch, roll, throttle
-        
-        // used on SERVER for drone ai, used on CLIENT by player pilots
-        
         ascendDescendLift:
         {
             // as pitch and roll increases, lift decreases by fall-off function.
@@ -1008,23 +990,29 @@ public class ThxEntityHelicopter extends ThxEntity
             thrust.x -= fwd.z * strafe;
             thrust.z += fwd.x * strafe;
         }
-
-        // start with current velocity
-        velocity.set((float)motionX, (float)motionY, (float)motionZ);
-
-        // friction, very little!
-        velocity.scale(FRICTION);
-
-        // scale thrust by current throttle and delta time
+        
+        // scale thrust by current throttle
         //thrust.normalize().scale(MAX_ACCEL * (1f + throttle) * deltaTime / .05f);
-        thrust.normalize().scale(MAX_ACCEL * (1f + throttle) * deltaTime / .05f);
-
-        // apply the thrust
-        Vector3.add(velocity, thrust, velocity);
+        thrust.normalize().scale(MAX_ACCEL * (1f + throttle));
 
         // gravity is always straight down
         //if (!inWater && !onGround) velocity.y -= GRAVITY * deltaTime / .05f;
-        velocity.y -= GRAVITY * deltaTime / .05f;
+        //velocity.y -= GRAVITY * deltaTime / .05f;
+        thrust.y -= GRAVITY;
+    }
+
+    void updateMotion(boolean altitudeLock)
+    {
+        updateThrust();
+        
+        // start with current velocity
+        velocity.set((float)motionX, (float)motionY, (float)motionZ);
+
+        // friction or wind resistence
+        velocity.scale(FRICTION);
+
+        // apply the thrust
+        Vector3.add(velocity, thrust, velocity);
 
         // limit max velocity
         if (velocity.lengthSquared() > MAX_VELOCITY * MAX_VELOCITY)
@@ -1037,6 +1025,7 @@ public class ThxEntityHelicopter extends ThxEntity
         motionY = (double) velocity.y;
         motionZ = (double) velocity.z;
             
+        // altitudeLock will quickly zero out the y component
         if (altitudeLock && riddenByEntity != null)
         {
             motionY *= .9;
@@ -1175,82 +1164,76 @@ public class ThxEntityHelicopter extends ThxEntity
         }
     }
     
-    void attackedByThxEntity(ThxEntity attackingEntity)
+    void attackedByThxEntity(ThxEntity attackingEntity) // activate/adjust AI for helicopter hit by another helicopter
     {
-        if (riddenByEntity != null)
+        if (riddenByEntity != null || !(attackingEntity instanceof ThxEntityHelicopter))
         {
-            // for piloted helicopter, track attacker? could allow guided missiles, radar, nemesis
-            //targetHelicopter = (ThxEntityHelicopter) attackingEntity;
-            //return;
+            return;
         }
         
-        // activate/adjust AI for drone helicopter hit by another helicopter
-        if (riddenByEntity == null && attackingEntity instanceof ThxEntityHelicopter)
-        {
-            log("attacked by " + attackingEntity + " with pilot: " + attackingEntity.riddenByEntity);
+        log("attacked by " + attackingEntity + " with pilot: " + attackingEntity.riddenByEntity);
             
-            if (targetEntity == null) // first attack by another helo, begin tracking as friendly
+        if (targetEntity == null) // first attack by another helo, begin tracking as friendly
+        {
+            targetEntity = (ThxEntityHelicopter) attackingEntity;
+            //targetEntity.followers.add(this);
+                
+            isTargetHelicopterFriendly = true;
+            isDroneArmed = false;
+                
+            worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
+                
+            log("new targetEntity: " + targetEntity);
+        }
+        else if (targetEntity.equals(attackingEntity)) // already tracking
+        {
+            if (isTargetHelicopterFriendly) // friendly fire
             {
-                targetEntity = (ThxEntityHelicopter) attackingEntity;
-                //targetEntity.followers.add(this);
-                
-                isTargetHelicopterFriendly = true;
-                isDroneArmed = false;
-                
-                worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
-                
-                log("new targetEntity: " + targetEntity);
-            }
-            else if (targetEntity.equals(attackingEntity)) // already tracking
-            {
-                if (isTargetHelicopterFriendly) // friendly fire
+                if (!isDroneArmed)
                 {
-                    if (!isDroneArmed)
-                    {
-                        isDroneArmed = true; // now armed, still friendly, earn xp!
-                        owner = targetEntity.owner;
+                    isDroneArmed = true; // now armed, still friendly, earn xp!
+                    owner = targetEntity.owner;
                         
-                        worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
-                    }
-                    else
-                    {
-                        isTargetHelicopterFriendly = false;
-                        
-                        //targetHelicopter.followers.remove(this);
-                        
-                        owner = this; // no more xp
-                        
-                        missileDelay = 10f; // initial missile delay
-                        rocketDelay  =  5f; // initial rocket delay
-                        
-                        worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
-                    }
+                    worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
                 }
                 else
                 {
-                    // enemy hit us again! surrender, change to friendly if almost dead
-                    if (damage / MAX_HEALTH > .9f && !isBurning())
-                    {
-                        isTargetHelicopterFriendly = true;
-                        isDroneArmed = false;
-                    }
+                    isTargetHelicopterFriendly = false;
+                        
+                    //targetHelicopter.followers.remove(this);
+                        
+                    owner = this; // no more xp
+                        
+                    missileDelay = 10f; // initial missile delay
+                    rocketDelay  =  5f; // initial rocket delay
+                        
+                    worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
                 }
             }
             else
             {
-                // hit by a helicopter other than the one we are following, so attack it
-                
-                //targetHelicopter.followers.remove(this);
-                
-                targetEntity = (ThxEntity) attackingEntity;
-                
-                isTargetHelicopterFriendly = false;
-                
-                worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
-                
-                log("new enemy targetEntity: " + targetEntity);
-                
+                // enemy hit us again! surrender, change to friendly if almost dead
+                if (damage / MAX_HEALTH > .9f && !isBurning())
+                {
+                    isTargetHelicopterFriendly = true;
+                    isDroneArmed = false;
+                }
             }
+        }
+        else
+        {
+            // hit by a helicopter other than the one we are following, so attack it
+                
+            //targetHelicopter.followers.remove(this);
+                
+            targetEntity = (ThxEntity) attackingEntity;
+                
+            isTargetHelicopterFriendly = false;
+                
+            worldObj.playSoundAtEntity(this, "random.fuse", 1f, 1f); // activation sound
+                
+            log("new enemy targetEntity: " + targetEntity);
+                
         }
     }
     

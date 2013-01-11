@@ -84,7 +84,8 @@ public class ThxEntityHelperClientHelicopter extends ThxEntityHelperClient
         }
         else // pilot is a different player, not using this client
         {
-            entity.readDataWatcher();
+            // already called on client in ThxEntity.onUpdate: 
+            //entity.readDataWatcher();
             
             // either of the following approaches causes drift and entity de-sync:
 	        //entity.moveEntity(entity.motionX, entity.motionY, entity.motionZ); // causing drift on client
