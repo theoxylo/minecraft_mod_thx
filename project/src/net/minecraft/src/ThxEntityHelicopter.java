@@ -114,7 +114,7 @@ public class ThxEntityHelicopter extends ThxEntity
         super.onUpdate();
         
         // all helicopters should have exhaust smoke as a test in lan mp: particles must be spawned by client, no effect on server
-        if (worldObj.isRemote) worldObj.spawnParticle("smoke", posX -.5f + Math.random(), posY -.5f + Math.random(), posZ -.5f + Math.random(), 0.0, 0.0, 0.0);
+        //if (worldObj.isRemote) worldObj.spawnParticle("smoke", posX -.5f + Math.random(), posY -.5f + Math.random(), posZ -.5f + Math.random(), 0.0, 0.0, 0.0);
         
         // decrement cooldown timers
         missileDelay -= deltaTime;
@@ -922,7 +922,7 @@ public class ThxEntityHelicopter extends ThxEntity
         int mapIdx = ((mapIdxX + 50) * 100) + mapIdxZ + 50;
         //System.out.println("Map idx: " + mapIdx);
                 
-        ItemStack mapStack = new ItemStack(Item.map.shiftedIndex, 1, mapIdx);
+        ItemStack mapStack = new ItemStack(Item.map.itemID, 1, mapIdx);
                 
         String mapIdxString = "map_" + mapIdx;
                 

@@ -1,21 +1,21 @@
-Minecraft THX Helicopter Mod, v020 for mc146 with ModLoader OR Forge, 20130102, mod_thx-mc146_v020
+Minecraft THX Helicopter Mod, v021 for mc147 with ModLoader OR Forge, 20130110, mod_thx-mc147_v021
 
 
 INTRODUCTION
 ------------
-This is version v020 for use with Minecraft 1.4.6 and ModLoader OR Forge for single-player and LAN MP.
+This is version v021 for use with Minecraft 1.4.7 and ModLoader OR Forge for single-player and LAN MP.
 
 You can download the installation zip file from GitHub:
 
-    https://github.com/theoxylo/minecraft_mod_thx/blob/v020_mc146/downloads/mod_thx_helicopter_mc146_v020_client.zip?raw=true
+    xxx
 
-And you can download the exact 1.4.6 ModLoader archive you need from this download link:
+And you can download the exact 1.4.7 ModLoader archive you need from this download link:
 
-    http://dl.dropbox.com/u/20629262/Latest/ModLoader.zip
+    xxx
 
 Or, to use Forge instead, download the universal client, version 6.5.0 build 471:
 
-    http://files.minecraftforge.net/minecraftforge/minecraftforge-universal-1.4.6-6.5.0.471.zip    
+    xxx
 
 
 Make sure that Minecraft and ModLoader (or Forge) are working properly.
@@ -98,7 +98,9 @@ Official YouTube playlist:
 
 CHANGELOG
 ---------
-v020: now for use with Minecraft and ModLoader 1.4.5
+v021: now for use with Minecraft 1.4.7 with either ModLoader or Forge
+
+v020: now for use with Minecraft and ModLoader 1.4.5/1.4.6
 v020: LAN MP now supported
 
 v019: now for use with Minecraft and ModLoader/MP 1.3.2

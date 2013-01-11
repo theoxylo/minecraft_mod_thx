@@ -10,7 +10,7 @@ public class ThxItemHelicopter extends Item
     public ThxItemHelicopter(int id)
     {
         super(id);
-        shiftedId = shiftedIndex;
+        shiftedId = itemID;
         
         setItemName("thxHelicopterItem");
         setMaxStackSize(16);
