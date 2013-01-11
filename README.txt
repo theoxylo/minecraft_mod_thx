@@ -7,15 +7,15 @@ This is version v021 for use with Minecraft 1.4.7 and ModLoader OR Forge for sin
 
 You can download the installation zip file from GitHub:
 
-    xxx
+    https://github.com/theoxylo/minecraft_mod_thx/blob/master/downloads/mod_thx_helicopter_mc147_v021_beta.zip?raw=true
 
 And you can download the exact 1.4.7 ModLoader archive you need from this download link:
 
-    xxx
+    http://dl.dropbox.com/u/20629262/Latest/ModLoader.zip
 
-Or, to use Forge instead, download the universal client, version 6.5.0 build 471:
+Or, to use Forge instead, download the universal client:
 
-    xxx
+    http://files.minecraftforge.net/minecraftforge/minecraftforge-universal-1.4.7-6.6.0.497.zip
 
 
 Make sure that Minecraft and ModLoader (or Forge) are working properly.
