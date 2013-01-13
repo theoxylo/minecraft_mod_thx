@@ -12,6 +12,8 @@ public class ThxEntityHelperServerHelicopter extends ThxEntityHelperServer
     
     void pilotExit(Entity pilot)
     {
+        entity.log("server helper pilotExit() called");
+        
         System.out.println("*** ThxEntityHelperServerHelicopter.pilotExit()");
         // place pilot to left of helicopter
         // (use fwd XZ perp to exit left: x = z, z = -x)

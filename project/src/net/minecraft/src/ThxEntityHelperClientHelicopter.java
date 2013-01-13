@@ -41,6 +41,8 @@ public class ThxEntityHelperClientHelicopter extends ThxEntityHelperClient
     @Override
     void pilotExit(Entity pilot)
     {
+        entity.log("client helper pilotExit() called");
+        
         // place pilot to left of helicopter
         // ? not needed on the client, only on the server, then sync?
         // (use fwd XZ perp to exit left: x = z, z = -x)

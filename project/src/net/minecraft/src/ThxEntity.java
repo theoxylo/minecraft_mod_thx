@@ -69,7 +69,7 @@ public abstract class ThxEntity extends Entity
         
         minecraft = ModLoader.getMinecraftInstance();
         
-        log("ThxEntity() called with world: " + world);
+        log("ThxEntity() called with world.isRemote: " + world.isRemote);
         
         sidedHelper = createEntityHelper();
     }

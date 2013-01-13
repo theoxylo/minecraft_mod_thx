@@ -96,7 +96,7 @@ public class ThxEntityHelicopter extends ThxEntity
 	        ThxModelHelicopterBase model = ThxConfig.getBoolProperty("enable_alt_model") ? new ThxModelHelicopterAlt() : new ThxModelHelicopter();
 	        return new ThxEntityHelperClientHelicopter(this, model);
         }
-        return new ThxEntityHelperServer(this);
+        return new ThxEntityHelperServerHelicopter(this);
     }
 
     public Entity getPilot()
@@ -789,7 +789,11 @@ public class ThxEntityHelicopter extends ThxEntity
     {
         log("pilotExit() called on " + (worldObj.isRemote ? "client" : "server"));
         
-        if (riddenByEntity == null) return;
+        if (riddenByEntity == null) 
+        {
+            log("### riddenByEntity is already null, returning");
+            return;
+        }
         
         Entity pilot = getPilot();
         riddenByEntity.mountEntity(this); // riddenByEntity is now null // no more pilot
