@@ -1179,8 +1179,10 @@ public class ThxEntityHelicopter extends ThxEntity
             
         if (targetEntity == null) // first attack by another helo, begin tracking as friendly
         {
-            targetEntity = (ThxEntityHelicopter) attackingEntity;
-            //targetEntity.followers.add(this);
+            targetEntity = attackingEntity;
+            targetEntity =  attackingEntity;
+            
+            ((ThxEntityHelicopter) targetEntity).followers.add(this);
                 
             isTargetHelicopterFriendly = true;
             isDroneArmed = false;
@@ -1204,7 +1206,7 @@ public class ThxEntityHelicopter extends ThxEntity
                 {
                     isTargetHelicopterFriendly = false;
                         
-                    //targetHelicopter.followers.remove(this);
+                    ((ThxEntityHelicopter) targetEntity).followers.remove(this);
                         
                     owner = this; // no more xp
                         
@@ -1228,7 +1230,7 @@ public class ThxEntityHelicopter extends ThxEntity
         {
             // hit by a helicopter other than the one we are following, so attack it
                 
-            //targetHelicopter.followers.remove(this);
+            ((ThxEntityHelicopter) targetEntity).followers.remove(this);
                 
             targetEntity = (ThxEntity) attackingEntity;
                 
