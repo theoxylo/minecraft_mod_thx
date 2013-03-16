@@ -1,21 +1,21 @@
-Minecraft THX Helicopter Mod, v021 for mc147 with ModLoader OR Forge, 20130110, mod_thx-mc147_v021
+Minecraft THX Helicopter Mod, v022 for mc_150 with ModLoader OR Forge, 20130315, mod_thx-mc150_v022
 
 
 INTRODUCTION
 ------------
-This is version v021 for use with Minecraft 1.4.7 and ModLoader OR Forge for single-player and LAN MP.
+This is version v022 for use with Minecraft 1.5.0 and ModLoader OR Forge for single-player and LAN MP.
 
-You can download the installation zip file from GitHub:
+You can download the latest installation zip file from GitHub:
 
-    https://github.com/theoxylo/minecraft_mod_thx/blob/master/downloads/mod_thx_helicopter_mc147_v021_beta.zip?raw=true
+    https://github.com/theoxylo/minecraft_mod_thx/blob/master/downloads/mod_thx_helicopter_mc150_v022.zip?raw=true
 
-And you can download the exact 1.4.7 ModLoader archive you need from this download link:
+And you can download the ModLoader installation archive you need from this download link:
 
     http://dl.dropbox.com/u/20629262/Latest/ModLoader.zip
 
 Or, to use Forge instead, download the universal client:
 
-    http://files.minecraftforge.net/minecraftforge/minecraftforge-universal-1.4.7-6.6.0.497.zip
+    http://files.minecraftforge.net/minecraftforge/minecraftforge-universal-1.5-7.7.0.582.zip
 
 
 Make sure that Minecraft and ModLoader (or Forge) are working properly.
@@ -98,13 +98,11 @@ Official YouTube playlist:
 
 CHANGELOG
 ---------
+v022: now for use with Minecraft 1.5.0 with either ModLoader or Forge
 v021: now for use with Minecraft 1.4.7 with either ModLoader or Forge
-
 v020: now for use with Minecraft and ModLoader 1.4.5/1.4.6
 v020: LAN MP now supported
-
 v019: now for use with Minecraft and ModLoader/MP 1.3.2
-
 v018: still for use with Minecraft and ModLoader/MP 1.2.5
 v018: added ower support to missile (e.g. xp)
 v018: added improved projectile hit detection
@@ -120,10 +118,8 @@ v018: added more missiles fired by ai
 v018: added surrender for critically damaged ai
 v018: changed client config file to 'mod_thx_options.txt'
 v018: changed server config file to 'mod_thx_options.cfg'
-
 v017: now for use with Minecraft and ModLoader 1.2.5
 v017: added basic ai for friendly and enemy drones
-
 v016: now for use with Minecraft and ModLoader 1.2.4
 v016: left-click (pilot attack) fires missile
 v016: right-click (pilot interact) fires rockets, subject to reload after 12
@@ -132,18 +128,14 @@ v016: added manual rocket reload
 v016: added smoke and flame to indicate damge
 v016: added rocket model and skin, please customize
 v016: added new skin with wireframe and enlarged HUD, please customize
-
 v015: now for use with Minecraft and ModLoader 1.1.0
-
 v014: still for use with Minecraft and ModLoader 1.0.0
 v014: added altitude lock as suggested by Gabbiman (default key P)
 v014: added HUD/camera mode where model is hidden (default key C)
 v014: added windshield to model with transparancy effects
 v014: added helicopter skin improved by vip3r
-
 v013: still for use with Minecraft and ModLoader 1.0.0
 v013: fixed NPE crash on AI fire weapon
-
 v012: for use with Minecraft and ModLoader 1.0.0
 v012: enabled separate textures for all model faces
 v012: replaced hud mode with in-game look-pitch control (key L)
@@ -153,13 +145,11 @@ v012: now preserving view mode when entering/exiting
 v012: extended auto-level function to look-pitch mode (key K)
 v012: removed disappearing floor logic
 v012: removed heavy weapons option
-
 v011: for use with Minecraft and ModLoader beta 1.8.1
 v011: enhanced model with "hi-rez" texture panel support
 v011: restored right-click exit function
 v011: fixed judder when auto-level turned off
 v011: adjusted on-demand auto-level, applies to roll also (K key by default)
-
 v010: for use with Minecraft and ModLoader beta 1.8.1
 v010: now using DamageSource for rocket attack owner check
 v010: removed explosion from rocket strike, added flame marker
@@ -167,28 +157,23 @@ v010: increased rocket entity damage, crash damage, max health
 v010: removed helicopter death particle spawn and increased explosion
 v010: removed right-click exit, use 'Y' key by default
 v010: added map creation function, key 'O' by default
-
 v009: for use with Minecraft and ModLoader beta 1.7.3
 v009: adjusted attack and health values
 v009: adjusted collision and damage threshold
 v009: added follow/attack AI (attack empty helicopter to engage)
 v009: added smoke to missile flight
-
 v008: built for Minecraft and ModLoader beta 1.7.3
 v008: updated README.txt :)
-
 v007: now updating helicopter rotation rendering at 60 fps
 v007: added rear view and 'key_look_back' option, U key by default
 v007: some tuning to look-pitch mode
 v007: rockets now damage trees and snow
 v007: added 'disable_helicopter_item_image' option for Mo'Createures compatibility
-
 v006: still on Minecraft and ModLoader beta 1.6.6
 v006: added tail rotor
 v006: added water check and float
 v006: added blue camo texture (customize by replacing helicopter.png)
 v006: fixed rendering delta time bug (backward rotor)
-
 v005: now on Minecraft and ModLoader beta 1.6.6
 v005: using delta time for smoother entity updates
 v005: improved missile movement and collision, increased damage
@@ -206,7 +191,6 @@ v005: fixed helicopter inventory item right click
 v005: fixed self collision with missiles and rockets
 v005: fixed texture mapping to missile model
 v005: fixed velocity effects from firing rockets
-
 v004: now on Minecraft beta 1.6.5 and ModLoader v6
 v004: fixed pitch-up rendering
 v004: added pitch-down  transparent panel
@@ -219,7 +203,6 @@ v004: fixed bogus fall damage to pilot
 v004: change vehicle exit
 v004: made helicopter item stackable to 16
 v004: now using delta time for variable framerates
-
 v003: now using ModLoader v4 for Minecraft 1.5_01
 v003: added rotor spin up/down
 v003: added model windshield
