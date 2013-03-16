@@ -27,38 +27,41 @@ public class mod_thx extends BaseMod
         int drawDistance = 160; // typically 160, reduce to 20 for testing spawn/despawn
         int updateFreq = 1; // 20 for 1 second updates, 2 for every other tick
         boolean trackMotion = true;
-            
+     
         // register entity classes
         helicopter:
         {
-            int entityId = 3030; // no longer in 1.5: ModLoader.getUniqueEntityId();
+            int id = ThxConfig.getIntProperty("thx_id_entity_helicopter"); // can be overridden in prop file only if needed
+            if (id > 0) HELICOPTER_TYPE_ID = id;
+            
+            int entityId = HELICOPTER_TYPE_ID + 10;
             log("Registering entity class for Helicopter with ModLoader entity id " + entityId);
             ModLoader.registerEntityID(ThxEntityHelicopter.class, "thxHelicopter", entityId);
 
-            int id = ThxConfig.getIntProperty("thx_id_entity_helicopter"); // can be overridden in prop file only if needed
-            if (id > 0) HELICOPTER_TYPE_ID = id;
             log("Adding entity tracker for Helicopter with entity type id " + HELICOPTER_TYPE_ID);
             ModLoader.addEntityTracker(this, ThxEntityHelicopter.class, HELICOPTER_TYPE_ID, drawDistance, updateFreq, trackMotion);
         }
         rocket:
         {
-            int entityId = 3031; // no longer in 1.5: ModLoader.getUniqueEntityId();
+            int id = ThxConfig.getIntProperty("thx_id_entity_rocket"); // can be overridden in prop file only if needed
+            if (id > 0) ROCKET_TYPE_ID = id;
+            
+            int entityId = ROCKET_TYPE_ID + 10;
             log("Registering entity class for Rocket with ModLoader entity id " + entityId);
             ModLoader.registerEntityID(ThxEntityRocket.class, "thxRocket", entityId);
 
-            int id = ThxConfig.getIntProperty("thx_id_entity_rocket"); // can be overridden in prop file only if needed
-            if (id > 0) ROCKET_TYPE_ID = id;
             log("Adding entity tracker for Rocket with entity type id " + ROCKET_TYPE_ID);
             ModLoader.addEntityTracker(this, ThxEntityRocket.class, ROCKET_TYPE_ID, drawDistance, updateFreq, trackMotion);
         }
         missile:
         {
-            int entityId = 3032; // no longer in 1.5: ModLoader.getUniqueEntityId();
+            int id = ThxConfig.getIntProperty("thx_id_entity_missile"); // can be overridden in prop file only if needed
+            if (id > 0) MISSILE_TYPE_ID = id;
+            
+            int entityId = MISSILE_TYPE_ID + 10;
             log("Registering entity class for Missile with ModLoader entity id " + entityId);
             ModLoader.registerEntityID(ThxEntityMissile.class, "thxMissile", entityId);
 
-            int id = ThxConfig.getIntProperty("thx_id_entity_missile"); // can be overridden in prop file only if needed
-            if (id > 0) MISSILE_TYPE_ID = id;
             log("Adding entity tracker for Missile with entity type id " + MISSILE_TYPE_ID);
             ModLoader.addEntityTracker(this, ThxEntityMissile.class, MISSILE_TYPE_ID, drawDistance, updateFreq, trackMotion);
         }
@@ -69,17 +72,6 @@ public class mod_thx extends BaseMod
             if (itemId == 0) itemId = getNextItemId(); // not defined in prop file
             log("Setting up inventory item for helicopter with item id " + itemId);
             Item item = new ThxItemHelicopter(itemId);
-
-// not working in 1.5.0:
-//            if (ThxConfig.getBoolProperty("disable_helicopter_item_image"))
-//            {
-//                item.setIconIndex(92); // hard-code to cookie icon for compatibility override
-//            }
-//            else
-//            {
-//                item.setIconIndex(ModLoader.addOverride("/gui/items.png", "/thx/helicopter_icon.png"));
-//            }
-
             ModLoader.addName(item, "THX Helicopter Prototype");
 
             log("Adding recipe for helicopter item: " + item);
