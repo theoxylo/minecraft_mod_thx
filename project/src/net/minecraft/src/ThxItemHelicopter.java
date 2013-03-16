@@ -12,7 +12,8 @@ public class ThxItemHelicopter extends Item
         super(id);
         shiftedId = itemID;
         
-        setItemName("thxHelicopterItem");
+        //setItemName("thxHelicopterItem"); // mc_147
+        setUnlocalizedName("thxHelicopterItem"); // mc_150
         setMaxStackSize(16);
         
         setMaxDamage(0);

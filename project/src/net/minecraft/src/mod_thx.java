@@ -31,7 +31,7 @@ public class mod_thx extends BaseMod
         // register entity classes
         helicopter:
         {
-            int entityId = ModLoader.getUniqueEntityId();
+            int entityId = 3030; // no longer in 1.5: ModLoader.getUniqueEntityId();
             log("Registering entity class for Helicopter with ModLoader entity id " + entityId);
             ModLoader.registerEntityID(ThxEntityHelicopter.class, "thxHelicopter", entityId);
 
@@ -42,7 +42,7 @@ public class mod_thx extends BaseMod
         }
         rocket:
         {
-            int entityId = ModLoader.getUniqueEntityId();
+            int entityId = 3031; // no longer in 1.5: ModLoader.getUniqueEntityId();
             log("Registering entity class for Rocket with ModLoader entity id " + entityId);
             ModLoader.registerEntityID(ThxEntityRocket.class, "thxRocket", entityId);
 
@@ -53,7 +53,7 @@ public class mod_thx extends BaseMod
         }
         missile:
         {
-            int entityId = ModLoader.getUniqueEntityId();
+            int entityId = 3032; // no longer in 1.5: ModLoader.getUniqueEntityId();
             log("Registering entity class for Missile with ModLoader entity id " + entityId);
             ModLoader.registerEntityID(ThxEntityMissile.class, "thxMissile", entityId);
 
@@ -70,14 +70,15 @@ public class mod_thx extends BaseMod
             log("Setting up inventory item for helicopter with item id " + itemId);
             Item item = new ThxItemHelicopter(itemId);
 
-            if (ThxConfig.getBoolProperty("disable_helicopter_item_image"))
-            {
-                item.setIconIndex(92); // hard-code to cookie icon for compatibility override
-            }
-            else
-            {
-                item.setIconIndex(ModLoader.addOverride("/gui/items.png", "/thx/helicopter_icon.png"));
-            }
+// not working in 1.5.0:
+//            if (ThxConfig.getBoolProperty("disable_helicopter_item_image"))
+//            {
+//                item.setIconIndex(92); // hard-code to cookie icon for compatibility override
+//            }
+//            else
+//            {
+//                item.setIconIndex(ModLoader.addOverride("/gui/items.png", "/thx/helicopter_icon.png"));
+//            }
 
             ModLoader.addName(item, "THX Helicopter Prototype");
 
@@ -101,8 +102,7 @@ public class mod_thx extends BaseMod
     @Override
     public String getVersion()
     {
-        //log("getVersion called");
-        return "Minecraft THX Helicopter Mod - mod_thx-mc147_v021_b";
+        return "Minecraft THX Helicopter Mod - mod_thx-v022-mc_150";
     }
 
     int getNextItemId()

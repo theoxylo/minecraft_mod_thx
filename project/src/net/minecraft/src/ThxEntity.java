@@ -446,7 +446,7 @@ public abstract class ThxEntity extends Entity
     {
         assertClientSideOnly();
         
-        minecraft.getSendQueue().addToSendQueue(createUpdatePacket());
+        minecraft.getNetHandler().addToSendQueue(createUpdatePacket());
     }
     
     public void applyUpdatePacketFromClient(ThxEntityPacket250Data packet)
