@@ -13,7 +13,7 @@ public class ThxItemHelicopter extends Item
         shiftedId = itemID;
         
         //setItemName("thxHelicopterItem"); // mc_147
-        setUnlocalizedName("thxHelicopterItem"); // mc_150
+        setUnlocalizedName("helicopter_icon"); // mc_150, mapped to textures/items/helicopter_icon.png
         setMaxStackSize(16);
         
         setMaxDamage(0);
