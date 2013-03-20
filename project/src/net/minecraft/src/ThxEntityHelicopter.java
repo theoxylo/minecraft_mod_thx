@@ -126,6 +126,13 @@ public class ThxEntityHelicopter extends ThxEntity
             // play sound to indicate rocket reload is complete
             rocketReload = 0f; // prevent completion sound from playing repeatedly
             worldObj.playSoundAtEntity(this, "random.click",  .4f, .7f); // volume, pitch
+            
+//          // testing to find out current entity IDs in use
+//	        for (int i = 0; i < 3000; i++) 
+//	        {
+//	            log("class for id " + i + ": " + EntityList.getClassFromID(i));
+//		    }
+        
         }
         
         if (riddenByEntity != null)
