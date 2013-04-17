@@ -29,11 +29,11 @@
 	<variableList>
 		<variable>
 			<name>MCP_HOME</name>
-			<value>file:/C:/Dropbox/minecraft/mcp742_150</value>
+			<value>file:/C:/Dropbox/minecraft/mcp744_151</value>
 		</variable>
 		<variable>
 			<name>MC_HOME</name>
-			<value>file:/C:/Dropbox/minecraft/reference_jars/mc_150/rml</value>
+			<value>file:/C:/Dropbox/minecraft/reference_jars/mc_151/rml</value>
 		</variable>
 	</variableList>
 </projectDescription>

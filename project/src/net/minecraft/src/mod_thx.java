@@ -94,7 +94,7 @@ public class mod_thx extends BaseMod
     @Override
     public String getVersion()
     {
-        return "Minecraft THX Helicopter Mod - mod_thx-v022-mc_150";
+        return "Minecraft THX Helicopter Mod - mod_thx-v023-mc_151";
     }
 
     int getNextItemId()
