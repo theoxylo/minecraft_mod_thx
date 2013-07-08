@@ -1,21 +1,21 @@
-Minecraft THX Helicopter Mod, v024 for mc_152 with ModLoader OR Forge, 20130315, mod_thx-mc152_v024
+Minecraft THX Helicopter Mod, v025 for mc_161 with ModLoader OR Forge, 20130708, mod_thx-mc161_v025
 
 
 INTRODUCTION
 ------------
-This is version v024 for use with Minecraft 1.5.2 and ModLoader OR Forge for single-player and LAN MP.
+This is version v025 for use with Minecraft 1.6.1 and ModLoader OR Forge for single-player and LAN MP.
 
 You can download the latest installation zip file from GitHub:
 
-    https://github.com/theoxylo/minecraft_mod_thx/blob/master/downloads/mod_thx_helicopter_mc152_v024.zip?raw=true
+    https://github.com/theoxylo/minecraft_mod_thx/blob/master/downloads/mod_thx_helicopter_mc161_v025.zip?raw=true
 
 And you can download the ModLoader installation archive you need from this download link:
 
-    http://dl.dropboxusercontent.com/u/20629262/Latest/ModLoader.zip
+    https://www.dropbox.com/s/a31cqz0e9mse9z3/ModLoader.zip
 
 Or, to use Forge instead, download the universal client:
 
-    http://files.minecraftforge.net/minecraftforge/minecraftforge-universal-1.5.2-7.8.0.684.zip
+    http://files.minecraftforge.net/minecraftforge/minecraftforge-universal-XXX.zip
 
 
 Make sure that Minecraft and ModLoader (or Forge) are working properly.

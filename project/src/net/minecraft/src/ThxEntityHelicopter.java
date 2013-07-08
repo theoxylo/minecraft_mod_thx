@@ -748,7 +748,7 @@ public class ThxEntityHelicopter extends ThxEntity
     }
     
     @Override
-    public boolean attackEntityFrom(DamageSource damageSource, int damageAmount)
+    public boolean attackEntityFrom(DamageSource damageSource, float damageAmount)
     {
         if (!super.attackEntityFrom(damageSource, damageAmount)) return false; // no hit
         
@@ -767,10 +767,12 @@ public class ThxEntityHelicopter extends ThxEntity
     }
 
     @Override
-    public boolean interact(EntityPlayer player)
+    public boolean func_130002_c/*interact*/(EntityPlayer player)
+    //public boolean interact(EntityPlayer player)
     {
         // super.interact returns true if player boards and becomes new pilot
-        if (!super.interact(player)) return true; // return true to handle interact() -- prevents currently held item from being used
+        if (!super.func_130002_c/*interact*/(player)) return true; // return true to handle interact() -- prevents currently held item from being used
+        //if (!super.interact(player)) return true; // return true to handle interact() -- prevents currently held item from being used
         
         targetEntity = null; // inactivate ai
         

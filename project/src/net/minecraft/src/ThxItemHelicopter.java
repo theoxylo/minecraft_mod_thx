@@ -19,6 +19,9 @@ public class ThxItemHelicopter extends Item
         setMaxDamage(0);
         setCreativeTab(CreativeTabs.tabTransport);
         
+        // required to locate png file in thx.zip/assets/mod_thx/textures/items/helicopter_icon.png
+        func_111206_d("helicopter_icon");
+        
         ThxConfig.log("Created new helicopter item with id " + id + ": " + this);
     }
     

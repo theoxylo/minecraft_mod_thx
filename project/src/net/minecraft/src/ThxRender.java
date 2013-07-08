@@ -5,6 +5,12 @@ import org.lwjgl.opengl.GL11;
 public class ThxRender extends Render
 {
     @Override
+    protected ResourceLocation func_110775_a(Entity arg) { 
+        System.out.println("******************* ThxRender.func_110775 called");
+        return null; 
+    } // new in 1.6.1
+
+    @Override
     public void doRender(Entity entityArg, double x, double y, double z, float yaw, float deltaTime)
     {
         ThxEntity entity = (ThxEntity) entityArg;
@@ -41,7 +47,9 @@ public class ThxRender extends Render
 	        model.rotationRollSpeed = 0f;
         }
         
-        loadTexture(model.renderTexture);
+        //loadTexture(model.renderTexture);
+        //func_110776_a/*loadTexture*/(new ResourceLocation(model.renderTexture)); // new in 1.6.1
+        func_110776_a/*loadTexture*/(new ResourceLocation(model.renderTexture)); // new in 1.6.1
 
         model.render();
         

@@ -9,7 +9,8 @@ public class ThxModelMissile extends ThxModel
     
     public ThxModelMissile()
     {       
-        renderTexture = "/thx/missile.png";
+        //renderTexture = "textures/entity/missile.png";
+        renderTexture = ThxConfig.getProperty("texture_missile");
 
         float x_length = 16f;
         float z_width  = 4f;

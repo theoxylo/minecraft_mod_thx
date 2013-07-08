@@ -7,8 +7,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
-import net.minecraft.client.Minecraft;
-
 import org.lwjgl.input.Keyboard;
 
 // controls and options set from mods/mod_thx_options.txt
@@ -20,23 +18,26 @@ public class ThxConfig
     {
         boolean writeFile = false;
         
-        String filename = getFilename();
+        //String filename = "/mods/mod_thx_options.txt"; // in 161, maps to c:\mods\mod_thx_options.txt
+        String filename = "mods/mod_thx_options.txt"; // in 161, maps to c:\mods\mod_thx_options.txt
         
         _PROPERTIES = new Properties();
         try
         {
             File file = new File(filename);
-            log("Reading properties from file: " + file.getAbsolutePath());
+            filename = file.getAbsolutePath();
+            System.out.println("Reading properties from file: " + file.getAbsolutePath());
             
             _PROPERTIES.load(new FileInputStream(file));
         }
         catch(FileNotFoundException ioe1)
         {
+            System.out.println("FileNotFoundException - " + ioe1);
             writeFile = true;
         }
         catch (Exception e)
         {
-            log("Error loading properties: " + e);
+            System.out.println("Error loading properties: " + e);
         }
         
         writeFile = loadDefaults() || writeFile;
@@ -48,10 +49,10 @@ public class ThxConfig
             try
             {
                 // create default properties file
-                log("Creating/updating config file " + filename);
+                System.out.println("Creating/updating config file " + filename);
                 _PROPERTIES.store(new FileOutputStream(filename), "Added default properties");
             }
-            catch(IOException e) { log("Error writing default properties file: " + e); }
+            catch(IOException e) { System.out.println("Error writing default properties file: " + e); }
         }
     }
     
@@ -84,14 +85,6 @@ public class ThxConfig
         if (ENABLE_LOGGING) System.out.println("ThxConfig: " + s);
     }
     
-    static String getFilename()
-    {
-        //return ModLoader.getMinecraftInstance().getMinecraftDir() + "/mods/mod_thx_options.txt";
-        String cfgFile = Minecraft.getMinecraftDir() + "/mods/mod_thx_options.txt";
-        log("Config file: " + cfgFile);
-        return cfgFile;
-    }
-    
     static String getProperty(String name)
     {
         return _PROPERTIES.getProperty(name);
@@ -105,7 +98,7 @@ public class ThxConfig
         }
         catch (Exception e)
         {
-            log("int property not found '" + name + "'");
+            System.out.println("int property not found '" + name + "'");
             return 0;
         }
     }
@@ -118,7 +111,7 @@ public class ThxConfig
         }
         catch (Exception e)
         {
-            log("Boolean property '" + name + "' not found");
+            System.out.println("Boolean property '" + name + "' not found");
             return false;
         }
     }
@@ -164,6 +157,10 @@ public class ThxConfig
         defaultAdded = ensureDefault("enable_rotor", "true") || defaultAdded;
         defaultAdded = ensureDefault("enable_auto_level", "true") || defaultAdded;
         defaultAdded = ensureDefault("enable_auto_throttle_zero", "true") || defaultAdded;
+        
+        defaultAdded = ensureDefault("texture_helicopter", "textures/entity/helicopter.png") || defaultAdded;
+        defaultAdded = ensureDefault("texture_missile", "textures/entity/missile.png") || defaultAdded;
+        defaultAdded = ensureDefault("texture_rocket", "textures/entity/rocket.png") || defaultAdded;
         
         return defaultAdded;
     }

@@ -1,15 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="mc_ref/src/minecraft"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="mcp/bin/jinput.jar"/>
-	<classpathentry kind="lib" path="mcp/bin/lwjgl_util.jar"/>
-	<classpathentry kind="lib" path="mcp/bin/lwjgl.jar">
-		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="project_client/mcp/bin/natives"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="mc_ref/minecraft.jar"/>
+	<classpathentry kind="src" path="mc_home/reference_jars/mc_161/rml/src/minecraft"/>
+	<classpathentry kind="lib" path="mc_home/mcp803_161/jars/libraries/argo/argo/2.25_fixed/argo-2.25_fixed.jar"/>
+	<classpathentry kind="lib" path="mc_home/mcp803_161/jars/libraries/com/google/code/gson/gson/2.2.2/gson-2.2.2.jar"/>
+	<classpathentry kind="lib" path="mc_home/mcp803_161./jars/libraries/com/google/guava/guava/14.0/guava-14.0.jar"/>
+	<classpathentry kind="lib" path="mc_home/mcp803_161./jars/libraries/com/paulscode/codecjorbis/20101023/codecjorbis-20101023.jar"/>
+	<classpathentry kind="lib" path="mc_home/mcp803_161./jars/libraries/com/paulscode/codecwav/20101023/codecwav-20101023.jar"/>
+	<classpathentry kind="lib" path="mc_home/mcp803_161./jars/libraries/com/paulscode/libraryjavasound/20101123/libraryjavasound-20101123.jar"/>
+	<classpathentry kind="lib" path="mc_home/mcp803_161./jars/libraries/com/paulscode/librarylwjglopenal/20100824/librarylwjglopenal-20100824.jar"/>
+	<classpathentry kind="lib" path="mc_home/mcp803_161./jars/libraries/com/paulscode/soundsystem/20120107/soundsystem-20120107.jar"/>
+	<classpathentry kind="lib" path="mc_home/mcp803_161./jars/libraries/commons-io/commons-io/2.4/commons-io-2.4.jar"/>
+	<classpathentry kind="lib" path="mc_home/mcp803_161./jars/libraries/net/java/jinput/jinput/2.0.5/jinput-2.0.5.jar"/>
+	<classpathentry kind="lib" path="mc_home/mcp803_161./jars/libraries/net/java/jinput/jinput-platform/2.0.5/jinput-platform-2.0.5-natives-windows.jar"/>
+	<classpathentry kind="lib" path="mc_home/mcp803_161./jars/libraries/net/java/jutils/jutils/1.0.0/jutils-1.0.0.jar"/>
+	<classpathentry kind="lib" path="mc_home/mcp803_161./jars/libraries/net/sf/jopt-simple/jopt-simple/4.5/jopt-simple-4.5.jar"/>
+	<classpathentry kind="lib" path="mc_home/mcp803_161./jars/libraries/org/apache/commons/commons-lang3/3.1/commons-lang3-3.1.jar"/>
+	<classpathentry kind="lib" path="mc_home/mcp803_161./jars/libraries/org/bouncycastle/bcprov-jdk15on/1.47/bcprov-jdk15on-1.47.jar"/>
+	<classpathentry kind="lib" path="mc_home/mcp803_161./jars/libraries/org/lwjgl/lwjgl/lwjgl/2.9.0/lwjgl-2.9.0.jar"/>
+	<classpathentry kind="lib" path="mc_home/mcp803_161./jars/libraries/org/lwjgl/lwjgl/lwjgl-platform/2.9.0/lwjgl-platform-2.9.0-natives-windows.jar"/>
+	<classpathentry kind="lib" path="mc_home/mcp803_161./jars/libraries/org/lwjgl/lwjgl/lwjgl_util/2.9.0/lwjgl_util-2.9.0.jar"/>
+	
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="temp"/>
 </classpath>

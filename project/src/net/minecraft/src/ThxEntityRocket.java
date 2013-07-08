@@ -24,7 +24,9 @@ public class ThxEntityRocket extends ThxEntityProjectile
         ThxModelMissile model = new ThxModelMissile();
         overrideMissileModel:
         {
-            model.renderTexture = "/thx/rocket.png";
+            //model.renderTexture = "textures/entity/rocket.png";
+	        model.renderTexture = ThxConfig.getProperty("texture_rocket");
+	        
             //model.rotationRollSpeed = 90f; // units?
             model.rollRadPerSec = -8f;
         }

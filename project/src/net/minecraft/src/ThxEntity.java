@@ -1,6 +1,6 @@
 package net.minecraft.src;
 
-import net.minecraft.client.Minecraft;
+import net.minecraft.src.Minecraft;
 
 public abstract class ThxEntity extends Entity
 {
@@ -300,7 +300,8 @@ public abstract class ThxEntity extends Entity
     }
     
     @Override
-    public boolean interact(EntityPlayer player)
+    public boolean func_130002_c/*interact*/(EntityPlayer player)
+    //public boolean interact(EntityPlayer player)
     {
         log("interact called with player " + player.entityId);
         
@@ -359,7 +360,7 @@ public abstract class ThxEntity extends Entity
     }
     
     @Override
-    public boolean attackEntityFrom(DamageSource damageSource, int damageAmount)
+    public boolean attackEntityFrom(DamageSource damageSource, float damageAmount)
     {
         if (worldObj.isRemote) return false; // server only
         

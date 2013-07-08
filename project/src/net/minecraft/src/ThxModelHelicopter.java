@@ -22,7 +22,8 @@ public class ThxModelHelicopter extends ThxModelHelicopterBase
     
     public ThxModelHelicopter()
     {
-        renderTexture = "/thx/helicopter.png";
+        //renderTexture = "textures/entity/helicopter.png";
+        renderTexture = ThxConfig.getProperty("texture_helicopter");
         
         // All model boxes are now scaled x2 at rendering time to conserve texture space
 
